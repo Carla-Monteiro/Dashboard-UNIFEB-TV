@@ -1,27 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🚀 SINCRONIZADOR SHAREPOINT → JSON (OTIMIZADO)
-✅ Logging detalhado com timing
-✅ Cache de Site/List ID
-✅ Paginação automática
-✅ Session pooling para reutilizar conexões
-✅ Campos seletivos (sem $expand desnecessário)
-✅ Retry logic para falhas de rede
-⚠️  Reduz de ~10min para ~2-3min
+🚀 SINCRONIZADOR SHAREPOINT → JSON
+✅ Sincroniza a cada 5 minutos
+✅ Gera chamados_sync.json
+✅ Calcula SLA dinamicamente
+⚠️  Usa variáveis de ambiente para segurança
+✅ CORRIGIDO: Campo "Escolhas" para Setor de Atendimento
 """
 
 import os
 import requests
 import json
 import time
+import schedule
 from datetime import datetime
 from dotenv import load_dotenv
 
 # ========== CARREGAR .env ==========
 load_dotenv()
 
-# ========== CREDENCIAIS ==========
+# ========== CREDENCIAIS (via .env) ==========
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 TENANT_ID = os.getenv('TENANT_ID')
@@ -32,71 +31,38 @@ SITE_PATH = os.getenv('SITE_PATH', '/sites/SuporteDTI')
 LIST_NAME = os.getenv('LIST_NAME', 'Chamados')
 GRAPH_API = "https://graph.microsoft.com/v1.0"
 JSON_FILE = os.getenv('JSON_FILE', 'chamados_sync.json')
-CACHE_FILE = '.cache_ids.json'
-
-# ========== SLA ==========
-SLA_HORAS = {'Alta': 2, 'Média': 8, 'Baixa': 24}
 
 # ========== VARIÁVEIS GLOBAIS ==========
-session = None
 access_token = None
 site_id = None
 list_id = None
 
-# ========== TIMING ==========
-timings = {}
-
-def marca_tempo(etapa, inicio=None):
-    """Registra tempo de cada etapa"""
-    if inicio is None:
-        timings[etapa] = time.time()
-    else:
-        duracao = time.time() - inicio
-        print(f"   ⏱️  {etapa}: {duracao:.2f}s")
-        return duracao
-
-# ========== CARREGAR CACHE ==========
-def carregar_cache_ids():
-    """Carrega Site/List ID do cache (evita requisições extras)"""
-    global site_id, list_id
-    
-    if os.path.exists(CACHE_FILE):
-        try:
-            with open(CACHE_FILE, 'r') as f:
-                cache = json.load(f)
-                site_id = cache.get('site_id')
-                list_id = cache.get('list_id')
-            if site_id and list_id:
-                print("✅ Site/List ID carregados do cache (economia: ~4-6s)")
-                return True
-        except:
-            pass
-    return False
-
-def salvar_cache_ids():
-    """Salva Site/List ID em cache"""
-    try:
-        with open(CACHE_FILE, 'w') as f:
-            json.dump({'site_id': site_id, 'list_id': list_id}, f)
-    except:
-        pass
+# ========== SLA POR PRIORIDADE (HORAS) ==========
+SLA_HORAS = {
+    'Alta': 2,
+    'Média': 8,
+    'Baixa': 24
+}
 
 # ========== VALIDAR CREDENCIAIS ==========
 def validar_credenciais():
-    """Verifica credenciais"""
+    """Verifica se as credenciais foram configuradas"""
     if not all([CLIENT_ID, CLIENT_SECRET, TENANT_ID]):
         print("\n❌ ERRO: Credenciais não configuradas!")
-        print("📝 Configure CLIENT_ID, CLIENT_SECRET, TENANT_ID no .env")
+        print("📝 Passos:")
+        print("   1. Copie o arquivo '.env.example' → '.env'")
+        print("   2. Abra '.env' e preencha com suas credenciais do Azure")
+        print("   3. NUNCA commite o arquivo '.env' no Git!")
+        print("\n💡 Guia: https://docs.microsoft.com/en-us/azure/active-directory/")
         exit(1)
-    print("✅ Credenciais validadas")
+    print("✅ Credenciais carregadas do .env")
 
-# ========== AUTENTICAÇÃO COM RETRY ==========
-def autenticar_azure(retries=3):
-    """Obtém token com retry automático"""
-    global access_token, session
+# ========== AUTENTICAÇÃO ==========
+def autenticar_azure():
+    """Obtém token OAuth2 do Azure"""
+    global access_token
     
-    inicio = marca_tempo("Autenticação")
-    
+    print("🔐 Autenticando no Azure AD...")
     auth_url = f'https://login.microsoftonline.com/{TENANT_ID}/oauth2/v2.0/token'
     auth_data = {
         'client_id': CLIENT_ID,
@@ -105,64 +71,52 @@ def autenticar_azure(retries=3):
         'grant_type': 'client_credentials'
     }
     
-    for tentativa in range(retries):
-        try:
-            response = session.post(auth_url, data=auth_data, timeout=10)
-            
-            if response.status_code == 200:
-                access_token = response.json().get('access_token')
-                marca_tempo("Autenticação", inicio)
-                return True
-            else:
-                print(f"❌ Auth erro: {response.status_code}")
-                if tentativa < retries - 1:
-                    print(f"   🔄 Tentativa {tentativa + 2}/{retries}...")
-                    time.sleep(2)
-        except Exception as e:
-            print(f"❌ Erro: {e}")
-            if tentativa < retries - 1:
-                time.sleep(2)
-    
-    return False
+    try:
+        response = requests.post(auth_url, data=auth_data, timeout=30)
+        
+        if response.status_code != 200:
+            print(f"❌ Erro: {response.status_code}")
+            return False
+        
+        access_token = response.json().get('access_token')
+        print("✅ Autenticado com sucesso!")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Erro: {e}")
+        return False
 
-# ========== OBTER SITE E LISTA ==========
+# ========== OBTER IDS ==========
 def obter_site_e_lista():
-    """Obtém Site ID e List ID (usa cache se disponível)"""
+    """Obtém Site ID e List ID do SharePoint"""
     global site_id, list_id
     
-    # Tentar cache primeiro
-    if carregar_cache_ids():
-        return True
-    
-    print("📍 Obtendo Site/List ID...")
-    inicio = marca_tempo("Get Site/List ID")
+    print("📍 Obtendo Site ID e List ID...")
     
     headers = {'Authorization': f'Bearer {access_token}'}
     
     try:
         # Site ID
         site_url = f"{GRAPH_API}/sites/{SHAREPOINT_DOMAIN}:{SITE_PATH}"
-        site_response = session.get(site_url, headers=headers, timeout=10)
+        site_response = requests.get(site_url, headers=headers, timeout=30)
         
         if site_response.status_code != 200:
             print(f"❌ Erro ao obter site: {site_response.status_code}")
             return False
         
         site_id = site_response.json().get('id')
+        print(f"✅ Site ID obtido")
         
         # List ID
         list_url = f"{GRAPH_API}/sites/{site_id}/lists/{LIST_NAME}"
-        list_response = session.get(list_url, headers=headers, timeout=10)
+        list_response = requests.get(list_url, headers=headers, timeout=30)
         
         if list_response.status_code != 200:
             print(f"❌ Erro ao obter lista: {list_response.status_code}")
             return False
         
         list_id = list_response.json().get('id')
-        
-        # Salvar cache para próximas vezes
-        salvar_cache_ids()
-        marca_tempo("Get Site/List ID", inicio)
+        print(f"✅ List ID obtido")
         return True
         
     except Exception as e:
@@ -171,7 +125,7 @@ def obter_site_e_lista():
 
 # ========== CALCULAR SLA ==========
 def calcular_sla(data_abertura_str, prioridade, status):
-    """Calcula SLA"""
+    """Calcula se SLA foi vencido"""
     try:
         if status and 'resolvido' in status.lower():
             return False, 0, 'Resolvido', '0h'
@@ -203,151 +157,16 @@ def calcular_sla(data_abertura_str, prioridade, status):
         return sla_vencido, horas_aberto, atraso_str, aberto_str
         
     except Exception as e:
+        print(f"   ⚠️  Erro ao calcular SLA: {e}")
         return False, 0, "Erro", "0h"
-
-# ========== BUSCAR ITENS COM PAGINAÇÃO ==========
-def buscar_itens_com_paginacao():
-    """Busca todos os itens com paginação automática"""
-    
-    print("\n📋 Lendo chamados do SharePoint...")
-    inicio_busca = marca_tempo("Busca Itens")
-    
-    headers = {'Authorization': f'Bearer {access_token}'}
-    
-    # Buscar apenas campos necessários (mais rápido)
-    select_fields = "id,Title,SetordeAtendimento,Prioridade,Status,Created,Solicitante,Descricao"
-    items_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$expand=fields($select={select_fields})&$top=100"
-    
-    todos_items = []
-    pagina = 1
-    
-    try:
-        while items_url:
-            print(f"   📄 Página {pagina}...")
-            inicio_pagina = marca_tempo(f"Página {pagina}")
-            
-            response = session.get(items_url, headers=headers, timeout=15)
-            
-            if response.status_code != 200:
-                print(f"❌ Erro: {response.status_code}")
-                return []
-            
-            data = response.json()
-            items = data.get('value', [])
-            todos_items.extend(items)
-            
-            marca_tempo(f"Página {pagina}", inicio_pagina)
-            
-            # Próxima página
-            items_url = data.get('@odata.nextLink')
-            pagina += 1
-        
-        marca_tempo("Busca Itens", inicio_busca)
-        print(f"✅ {len(todos_items)} item(ns) encontrado(s)")
-        return todos_items
-        
-    except Exception as e:
-        print(f"❌ Erro: {e}")
-        return []
-
-# ========== PROCESSAR ITENS ==========
-def processar_itens(items):
-    """Processa itens do SharePoint"""
-    
-    print("⚙️  Processando itens...")
-    inicio_proc = marca_tempo("Processamento")
-    
-    chamados = []
-    termos_lixo = [
-        'flow', 'automate', 'power', 'erro', 'error', 'falha', 'failed',
-        'desenvolvimento', 'habilidades', 'learn', 'training', 'microsoft',
-        'power automate', 'flow result', 'microsoft flow', 'noreply',
-        'notification', 'notificação', 'teste', 'test', 'demo'
-    ]
-    
-    for item in items:
-        fields = item.get('fields', {})
-        
-        id_valor = str(fields.get('id') or '')
-        titulo = fields.get('Title') or ''
-        
-        # Validações básicas
-        if not id_valor or id_valor == '0' or id_valor == 'None':
-            continue
-        if not titulo or len(titulo.strip()) < 3:
-            continue
-        if any(termo in titulo.lower() for termo in termos_lixo):
-            continue
-        
-        setor = (
-            fields.get('SetordeAtendimento') or
-            fields.get('SetorDeAtendimento') or 
-            fields.get('Setor de Atendimento') or 
-            fields.get('Setor') or 
-            'Geral'
-        )
-        
-        prioridade = fields.get('Prioridade') or 'Média'
-        status = fields.get('Status') or 'Aberto'
-        data_abertura = fields.get('Created') or ''
-        
-        sla_vencido, horas_aberto, atraso_str, aberto_str = calcular_sla(
-            data_abertura, prioridade, status
-        )
-        
-        print(f"   ✅ #{id_valor} | {titulo[:35]:<35} | {setor}")
-        
-        chamado = {
-            "id": id_valor,
-            "titulo": titulo,
-            "solicitante": fields.get('Solicitante') or '',
-            "status": status,
-            "prioridade": prioridade,
-            "setorAtendimento": setor,
-            "descricao": fields.get('Descricao') or '',
-            "data": data_abertura,
-            "slaVencido": sla_vencido,
-            "slaAtraso": atraso_str,
-            "slaAberto": aberto_str,
-            "slaHoras": SLA_HORAS.get(prioridade, 8)
-        }
-        
-        chamados.append(chamado)
-    
-    marca_tempo("Processamento", inicio_proc)
-    return chamados
-
-# ========== SALVAR JSON ==========
-def salvar_json(chamados):
-    """Salva JSON"""
-    inicio_save = marca_tempo("Salvando JSON")
-    
-    output = {
-        "atualizado_em": datetime.now().isoformat(),
-        "total_chamados": len(chamados),
-        "chamados": chamados
-    }
-    
-    with open(JSON_FILE, 'w', encoding='utf-8') as f:
-        json.dump(output, f, ensure_ascii=False, indent=2)
-    
-    marca_tempo("Salvando JSON", inicio_save)
-    print(f"✅ {JSON_FILE} atualizado!")
 
 # ========== SINCRONIZAR ==========
 def sincronizar():
-    """Sincronização completa"""
-    global session
-    
-    inicio_total = time.time()
+    """Sincroniza dados do SharePoint para JSON"""
     
     print("\n" + "="*70)
     print(f"⏰ {datetime.now().strftime('%d/%m/%Y %H:%M:%S')} - SINCRONIZANDO...")
     print("="*70)
-    
-    # Criar session reutilizável
-    session = requests.Session()
-    session.headers.update({'Content-Type': 'application/json'})
     
     try:
         if not autenticar_azure():
@@ -358,21 +177,97 @@ def sincronizar():
             print("❌ Falha ao obter IDs!")
             return False
         
-        items = buscar_itens_com_paginacao()
-        if not items:
-            print("❌ Nenhum item encontrado!")
+        print("\n📋 Lendo chamados do SharePoint...")
+        
+        headers = {'Authorization': f'Bearer {access_token}'}
+        items_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$expand=fields"
+        
+        response = requests.get(items_url, headers=headers, timeout=30)
+        
+        if response.status_code != 200:
+            print(f"❌ Erro ao ler itens: {response.status_code}")
             return False
         
-        chamados = processar_itens(items)
-        if not chamados:
-            print("⚠️  Nenhum chamado válido!")
-            return False
+        items = response.json().get('value', [])
+        print(f"✅ {len(items)} item(ns) encontrado(s)")
         
-        salvar_json(chamados)
+        chamados = []
         
-        tempo_total = time.time() - inicio_total
-        print("\n" + "="*70)
-        print(f"✅ SUCESSO! Tempo total: {tempo_total:.2f}s ({tempo_total/60:.1f}min)")
+        for item in items:
+            fields = item.get('fields', {})
+            
+            id_valor = str(fields.get('id') or fields.get('ID') or fields.get('Id') or '')
+            id_valor = str(id_valor).strip()
+            
+            titulo = fields.get('Title') or fields.get('Titulo') or ''
+            
+            if not id_valor or id_valor == '0' or id_valor == 'None':
+                continue
+            
+            if not titulo or len(titulo.strip()) < 3:
+                continue
+            
+            titulo_lower = titulo.lower()
+            TERMOS_LIXO = [
+                'flow', 'automate', 'power', 'erro', 'error', 'falha', 'failed',
+                'desenvolvimento', 'habilidades', 'learn', 'training', 'microsoft',
+                'power automate', 'flow result', 'microsoft flow', 'noreply',
+                'notification', 'notificação', 'teste', 'test', 'demo'
+            ]
+            
+            if any(termo in titulo_lower for termo in TERMOS_LIXO):
+                continue
+            
+            # ✅ CORRIGIDO: "Escolhas" é o campo correto!
+            setor = (
+                fields.get('Escolhas') or  # ← CAMPO CORRETO NO SHAREPOINT
+                fields.get('SetordeAtendimento') or
+                fields.get('SetorDeAtendimento') or 
+                fields.get('Setor de Atendimento') or 
+                fields.get('SetorAtendimento') or 
+                fields.get('Setor') or 
+                'Geral'
+            )
+            
+            prioridade = fields.get('Prioridade') or 'Média'
+            status = fields.get('Status') or 'Aberto'
+            data_abertura = fields.get('Created') or fields.get('created') or ''
+            
+            sla_vencido, horas_aberto, atraso_str, aberto_str = calcular_sla(
+                data_abertura, prioridade, status
+            )
+            
+            print(f"   ✅ #{id_valor} - {titulo[:40]} | Setor: {setor} | SLA: {'VENCIDO' if sla_vencido else 'OK'}")
+            
+            chamado = {
+                "id": id_valor,
+                "titulo": titulo,
+                "solicitante": fields.get('Solicitante') or fields.get('Author') or '',
+                "status": status,
+                "prioridade": prioridade,
+                "setorAtendimento": setor,
+                "descricao": fields.get('Descricao') or fields.get('Description') or '',
+                "data": data_abertura,
+                "slaVencido": sla_vencido,
+                "slaAtraso": atraso_str,
+                "slaAberto": aberto_str,
+                "slaHoras": SLA_HORAS.get(prioridade, 8)
+            }
+            
+            chamados.append(chamado)
+        
+        print(f"\n💾 Salvando {len(chamados)} chamado(s) em JSON...")
+        
+        output = {
+            "atualizado_em": datetime.now().isoformat(),
+            "total_chamados": len(chamados),
+            "chamados": chamados
+        }
+        
+        with open(JSON_FILE, 'w', encoding='utf-8') as f:
+            json.dump(output, f, ensure_ascii=False, indent=2)
+        
+        print(f"✅ Arquivo '{JSON_FILE}' salvo!")
         print("="*70 + "\n")
         
         return True
@@ -381,17 +276,40 @@ def sincronizar():
         print(f"❌ ERRO: {e}")
         print("="*70 + "\n")
         return False
+
+# ========== AGENDADOR ==========
+def agendar_sincronizacao():
+    """Agenda sincronização a cada 5 minutos"""
     
-    finally:
-        if session:
-            session.close()
+    print("\n🕐 AGENDA DE SINCRONIZAÇÃO")
+    print("="*70)
+    print("✅ Primeira sincronização: AGORA")
+    print("✅ Próximas sincronizações: a cada 5 minutos")
+    print("📍 Horário do sistema:", datetime.now().strftime('%d/%m/%Y %H:%M:%S'))
+    print("💡 Dica: Deixe este terminal aberto!")
+    print("="*70 + "\n")
+    
+    sincronizar()
+    
+    schedule.every(5).minutes.do(sincronizar)
+    
+    print("🚀 Aguardando próxima sincronização...\n")
+    
+    try:
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\n\n⏹️  Sincronização parada pelo usuário")
+        print("✅ Até logo!")
 
 # ========== MAIN ==========
 if __name__ == '__main__':
     print("\n" + "="*70)
-    print("🚀 SINCRONIZADOR UNIFEB - OTIMIZADO")
+    print("🎯 SINCRONIZADOR UNIFEB - DASHBOARD TV")
     print("📊 SLA: Alta=2h | Média=8h | Baixa=24h")
+    print("✅ CORRIGIDO: Campo 'Escolhas' para Setor de Atendimento")
     print("="*70 + "\n")
     
     validar_credenciais()
-    sincronizar()
+    agendar_sincronizacao()
