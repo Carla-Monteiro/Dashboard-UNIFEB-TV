@@ -1,0 +1,48 @@
+{
+  "atualizado_em": "2026-07-29T16:06:07.010822",
+  "total_chamados": 3,
+  "chamados": [
+    {
+      "id": "363",
+      "titulo": "Troca de toner ",
+      "solicitante": "Carla Monteiro",
+      "status": "Aberto",
+      "prioridade": "Alta",
+      "setorAtendimento": "Matrícula",
+      "descricao": "<div class=\"ExternalClassCEA6B0F491F045B993308DF65B18CAF5\"><p class=\"editor-paragraph\">Solicito troca do toner, impressora HP\n\n\nAtenciosamente,&#160;\n\n\n\n\n</p></div>",
+      "data": "2026-07-27T20:26:09Z",
+      "slaVencido": true,
+      "slaAtraso": "44h 39min",
+      "slaAberto": "46h 39min",
+      "slaHoras": 2
+    },
+    {
+      "id": "364",
+      "titulo": "Instalalçao Office",
+      "solicitante": "Carla Monteiro",
+      "status": "Em andamento",
+      "prioridade": "Média",
+      "setorAtendimento": "Ouvidoria",
+      "descricao": "<div class=\"ExternalClassCF82A3FF00834B0EBC9F54292DB16B0A\"><p class=\"editor-paragraph\">Solicita a instalação do office na maquina da secretaria atendimento\n\n\n\n\n</p></div>",
+      "data": "2026-07-28T13:34:39Z",
+      "slaVencido": true,
+      "slaAtraso": "21h 31min",
+      "slaAberto": "29h 31min",
+      "slaHoras": 8
+    },
+    {
+      "id": "367",
+      "titulo": "impressora hp",
+      "solicitante": "Carla Monteiro",
+      "status": "Aberto",
+      "prioridade": "Média",
+      "setorAtendimento": "Geral",
+      "descricao": "<div class=\"ExternalClassBA14BAEBC4D444CB9BEFE73AF5881499\"><div style=\"font-family&#58;Calibri, Arial, Helvetica, sans-serif;font-size&#58;11pt;background-color&#58;transparent;\">trocar o toner<p><br></p></div></div>",
+      "data": "2026-07-29T18:58:46Z",
+      "slaVencido": false,
+      "slaAtraso": "No prazo",
+      "slaAberto": "7min",
+      "slaHoras": 8
+    }
+  ]
+}
