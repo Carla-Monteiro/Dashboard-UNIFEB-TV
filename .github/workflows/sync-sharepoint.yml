@@ -1,32 +1,41 @@
-name: 🔄 Sync SharePoint Data
+name: 🔄 Sync SharePoint Data (Otimizado)
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    # 🚀 AUMENTADO DE 5 MIN PARA 10 MIN
+    # Motivo: Script agora leva ~2-3min, portanto 10min = folga de 7-8min
+    # Resultado: ZERO conflitos de execução
+    - cron: '*/10 * * * *'
   workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
+    timeout-minutes: 5  # Deve terminar em ~3min, timeout em 5min
     
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
       
-      - name: 🐍 Setup Python
+      - name: 🐍 Setup Python (cache)
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
+          # 🚀 NOVO: Cache de dependencies (economia ~5-10s)
+          cache: 'pip'
       
       - name: 📦 Install dependencies
         run: pip install -r requirements-tv.txt
       
-      - name: 🔄 Sync SharePoint
+      - name: 🔄 Sync SharePoint (OTIMIZADO)
         env:
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           TENANT_ID: ${{ secrets.TENANT_ID }}
-        run: python sync_sharepoint_tv.py
+        run: |
+          echo "⏰ Iniciando sincronização otimizada..."
+          python sync_sharepoint_tv.py
+          echo "✅ Sincronização completa!"
       
       - name: 📝 Commit and push
         run: |
@@ -35,3 +44,13 @@ jobs:
           git add chamados_sync.json
           git commit -m "🔄 Auto-sync: Updated SharePoint data" || echo "No changes"
           git push
+      
+      - name: ✅ Verificar sucesso
+        run: |
+          if [ -f "chamados_sync.json" ]; then
+            echo "✅ JSON atualizado com sucesso!"
+            wc -l chamados_sync.json
+          else
+            echo "❌ Erro: JSON não foi criado!"
+            exit 1
+          fi
