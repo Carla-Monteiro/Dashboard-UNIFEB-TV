@@ -22,8 +22,8 @@ jobs:
           cache: 'pip'
       
       - name: 📦 Install dependencies
-        # ✅ CORRIGIDO: usar requirements-tv.txt (nome correto!)
-        run: pip install -r requirements-tv.txt
+        # ✅ CORRIGIDO: usar requirements.txt (nome correto!)
+        run: pip install -r requirements.txt
       
       - name: 🔄 Sync SharePoint (OTIMIZADO)
         env:
