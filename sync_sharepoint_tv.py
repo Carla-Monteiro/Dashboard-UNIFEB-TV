@@ -16,10 +16,18 @@ print("🚀 SINCRONIZADOR UNIFEB - DASHBOARD TV")
 print("="*80 + "\n")
 
 # ========== PEDIR CREDENCIAIS ==========
-print("📋 Digite suas credenciais do Azure:\n")
-CLIENT_ID = input("CLIENT_ID: ").strip()
-CLIENT_SECRET = input("CLIENT_SECRET: ").strip()
-TENANT_ID = input("TENANT_ID: ").strip()
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+CLIENT_ID = os.getenv('CLIENT_ID')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+TENANT_ID = os.getenv('TENANT_ID')
+
+if not all([CLIENT_ID, CLIENT_SECRET, TENANT_ID]):
+    print("❌ ERRO: Credenciais não encontradas no .env")
+    exit(1)
 
 SHAREPOINT_DOMAIN = "unifeb.sharepoint.com"
 SITE_PATH = "/sites/SuporteDTI"
