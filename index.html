@@ -1060,7 +1060,8 @@
                 solicitante: document.getElementById('solicitante').value,
                 email: document.getElementById('email').value || '',
                 setor: document.getElementById('setor').value,
-                prioridade: document.getElementById('prioridade').value
+                prioridade: document.getElementById('prioridade').value,
+                data: document.getElementById('data') ? document.getElementById('data').value : new Date().toISOString()
             };
             
             if (EDICAO_ID) dados.status = document.getElementById('status').value;
@@ -1071,9 +1072,28 @@
                 const response = await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(dados) });
                 
                 if (response.ok) {
+                    const resultado = await response.json();
+                    
+                    // ✅ NOVO: Se for edição, atualizar dados IMEDIATAMENTE sem esperar sincronização
+                    if (EDICAO_ID && resultado.chamado) {
+                        const chamadoAtualizado = resultado.chamado;
+                        const indice = CHAMADOS.findIndex(c => c.id === EDICAO_ID);
+                        if (indice !== -1) {
+                            CHAMADOS[indice] = {
+                                ...CHAMADOS[indice],
+                                ...chamadoAtualizado
+                            };
+                            renderizar(); // Renderizar na hora!
+                        }
+                    }
+                    
                     alert(EDICAO_ID ? '✅ Chamado atualizado!' : '✅ Chamado criado!');
                     fecharFormulario();
-                    setTimeout(carregarDados, 1000);
+                    
+                    // Se for novo chamado, espera um pouco e recarrega (para sincronizar)
+                    if (!EDICAO_ID) {
+                        setTimeout(carregarDados, 3000);
+                    }
                 } else alert('❌ Erro ao salvar');
             } catch (error) {
                 alert('❌ Erro: ' + error.message);

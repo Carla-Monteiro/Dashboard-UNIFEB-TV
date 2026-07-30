@@ -127,7 +127,22 @@ def editar_chamado(item_id):
         response = requests.patch(update_url, headers=headers, json=payload, timeout=10)
         
         if response.status_code == 200:
-            return jsonify({"status": "sucesso", "mensagem": "Atualizado!"}), 200
+            # ✅ NOVO: Retornar os dados atualizados para o frontend atualizar IMEDIATAMENTE
+            chamado_atualizado = {
+                "id": item_id,
+                "titulo": data.get('titulo'),
+                "solicitante": data.get('solicitante', ''),
+                "status": data.get('status'),
+                "prioridade": data.get('prioridade'),
+                "setorAtendimento": data.get('setor'),
+                "descricao": data.get('descricao'),
+                "data": data.get('data', '')
+            }
+            return jsonify({
+                "status": "sucesso", 
+                "mensagem": "✅ Atualizado com sucesso!",
+                "chamado": chamado_atualizado
+            }), 200
         else:
             return jsonify({"status": "erro", "mensagem": "Update falhou"}), response.status_code
     
