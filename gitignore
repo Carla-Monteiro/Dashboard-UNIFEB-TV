@@ -1,9 +1,0 @@
-.env
-.env.txt
-*.pyc
-__pycache__/
-.cache_ids.json
-.DS_Store
-node_modules/
-.vscode/
-*.log
