@@ -1072,27 +1072,16 @@
                 const response = await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(dados) });
                 
                 if (response.ok) {
-                    const resultado = await response.json();
-                    
-                    // ✅ NOVO: Se for edição, atualizar dados IMEDIATAMENTE sem esperar sincronização
-                    if (EDICAO_ID && resultado.chamado) {
-                        const chamadoAtualizado = resultado.chamado;
-                        const indice = CHAMADOS.findIndex(c => c.id === EDICAO_ID);
-                        if (indice !== -1) {
-                            CHAMADOS[indice] = {
-                                ...CHAMADOS[indice],
-                                ...chamadoAtualizado
-                            };
-                            renderizar(); // Renderizar na hora!
-                        }
-                    }
-                    
                     alert(EDICAO_ID ? '✅ Chamado atualizado!' : '✅ Chamado criado!');
                     fecharFormulario();
                     
-                    // Se for novo chamado, espera um pouco e recarrega (para sincronizar)
-                    if (!EDICAO_ID) {
-                        setTimeout(carregarDados, 3000);
+                    // ✅ Recarregar dados após salvar (para sincronizar com backend/SharePoint)
+                    if (EDICAO_ID) {
+                        // Se for edição, aguarda 500ms e recarrega
+                        setTimeout(carregarDados, 500);
+                    } else {
+                        // Se for novo, aguarda 2 segundos
+                        setTimeout(carregarDados, 2000);
                     }
                 } else alert('❌ Erro ao salvar');
             } catch (error) {
