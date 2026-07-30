@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🚀 SINCRONIZADOR CONTÍNUO - RODANDO 24/7 NO RENDER
+🚀 SINCRONIZADOR CONTÍNUO COM GIT PUSH - RODANDO 24/7 NO RENDER
 ✅ Sincroniza a cada 10 segundos
-✅ Roda em background sem bloquear o backend
+✅ Salva JSON localmente
+✅ Faz PUSH no GitHub para Vercel ler
 """
 
 import os
 import requests
 import json
 import time
+import subprocess
 from datetime import datetime
 import threading
 
@@ -26,6 +28,43 @@ JSON_FILE = "chamados_sync.json"
 
 SLA_HORAS = {'Alta': 2, 'Média': 8, 'Baixa': 24}
 
+def fazer_git_push():
+    """Fazer push no GitHub do arquivo JSON"""
+    try:
+        # Configurar git
+        subprocess.run(['git', 'config', 'user.email', 'sync@unifeb.br'], timeout=5, capture_output=True)
+        subprocess.run(['git', 'config', 'user.name', 'UNIFEB Sync Bot'], timeout=5, capture_output=True)
+        
+        # Adicionar arquivo
+        subprocess.run(['git', 'add', JSON_FILE], timeout=5, capture_output=True)
+        
+        # Commit
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        result = subprocess.run(
+            ['git', 'commit', '-m', f'Sync: Atualizar chamados às {timestamp}'],
+            timeout=5,
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode == 0:  # Commit bem-sucedido
+            # Push
+            push_result = subprocess.run(['git', 'push', 'origin', 'main'], timeout=10, capture_output=True, text=True)
+            if push_result.returncode == 0:
+                print(f"✅ [{datetime.now().strftime('%H:%M:%S')}] Git push bem-sucedido!")
+                return True
+            else:
+                print(f"⚠️  [{datetime.now().strftime('%H:%M:%S')}] Git push falhou: {push_result.stderr}")
+                return False
+        else:
+            # Nada para commit (arquivo não mudou)
+            return True
+            
+    except Exception as e:
+        print(f"⚠️  [{datetime.now().strftime('%H:%M:%S')}] Erro no git push: {e}")
+        return False
+
+
 def sincronizar():
     """Função que sincroniza com SharePoint"""
     try:
@@ -40,7 +79,6 @@ def sincronizar():
         
         response = requests.post(auth_url, data=auth_data, timeout=10)
         if response.status_code != 200:
-            print(f"❌ Erro autenticação: {response.status_code}")
             return False
         
         access_token = response.json().get('access_token')
@@ -158,6 +196,10 @@ def sincronizar():
             json.dump(output, f, ensure_ascii=False, indent=2)
         
         print(f"✅ [{datetime.now().strftime('%H:%M:%S')}] Sincronizado: {len(chamados)} chamados")
+        
+        # ========== FAZER GIT PUSH ==========
+        fazer_git_push()
+        
         return True
         
     except Exception as e:
@@ -167,7 +209,7 @@ def sincronizar():
 
 def sincronizar_continuamente():
     """Loop que sincroniza continuamente"""
-    print("🚀 Iniciando sincronização contínua...")
+    print("🚀 Iniciando sincronização contínua com GIT PUSH...")
     print(f"📊 A cada 10 segundos\n")
     
     while True:
