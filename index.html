@@ -823,11 +823,12 @@
 
         async function carregarDados() {
             try {
-                const response = await fetch('chamados_sync.json?v=' + Date.now());
+                // ✅ NOVO: Buscar do endpoint /api/chamados do Backend (Render) - dados sempre sincronizados!
+                const response = await fetch('https://unifeb-backend.onrender.com/api/chamados');
                 const dados = await response.json();
                 
                 CHAMADOS = dados.chamados || [];
-                console.log(`✅ ${CHAMADOS.length} chamados carregados`);
+                console.log(`✅ ${CHAMADOS.length} chamados carregados do Backend em tempo real`);
                 
                 document.getElementById('syncStatus').textContent = '🟢 Sincronizado';
                 filtrar();
