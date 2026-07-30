@@ -1,49 +1,9 @@
-# Arquivo com credenciais (NUNCA comitar!)
 .env
-.env.local
-.env.*.local
-
-# Arquivos gerados
-chamados_sync.json
-__pycache__/
+.env.txt
 *.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-*.egg
-*.egg-info/
-dist/
-build/
-.eggs/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*.sublime-project
-*.sublime-workspace
-
-# OS
+__pycache__/
+.cache_ids.json
 .DS_Store
-Thumbs.db
+node_modules/
+.vscode/
 *.log
-
-# Python
-venv/
-env/
-ENV/
-.python-version
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Virtual environments
-.env
-.venv
-venv/
