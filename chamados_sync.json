@@ -1,5 +1,5 @@
 {
-  "atualizado_em": "2026-07-30T13:34:31.053192",
+  "atualizado_em": "2026-07-30T17:07:36.462417",
   "total_chamados": 4,
   "chamados": [
     {
@@ -12,8 +12,8 @@
       "descricao": "<div class=\"ExternalClassCEA6B0F491F045B993308DF65B18CAF5\"><p class=\"editor-paragraph\">Solicito troca do toner, impressora HP\n\n\nAtenciosamente,&#160;\n\n\n\n\n</p></div>",
       "data": "2026-07-27T20:26:09Z",
       "slaVencido": true,
-      "slaAtraso": "63h 8min",
-      "slaAberto": "65h 8min",
+      "slaAtraso": "66h 41min",
+      "slaAberto": "68h 41min",
       "slaHoras": 2
     },
     {
@@ -26,8 +26,8 @@
       "descricao": "<div class=\"ExternalClassCF82A3FF00834B0EBC9F54292DB16B0A\"><p class=\"editor-paragraph\">Solicita a instalação do office na maquina da secretaria atendimento\n\n\n\n\n</p></div>",
       "data": "2026-07-28T13:34:39Z",
       "slaVencido": true,
-      "slaAtraso": "39h 59min",
-      "slaAberto": "47h 59min",
+      "slaAtraso": "43h 32min",
+      "slaAberto": "51h 32min",
       "slaHoras": 8
     },
     {
@@ -40,8 +40,8 @@
       "descricao": "<div class=\"ExternalClassBA14BAEBC4D444CB9BEFE73AF5881499\"><div style=\"font-family&#58;Calibri, Arial, Helvetica, sans-serif;font-size&#58;11pt;background-color&#58;transparent;\">trocar o toner<p><br></p></div></div>",
       "data": "2026-07-29T18:58:46Z",
       "slaVencido": true,
-      "slaAtraso": "10h 35min",
-      "slaAberto": "18h 35min",
+      "slaAtraso": "14h 8min",
+      "slaAberto": "22h 8min",
       "slaHoras": 8
     },
     {
@@ -54,8 +54,8 @@
       "descricao": "<div class=\"ExternalClass7181909D8993443B9403111BFB5979FE\"><p class=\"editor-paragraph\">Por favor trocar impressora de lugar\n\n\n\n\n</p></div>",
       "data": "2026-07-29T20:48:45Z",
       "slaVencido": true,
-      "slaAtraso": "8h 45min",
-      "slaAberto": "16h 45min",
+      "slaAtraso": "12h 18min",
+      "slaAberto": "20h 18min",
       "slaHoras": 8
     }
   ]
