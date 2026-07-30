@@ -25,7 +25,7 @@ python sync_sharepoint_tv.py
 Digite as credenciais quando solicitado:
 ```
 CLIENT_ID: 100ba4af-831a-4d3c-8e96-60e683f0152a
-CLIENT_SECRET: P338Q~zC04Td8P1rk_srVCl-pS2wlzWzSGl9da3T
+CLIENT_SECRET=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 TENANT_ID: 62a0e447-20c2-41be-8e60-893b78364660
 ```
 
