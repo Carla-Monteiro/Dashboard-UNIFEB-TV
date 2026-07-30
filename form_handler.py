@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""API Backend para Gerenciar Chamados - Render Ready"""
+"""API Backend para Gerenciar Chamados - Render Ready com Endpoint de Chamados"""
 
 import os
 import json
@@ -42,6 +42,22 @@ def get_access_token():
     except Exception as e:
         print(f"Auth exception: {e}")
         return None
+
+# ========== ENDPOINT NOVO: Retornar Chamados Sincronizados ==========
+@app.route('/api/chamados', methods=['GET'])
+def get_chamados():
+    """Retorna os chamados sincronizados do arquivo JSON"""
+    try:
+        with open('chamados_sync.json', 'r', encoding='utf-8') as f:
+            dados = json.load(f)
+            return jsonify(dados), 200
+    except FileNotFoundError:
+        return jsonify({"chamados": [], "total_chamados": 0}), 200
+    except Exception as e:
+        print(f"Erro ao ler chamados_sync.json: {e}")
+        return jsonify({"chamados": [], "total_chamados": 0}), 200
+
+# ========== ENDPOINTS ANTIGOS (Manter funcionando) ==========
 
 @app.route('/health', methods=['GET'])
 def health():
@@ -127,21 +143,9 @@ def editar_chamado(item_id):
         response = requests.patch(update_url, headers=headers, json=payload, timeout=10)
         
         if response.status_code == 200:
-            # ✅ NOVO: Retornar os dados atualizados para o frontend atualizar IMEDIATAMENTE
-            chamado_atualizado = {
-                "id": item_id,
-                "titulo": data.get('titulo'),
-                "solicitante": data.get('solicitante', ''),
-                "status": data.get('status'),
-                "prioridade": data.get('prioridade'),
-                "setorAtendimento": data.get('setor'),
-                "descricao": data.get('descricao'),
-                "data": data.get('data', '')
-            }
             return jsonify({
                 "status": "sucesso", 
-                "mensagem": "✅ Atualizado com sucesso!",
-                "chamado": chamado_atualizado
+                "mensagem": "✅ Atualizado com sucesso!"
             }), 200
         else:
             return jsonify({"status": "erro", "mensagem": "Update falhou"}), response.status_code
