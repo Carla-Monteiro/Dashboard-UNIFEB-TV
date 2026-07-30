@@ -2,7 +2,6 @@ name: 🔄 Sync SharePoint Data (Otimizado)
 
 on:
   schedule:
-    # Roda a cada 10 minutos
     - cron: '*/10 * * * *'
   workflow_dispatch:
 
@@ -15,25 +14,21 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
       
-      - name: 🐍 Setup Python (cache)
+      - name: 🐍 Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
           cache: 'pip'
       
       - name: 📦 Install dependencies
-        # ✅ CORRIGIDO: usar requirements.txt (nome correto!)
-        run: pip install -r requirements.txt
+        run: pip install requests
       
       - name: 🔄 Sync SharePoint (OTIMIZADO)
         env:
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           TENANT_ID: ${{ secrets.TENANT_ID }}
-        run: |
-          echo "⏰ Iniciando sincronização otimizada..."
-          python sync_sharepoint_tv.py
-          echo "✅ Sincronização completa!"
+        run: python sync_github.py
       
       - name: 📝 Commit and push
         run: |
@@ -47,7 +42,6 @@ jobs:
         run: |
           if [ -f "chamados_sync.json" ]; then
             echo "✅ JSON atualizado com sucesso!"
-            wc -l chamados_sync.json
           else
             echo "❌ Erro: JSON não foi criado!"
             exit 1
