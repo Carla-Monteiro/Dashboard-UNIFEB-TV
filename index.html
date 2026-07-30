@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Chamados UNIFEB</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23003d7a' width='100' height='100'/><text x='50' y='65' font-size='70' font-weight='bold' fill='%23ffa500' text-anchor='middle'>U</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #1a2f4d 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1900px;
+            margin: 0 auto;
+        }
+
+        /* ===== LOGO GRANDE E NÍTIDA ===== */
+        .logo-banner {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            padding: 20px 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 165, 0, 0.3);
+            border-radius: 14px;
+        }
+
+        .logo-big {
+            width: 150px;
+            height: 150px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .header-text h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header-text p {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .status-badge {
+            margin-left: auto;
+            padding: 10px 20px;
+            background: rgba(0, 200, 100, 0.25);
+            border: 2px solid #00c864;
+            border-radius: 25px;
+            color: #00c864;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* ===== BUTTONS ===== */
+        .buttons-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 11px 20px;
+            background: rgba(255, 165, 0, 0.15);
+            border: 2px solid rgba(255, 165, 0, 0.5);
+            border-radius: 8px;
+            color: #ffa500;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: rgba(255, 165, 0, 0.25);
+            border-color: #ffa500;
+            transform: translateY(-2px);
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #ff6b35, #ffa500);
+            border-color: #ff6b35;
+            color: #fff;
+        }
+
+        .btn.primary:hover {
+            background: linear-gradient(135deg, #ff7a50, #ffb84d);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+
+        /* ===== TABS ===== */
+        .tabs-section {
+            display: flex;
+            gap: 0;
+            margin-bottom: 25px;
+            border-bottom: 2px solid rgba(255, 165, 0, 0.2);
+            padding-bottom: 0;
+        }
+
+        .tab {
+            padding: 14px 28px;
+            background: transparent;
+            border: none;
+            color: #aaa;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 4px solid transparent;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab:hover {
+            color: #ffa500;
+        }
+
+        .tab.active {
+            color: #ffa500;
+            border-bottom-color: #ffa500;
+            background: rgba(255, 165, 0, 0.08);
+        }
+
+        /* ===== FILTERS ===== */
+        .filters-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .filter-item label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #ffa500;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-item select,
+        .filter-item input {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(255, 165, 0, 0.08);
+            border: 2px solid rgba(255, 165, 0, 0.3);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 13px;
+        }
+
+        .filter-item select:focus,
+        .filter-item input:focus {
+            outline: none;
+            border-color: #ffa500;
+            background: rgba(255, 165, 0, 0.15);
+        }
+
+        .filter-item select option {
+            background: #0a1628;
+            color: #fff;
+        }
+
+        /* ===== TABLE ===== */
+        .table-wrapper {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 165, 0, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: rgba(255, 165, 0, 0.12);
+            border-bottom: 2px solid rgba(255, 165, 0, 0.3);
+        }
+
+        th {
+            padding: 16px 12px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            color: #ffa500;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 13px 12px;
+            border-bottom: 1px solid rgba(255, 165, 0, 0.08);
+            font-size: 13px;
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 165, 0, 0.1);
+        }
+
+        /* ===== BADGES ===== */
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap;
+            border: 1px solid;
+        }
+
+        .badge-aberto {
+            background: rgba(100, 200, 255, 0.2);
+            color: #64c8ff;
+            border-color: #64c8ff;
+        }
+
+        .badge-andamento {
+            background: rgba(255, 165, 0, 0.2);
+            color: #ffa500;
+            border-color: #ffa500;
+        }
+
+        .badge-resolvido {
+            background: rgba(0, 200, 100, 0.2);
+            color: #00c864;
+            border-color: #00c864;
+        }
+
+        .badge-alta {
+            background: rgba(255, 100, 100, 0.25);
+            color: #ff6464;
+            border-color: #ff6464;
+        }
+
+        .badge-media {
+            background: rgba(255, 165, 0, 0.25);
+            color: #ffa500;
+            border-color: #ffa500;
+        }
+
+        .badge-baixa {
+            background: rgba(100, 200, 100, 0.25);
+            color: #64c864;
+            border-color: #64c864;
+        }
+
+        /* ===== SLA BADGES ===== */
+        .sla-ok {
+            background: rgba(0, 200, 100, 0.3);
+            color: #00c864;
+            border-color: #00c864;
+            cursor: pointer;
+        }
+
+        .sla-vencido {
+            background: rgba(255, 100, 100, 0.3);
+            color: #ff6464;
+            border-color: #ff6464;
+            cursor: pointer;
+        }
+
+        /* ===== SLA MODAL ===== */
+        .sla-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sla-modal.active {
+            display: flex;
+        }
+
+        .sla-card-modal {
+            background: rgba(20, 40, 60, 0.98);
+            border: 2px solid rgba(255, 100, 100, 0.6);
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 10px 50px rgba(255, 100, 100, 0.3);
+        }
+
+        .sla-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            color: #aaa;
+            font-size: 28px;
+            cursor: pointer;
+        }
+
+        .sla-status-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .sla-status-text {
+            color: #ff6464;
+        }
+
+        .sla-percent {
+            color: #ff6464;
+            font-size: 20px;
+        }
+
+        .sla-progress {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 100, 100, 0.2);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .sla-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6464, #ff8080);
+            width: 100%;
+            border-radius: 5px;
+        }
+
+        .sla-details {
+            display: grid;
+            gap: 15px;
+        }
+
+        .sla-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(255, 100, 100, 0.12);
+            border-left: 4px solid #ff6464;
+            border-radius: 6px;
+        }
+
+        .sla-detail-icon {
+            font-size: 20px;
+            min-width: 25px;
+        }
+
+        .sla-detail-content {
+            flex: 1;
+        }
+
+        .sla-detail-label {
+            font-size: 11px;
+            color: #aaa;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .sla-detail-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ff6464;
+        }
+
+        /* ===== ESTATÍSTICAS ===== */
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.15), rgba(255, 165, 0, 0.05));
+            border: 2px solid rgba(255, 165, 0, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: default;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(255, 165, 0, 0.6);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 165, 0, 0.2);
+        }
+
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #aaa;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: #ffa500;
+        }
+
+        .stat-card.warning .stat-number {
+            color: #ff6464;
+        }
+
+        .stat-card.success .stat-number {
+            color: #00c864;
+        }
+
+        /* ===== GRÁFICOS ===== */
+        .graficos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+        }
+
+        .chart-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 165, 0, 0.2);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+
+        .chart-card:hover {
+            border-color: rgba(255, 165, 0, 0.4);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .chart-card h3 {
+            margin-bottom: 25px;
+            color: #ffa500;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+        }
+
+        .chart-card canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #aaa;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 165, 0, 0.3);
+            border-top-color: #ffa500;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1200px) {
+            .logo-banner {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .status-badge {
+                margin-left: 0;
+            }
+
+            .logo-big {
+                width: 120px;
+                height: 120px;
+            }
+
+            .graficos-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .buttons-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .filters-section {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .table-wrapper {
+                overflow-x: auto;
+            }
+
+            table {
+                min-width: 900px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- LOGO GRANDE E NÍTIDA -->
+        <div class="logo-banner">
+            <img src="logo-UNIFEB.png" alt="UNIFEB" class="logo-big" onerror="this.style.display='none'">
+            <div class="header-text">
+                <h1>Controle de Chamados</h1>
+                <p>Gerenciamento em Tempo Real - SharePoint</p>
+            </div>
+            <div class="status-badge" id="syncStatus">🟢 Sincronizado</div>
+        </div>
+
+        <!-- BOTÕES -->
+        <div class="buttons-group">
+            <button class="btn" onclick="sincronizar()">🔄 Sincronizar</button>
+            <button class="btn" onclick="limparCache()">🗑️ Limpar Cache</button>
+            <button class="btn" onclick="exportar()">📥 Exportar</button>
+            <button class="btn" onclick="imprimir()">🖨️ Imprimir</button>
+            <button class="btn primary" onclick="novoChamado()">➕ Novo Chamado</button>
+        </div>
+
+        <!-- ABAS -->
+        <div class="tabs-section">
+            <button class="tab active" onclick="mostrarAba('chamados')">📋 Chamados Detalhados</button>
+            <button class="tab" onclick="mostrarAba('graficos')">📊 Gráficos</button>
+        </div>
+
+        <!-- FILTROS -->
+        <div class="filters-section">
+            <div class="filter-item">
+                <label>Status</label>
+                <select id="filterStatus" onchange="filtrar()">
+                    <option value="">-- Todos os Status --</option>
+                    <option value="Aberto">Aberto</option>
+                    <option value="Em andamento">Em andamento</option>
+                    <option value="Resolvido">Resolvido</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label>Prioridade</label>
+                <select id="filterPrioridade" onchange="filtrar()">
+                    <option value="">-- Todas as Prioridades --</option>
+                    <option value="Alta">Alta</option>
+                    <option value="Média">Média</option>
+                    <option value="Baixa">Baixa</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label>Buscar</label>
+                <input type="text" id="filterBusca" placeholder="ID, Título, Solicitante..." onkeyup="filtrar()">
+            </div>
+        </div>
+
+        <!-- ABA: CHAMADOS DETALHADOS -->
+        <div id="chamados" class="tab-content active">
+            <div class="table-wrapper">
+                <table id="tabela">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Solicitante</th>
+                            <th>Prioridade</th>
+                            <th>Status</th>
+                            <th>Setor de Atendimento</th>
+                            <th>Abertura</th>
+                            <th>Descrição</th>
+                            <th>SLA</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody">
+                        <tr>
+                            <td colspan="9" class="loading-spinner">
+                                <div class="spinner"></div>
+                                Carregando chamados...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ABA: GRÁFICOS -->
+        <div id="graficos" class="tab-content">
+            <!-- ESTATÍSTICAS -->
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-label">Total</div>
+                    <div class="stat-number" id="statTotal">0</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-icon">🔴</div>
+                    <div class="stat-label">SLA Vencido</div>
+                    <div class="stat-number" id="statSLA">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📂</div>
+                    <div class="stat-label">Abertos</div>
+                    <div class="stat-number" id="statAbertos">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-label">Em Andamento</div>
+                    <div class="stat-number" id="statAndamento">0</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-label">Resolvidos</div>
+                    <div class="stat-number" id="statResolvidos">0</div>
+                </div>
+            </div>
+
+            <!-- GRÁFICOS -->
+            <div class="graficos-grid">
+                <div class="chart-card">
+                    <h3>📊 Por Status</h3>
+                    <canvas id="graficoStatus"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>⚡ Por Prioridade</h3>
+                    <canvas id="graficoPrioridade"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>🏢 Por Setor</h3>
+                    <canvas id="graficoSetor"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLA MODAL -->
+    <div id="slaModal" class="sla-modal" onclick="if(event.target === this) fecharSLA()">
+        <div class="sla-card-modal">
+            <button class="sla-close" onclick="fecharSLA()">✕</button>
+            <div class="sla-status-line">
+                <span class="sla-status-text" id="modalStatus">🔴 VENCIDO</span>
+                <span class="sla-percent" id="modalPercent">100%</span>
+            </div>
+            <div class="sla-progress">
+                <div class="sla-progress-bar"></div>
+            </div>
+            <div class="sla-details">
+                <div class="sla-detail-item">
+                    <div class="sla-detail-icon">⏱️</div>
+                    <div class="sla-detail-content">
+                        <div class="sla-detail-label">Atrasado</div>
+                        <div class="sla-detail-value" id="modalAtraso">142h 59min</div>
+                    </div>
+                </div>
+                <div class="sla-detail-item">
+                    <div class="sla-detail-icon">📅</div>
+                    <div class="sla-detail-content">
+                        <div class="sla-detail-label">Aberto há</div>
+                        <div class="sla-detail-value" id="modalAberto">166h 59min</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: FORMULÁRIO -->
+    <div id="modalFormulario" class="modal-formulario" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 100; padding: 20px; display: none; flex-direction: column; justify-content: center; align-items: center;">
+        <div style="background: linear-gradient(135deg, #0a1628 0%, #1a2f4d 100%); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 16px; padding: 30px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px solid rgba(255, 165, 0, 0.2);">
+                <h2 id="modalTitulo" style="font-size: 24px; margin: 0;">➕ Novo Chamado</h2>
+                <button class="modal-close" onclick="fecharFormulario()" style="background: none; border: none; color: #aaa; font-size: 28px; cursor: pointer;">✕</button>
+            </div>
+            <form id="formChamado" onsubmit="salvarChamado(event)" style="display: flex; flex-direction: column; gap: 20px;">
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Título *</label>
+                    <input type="text" id="titulo" required placeholder="Ex: Troca de impressora" style="width: 100%; padding: 12px 14px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Descrição *</label>
+                    <textarea id="descricao" required placeholder="Descreva o problema em detalhes" style="width: 100%; padding: 12px 14px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit; resize: vertical; min-height: 100px;"></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Solicitante *</label>
+                        <input type="text" id="solicitante" required placeholder="Seu nome" style="width: 100%; padding: 12px 14px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Email *</label>
+                        <input type="email" id="email" required placeholder="seu@email.unifeb.br" style="width: 100%; padding: 12px 14px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Setor *</label>
+                        <select id="setor" required style="width: 100%; padding: 12px 14px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
+                            <option value="">Selecione um setor</option>
+                            <option value="Matrícula">Matrícula</option>
+                            <option value="Ouvidoria">Ouvidoria</option>
+                            <option value="Colégio FEB">Colégio FEB</option>
+                            <option value="Núcleo Práticas Jurídicas">Núcleo Práticas Jurídicas</option>
+                            <option value="Geral">Geral</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Prioridade *</label>
+                        <select id="prioridade" required style="width: 100%; padding: 12px 14px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
+                            <option value="">Selecione</option>
+                            <option value="Alta">Alta</option>
+                            <option value="Média">Média</option>
+                            <option value="Baixa">Baixa</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="statusEditar" style="display: none;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Status</label>
+                    <select id="status" style="width: 100%; padding: 12px 14px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
+                        <option value="Aberto">Aberto</option>
+                        <option value="Em andamento">Em andamento</option>
+                        <option value="Resolvido">Resolvido</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 2px solid rgba(255, 165, 0, 0.2);">
+                    <button type="submit" id="btnSubmit" style="flex: 2; padding: 11px 20px; background: linear-gradient(135deg, #ff6b35, #ffa500); border: none; border-radius: 8px; color: #fff; font-weight: 600; cursor: pointer; font-size: 12px;">Criar Chamado</button>
+                    <button type="button" onclick="fecharFormulario()" style="flex: 1; padding: 11px 20px; background: rgba(255, 165, 0, 0.15); border: 2px solid rgba(255, 165, 0, 0.5); border-radius: 8px; color: #ffa500; font-weight: 600; cursor: pointer; font-size: 12px;">Cancelar</button>
+                    <button type="button" id="btnDeletar" style="display: none; flex: 1; padding: 11px 20px; background: rgba(255, 165, 0, 0.15); border: 2px solid rgba(255, 165, 0, 0.5); border-radius: 8px; color: #ff6464; font-weight: 600; cursor: pointer; font-size: 12px;" onclick="deletarChamadoAtual()">🗑️ Deletar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let CHAMADOS = [];
+        let CHAMADOS_FILTRADOS = [];
+
+        async function carregarDados() {
+            try {
+                const response = await fetch('chamados_sync.json?v=' + Date.now());
+                const dados = await response.json();
+                
+                CHAMADOS = dados.chamados || [];
+                console.log(`✅ ${CHAMADOS.length} chamados carregados`);
+                
+                document.getElementById('syncStatus').textContent = '🟢 Sincronizado';
+                filtrar();
+                
+            } catch (erro) {
+                console.error('❌ Erro:', erro);
+                document.getElementById('syncStatus').textContent = '🔴 Erro';
+                document.getElementById('tbody').innerHTML = `<tr><td colspan="9" class="empty-state">❌ Erro ao carregar dados</td></tr>`;
+            }
+        }
+
+        function mostrarAba(abaName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            
+            document.getElementById(abaName).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (abaName === 'graficos') setTimeout(() => desenharGraficos(), 200);
+        }
+
+        function filtrar() {
+            const status = document.getElementById('filterStatus').value;
+            const prioridade = document.getElementById('filterPrioridade').value;
+            const busca = document.getElementById('filterBusca').value.toLowerCase();
+
+            CHAMADOS_FILTRADOS = CHAMADOS.filter(c => {
+                let ok = true;
+                if (status && c.status !== status) ok = false;
+                if (prioridade && c.prioridade !== prioridade) ok = false;
+                if (busca) {
+                    const texto = `${c.id} ${c.titulo} ${c.solicitante}`.toLowerCase();
+                    if (!texto.includes(busca)) ok = false;
+                }
+                return ok;
+            });
+
+            renderizar();
+        }
+
+        function renderizar() {
+            const tbody = document.getElementById('tbody');
+
+            if (CHAMADOS_FILTRADOS.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="empty-state">📭 Nenhum chamado encontrado</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = CHAMADOS_FILTRADOS.map(c => `
+                <tr onclick="abrirFormularioEditar('${c.id}')">
+                    <td><strong>#${c.id}</strong></td>
+                    <td>${c.titulo}</td>
+                    <td>${c.solicitante}</td>
+                    <td><span class="badge badge-${getBadgePrio(c.prioridade)}">${c.prioridade}</span></td>
+                    <td><span class="badge badge-${getBadgeStatus(c.status)}">${c.status}</span></td>
+                    <td>${c.setorAtendimento || 'Geral'}</td>
+                    <td>${formatarData(c.data)}</td>
+                    <td><small>${limparHTML(c.descricao).substring(0, 40)}...</small></td>
+                    <td><span class="badge ${c.slaVencido ? 'sla-vencido' : 'sla-ok'}" onclick="event.stopPropagation(); abrirSLA('${c.id}')">${c.slaVencido ? '🔴 VENCIDO' : '✅ OK'}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function abrirSLA(chamadoId) {
+            const chamado = CHAMADOS.find(c => c.id === chamadoId);
+            
+            if (!chamado) {
+                alert('Chamado não encontrado');
+                return;
+            }
+            
+            // Status
+            const status = chamado.slaVencido ? '🔴 VENCIDO' : '✅ OK';
+            
+            // Calcular percentual de SLA
+            const slaHoras = chamado.slaHoras || 8;
+            let percentualStr = '0%';
+            if (chamado.slaAtraso && chamado.slaAtraso !== 'No prazo') {
+                percentualStr = '100%';
+            } else if (chamado.slaAberto) {
+                const match = chamado.slaAberto.match(/(\d+)h/);
+                if (match) {
+                    const horas = parseInt(match[1]);
+                    const percent = Math.min(100, Math.round((horas / slaHoras) * 100));
+                    percentualStr = percent + '%';
+                }
+            }
+            
+            // Atualizar modal
+            document.getElementById('modalStatus').textContent = status;
+            document.getElementById('modalPercent').textContent = percentualStr;
+            document.getElementById('modalAtraso').textContent = chamado.slaAtraso || 'No prazo';
+            document.getElementById('modalAberto').textContent = chamado.slaAberto || '0h';
+            
+            // Atualizar cor da barra
+            const progressBar = document.querySelector('.sla-progress-bar');
+            if (chamado.slaVencido) {
+                progressBar.style.width = '100%';
+            } else {
+                progressBar.style.width = percentualStr;
+            }
+            
+            // Mostrar modal
+            document.getElementById('slaModal').classList.add('active');
+        }
+
+        function fecharSLA() {
+            document.getElementById('slaModal').classList.remove('active');
+        }
+
+        function desenharGraficos() {
+            const statusCounts = {}, prioridadeCounts = {}, setorCounts = {};
+
+            CHAMADOS.forEach(c => {
+                statusCounts[c.status] = (statusCounts[c.status] || 0) + 1;
+                prioridadeCounts[c.prioridade] = (prioridadeCounts[c.prioridade] || 0) + 1;
+                setorCounts[c.setorAtendimento] = (setorCounts[c.setorAtendimento] || 0) + 1;
+            });
+
+            // Atualizar estatísticas
+            document.getElementById('statTotal').textContent = CHAMADOS.length;
+            document.getElementById('statSLA').textContent = CHAMADOS.filter(c => c.slaVencido).length;
+            document.getElementById('statAbertos').textContent = CHAMADOS.filter(c => c.status === 'Aberto').length;
+            document.getElementById('statAndamento').textContent = CHAMADOS.filter(c => c.status === 'Em andamento').length;
+            document.getElementById('statResolvidos').textContent = CHAMADOS.filter(c => c.status === 'Resolvido').length;
+
+            const cores = ['#ffa500', '#64c8ff', '#00c864', '#ff6464'];
+
+            // Limpar gráficos anteriores
+            if (window.graficoStatusChart) window.graficoStatusChart.destroy();
+            if (window.graficoPrioridadeChart) window.graficoPrioridadeChart.destroy();
+            if (window.graficoSetorChart) window.graficoSetorChart.destroy();
+
+            window.graficoStatusChart = new Chart(document.getElementById('graficoStatus'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(statusCounts),
+                    datasets: [{ data: Object.values(statusCounts), backgroundColor: cores }]
+                },
+                options: { 
+                    responsive: true, 
+                    plugins: { 
+                        legend: { labels: { color: '#aaa', font: { size: 12 } } } 
+                    } 
+                }
+            });
+
+            window.graficoPrioridadeChart = new Chart(document.getElementById('graficoPrioridade'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(prioridadeCounts),
+                    datasets: [{ label: 'Quantidade', data: Object.values(prioridadeCounts), backgroundColor: '#ffa500' }]
+                },
+                options: { 
+                    responsive: true, 
+                    scales: { 
+                        y: { ticks: { color: '#aaa' }, beginAtZero: true } , 
+                        x: { ticks: { color: '#aaa' } } 
+                    }, 
+                    plugins: { legend: { labels: { color: '#aaa' } } } 
+                }
+            });
+
+            window.graficoSetorChart = new Chart(document.getElementById('graficoSetor'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(setorCounts),
+                    datasets: [{ data: Object.values(setorCounts), backgroundColor: cores }]
+                },
+                options: { 
+                    responsive: true, 
+                    plugins: { 
+                        legend: { labels: { color: '#aaa', font: { size: 12 } } } 
+                    } 
+                }
+            });
+        }
+
+        function getBadgePrio(p) { return p === 'Alta' ? 'alta' : p === 'Baixa' ? 'baixa' : 'media'; }
+        function getBadgeStatus(s) { return s === 'Aberto' ? 'aberto' : s === 'Resolvido' ? 'resolvido' : 'andamento'; }
+        function formatarData(d) { try { return new Date(d).toLocaleDateString('pt-BR'); } catch { return d; } }
+        function limparHTML(t) { return (t || '').replace(/<[^>]*>/g, ''); }
+        function sincronizar() { alert('Execute no terminal: python sync_sharepoint_tv.py'); }
+        function limparCache() { localStorage.clear(); location.reload(); }
+        function exportar() { alert('Função em desenvolvimento'); }
+        function imprimir() { window.print(); }
+        function novoChamado() { abrirFormularioCriar(); }
+
+        let EDICAO_ID = null;
+        const BACKEND_URL = 'https://unifeb-backend.onrender.com';
+
+        function abrirFormularioCriar() {
+            EDICAO_ID = null;
+            document.getElementById('modalTitulo').textContent = '➕ Novo Chamado';
+            document.getElementById('formChamado').reset();
+            document.getElementById('statusEditar').style.display = 'none';
+            document.getElementById('btnDeletar').style.display = 'none';
+            document.getElementById('btnSubmit').textContent = 'Criar Chamado';
+            document.getElementById('modalFormulario').classList.add('active');
+        }
+
+        function abrirFormularioEditar(chamadoId) {
+            const chamado = CHAMADOS.find(c => c.id === chamadoId);
+            if (!chamado) return;
+            
+            EDICAO_ID = chamadoId;
+            document.getElementById('modalTitulo').textContent = '✏️ Editar Chamado';
+            document.getElementById('titulo').value = chamado.titulo;
+            document.getElementById('descricao').value = limparHTML(chamado.descricao);
+            document.getElementById('solicitante').value = chamado.solicitante;
+            document.getElementById('setor').value = chamado.setorAtendimento || '';
+            document.getElementById('prioridade').value = chamado.prioridade;
+            document.getElementById('status').value = chamado.status;
+            document.getElementById('statusEditar').style.display = 'block';
+            document.getElementById('btnDeletar').style.display = 'block';
+            document.getElementById('btnSubmit').textContent = 'Atualizar Chamado';
+            document.getElementById('modalFormulario').classList.add('active');
+        }
+
+        function fecharFormulario() {
+            document.getElementById('modalFormulario').classList.remove('active');
+            EDICAO_ID = null;
+        }
+
+        async function salvarChamado(event) {
+            event.preventDefault();
+            const dados = {
+                titulo: document.getElementById('titulo').value,
+                descricao: document.getElementById('descricao').value,
+                solicitante: document.getElementById('solicitante').value,
+                email: document.getElementById('email').value || '',
+                setor: document.getElementById('setor').value,
+                prioridade: document.getElementById('prioridade').value
+            };
+            
+            if (EDICAO_ID) dados.status = document.getElementById('status').value;
+            
+            try {
+                const url = EDICAO_ID ? `${BACKEND_URL}/api/editar-chamado/${EDICAO_ID}` : `${BACKEND_URL}/api/criar-chamado`;
+                const method = EDICAO_ID ? 'PATCH' : 'POST';
+                const response = await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(dados) });
+                
+                if (response.ok) {
+                    alert(EDICAO_ID ? '✅ Chamado atualizado!' : '✅ Chamado criado!');
+                    fecharFormulario();
+                    setTimeout(carregarDados, 1000);
+                } else alert('❌ Erro ao salvar');
+            } catch (error) {
+                alert('❌ Erro: ' + error.message);
+            }
+        }
+
+        async function deletarChamadoAtual() {
+            if (!EDICAO_ID || !confirm('Deletar este chamado?')) return;
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/deletar-chamado/${EDICAO_ID}`, { method: 'DELETE' });
+                if (response.ok) {
+                    alert('✅ Deletado!');
+                    fecharFormulario();
+                    setTimeout(carregarDados, 1000);
+                } else alert('❌ Erro');
+            } catch (error) {
+                alert('❌ Erro: ' + error.message);
+            }
+        }
+
+        window.addEventListener('load', () => {
+            carregarDados();
+            setInterval(carregarDados, 5000);
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) carregarDados();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') fecharSLA();
+        });
+
+        // CSS para modal aparecer
+        const style = document.createElement('style');
+        style.innerHTML = `
+            #modalFormulario.active {
+                display: flex !important;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
