@@ -1,5 +1,5 @@
 {
-  "atualizado_em": "2026-07-30T21:53:40.938066",
+  "atualizado_em": "2026-07-31T08:19:37.488355",
   "total_chamados": 6,
   "chamados": [
     {
@@ -12,8 +12,8 @@
       "descricao": "<div class=\"ExternalClass64A0E42EA8F944AAA399A5FF710B64C6\">Solicito troca do toner, impressora HP\n\n\nAtenciosamente,&#160;\n\n\n\n\n</div>",
       "data": "2026-07-27T20:26:09Z",
       "slaVencido": true,
-      "slaAtraso": "71h 27min",
-      "slaAberto": "73h 27min",
+      "slaAtraso": "81h 53min",
+      "slaAberto": "83h 53min",
       "slaHoras": 2
     },
     {
@@ -26,8 +26,8 @@
       "descricao": "<div class=\"ExternalClassAE1A304A2B154C6BB280AF9AD4725385\">Solicita a instalação do office na maquina da secretaria atendimento\n\n\n\n\n</div>",
       "data": "2026-07-28T13:34:39Z",
       "slaVencido": true,
-      "slaAtraso": "54h 19min",
-      "slaAberto": "56h 19min",
+      "slaAtraso": "64h 44min",
+      "slaAberto": "66h 44min",
       "slaHoras": 2
     },
     {
@@ -40,8 +40,8 @@
       "descricao": "<div class=\"ExternalClass86AAB930CBC146C79BD253EAB7862197\">trocar o toner</div>",
       "data": "2026-07-29T18:58:46Z",
       "slaVencido": true,
-      "slaAtraso": "24h 54min",
-      "slaAberto": "26h 54min",
+      "slaAtraso": "35h 20min",
+      "slaAberto": "37h 20min",
       "slaHoras": 2
     },
     {
@@ -54,8 +54,8 @@
       "descricao": "<div class=\"ExternalClassBC384E6896D44544AF50FAC4BD903BC4\">Por favor trocar impressora de lugar\n\n\n\n\n</div>",
       "data": "2026-07-29T20:48:45Z",
       "slaVencido": true,
-      "slaAtraso": "23h 4min",
-      "slaAberto": "25h 4min",
+      "slaAtraso": "33h 30min",
+      "slaAberto": "35h 30min",
       "slaHoras": 2
     },
     {
@@ -67,9 +67,9 @@
       "setorAtendimento": "Núcleo Práticas Jurídicas",
       "descricao": "<div class=\"ExternalClass20E60D451FD6443E8879A574860889F3\">Preciso que seja troca o teclado da baia 1 atendimento financeiro\n\n\n\n\n</div>",
       "data": "2026-07-30T17:09:54Z",
-      "slaVencido": false,
-      "slaAtraso": "No prazo",
-      "slaAberto": "4h 43min",
+      "slaVencido": true,
+      "slaAtraso": "7h 9min",
+      "slaAberto": "15h 9min",
       "slaHoras": 8
     },
     {
@@ -83,7 +83,7 @@
       "data": "2026-07-30T19:59:08Z",
       "slaVencido": false,
       "slaAtraso": "No prazo",
-      "slaAberto": "1h 54min",
+      "slaAberto": "12h 20min",
       "slaHoras": 24
     }
   ]
