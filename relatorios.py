@@ -45,12 +45,17 @@ def gerar_relatorio_excel(chamados, periodo='mensal'):
             ws.cell(row=row, column=5).value = chamado.get('status')
             ws.cell(row=row, column=6).value = chamado.get('setorAtendimento')
             
-            # Formatar data/hora corretamente
+            # Formatar data/hora corretamente (converter UTC para Brasília)
             data_str = chamado.get('data', '')
             try:
-                from datetime import datetime
-                data_obj = datetime.fromisoformat(data_str.replace('Z', '+00:00'))
-                data_formatada = data_obj.strftime('%d/%m/%Y, %H:%M:%S')
+                from datetime import datetime, timezone, timedelta
+                # Converter UTC para objeto datetime com timezone
+                data_utc = datetime.fromisoformat(data_str.replace('Z', '+00:00'))
+                # Criar timezone de Brasília (UTC-3)
+                brasilia_tz = timezone(timedelta(hours=-3))
+                # Converter para hora de Brasília
+                data_brasilia = data_utc.astimezone(brasilia_tz)
+                data_formatada = data_brasilia.strftime('%d/%m/%Y, %H:%M:%S')
                 ws.cell(row=row, column=7).value = data_formatada
             except:
                 ws.cell(row=row, column=7).value = data_str
