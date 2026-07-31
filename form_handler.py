@@ -111,6 +111,9 @@ def obter_roteamento(categoria):
 def enviar_email(destinatario, assunto, html):
     """Envia email via SMTP"""
     try:
+        logger.info(f"[EMAIL] Iniciando envio para: {destinatario}")
+        logger.info(f"[EMAIL] Assunto: {assunto}")
+        
         msg = MIMEMultipart('alternative')
         msg['Subject'] = assunto
         msg['From'] = EMAIL_FROM
@@ -118,39 +121,61 @@ def enviar_email(destinatario, assunto, html):
         
         msg.attach(MIMEText(html, 'html', 'utf-8'))
         
+        logger.info(f"[EMAIL] Conectando ao servidor SMTP: smtp.office365.com:587")
         server = smtplib.SMTP("smtp.office365.com", 587, timeout=10)
+        logger.info(f"[EMAIL] Iniciando TLS...")
         server.starttls()
+        
+        logger.info(f"[EMAIL] Fazendo login com: {EMAIL_FROM}")
         server.login(EMAIL_FROM, EMAIL_PASSWORD)
+        logger.info(f"[EMAIL] Login bem-sucedido!")
+        
+        logger.info(f"[EMAIL] Enviando mensagem...")
         server.send_message(msg)
         server.quit()
         
-        logger.info(f"✅ Email enviado para {destinatario}")
+        logger.info(f"✅ [EMAIL] Email enviado com sucesso para {destinatario}")
         return True
     except Exception as e:
-        logger.error(f"❌ Erro ao enviar email: {e}")
+        logger.error(f"❌ [EMAIL] Erro ao enviar email para {destinatario}: {e}", exc_info=True)
         return False
 
 def enviar_emails_background(numero, email_solicitante, emails_destino, html_solicitante, html_responsavel, categoria, bloco, sala, solicitante):
     """Envia emails em thread separada (não bloqueia resposta)"""
     def _enviar():
         try:
-            logger.info(f"[THREAD] Iniciando envio de emails para chamado {numero}")
+            logger.info(f"[THREAD-{numero}] ========== INICIANDO ENVIO DE EMAILS ==========")
+            logger.info(f"[THREAD-{numero}] Chamado: {numero}")
+            logger.info(f"[THREAD-{numero}] Solicitante: {email_solicitante}")
+            logger.info(f"[THREAD-{numero}] Responsáveis: {emails_destino}")
             
             # Email para solicitante
-            enviar_email(email_solicitante, f"✅ Chamado #{numero} Aberto", html_solicitante)
+            logger.info(f"[THREAD-{numero}] Enviando email para SOLICITANTE...")
+            result1 = enviar_email(email_solicitante, f"✅ Chamado #{numero} Aberto", html_solicitante)
+            if result1:
+                logger.info(f"[THREAD-{numero}] ✅ Email solicitante enviado!")
+            else:
+                logger.error(f"[THREAD-{numero}] ❌ Falha ao enviar email solicitante!")
             
             # Emails para responsáveis
+            logger.info(f"[THREAD-{numero}] Enviando emails para RESPONSÁVEIS...")
             for email_destino in emails_destino:
-                enviar_email(email_destino, f"[AVISO #{numero}] {categoria} - {bloco}/{sala}", html_responsavel)
+                logger.info(f"[THREAD-{numero}] Enviando para: {email_destino}")
+                result = enviar_email(email_destino, f"[AVISO #{numero}] {categoria} - {bloco}/{sala}", html_responsavel)
+                if result:
+                    logger.info(f"[THREAD-{numero}] ✅ Email responsável enviado para {email_destino}")
+                else:
+                    logger.error(f"[THREAD-{numero}] ❌ Falha ao enviar para {email_destino}")
             
-            logger.info(f"[THREAD] Emails enviados com sucesso para chamado {numero}")
+            logger.info(f"[THREAD-{numero}] ========== CONCLUSÃO DE ENVIO DE EMAILS ==========")
         except Exception as e:
-            logger.error(f"[THREAD] Erro ao enviar emails: {e}")
+            logger.error(f"[THREAD-{numero}] ❌ ERRO GERAL NA THREAD: {e}", exc_info=True)
     
     # Cria thread e executa sem bloquear
-    thread = threading.Thread(target=_enviar, daemon=True)
+    logger.info(f"[MAIN] Criando thread para envio de emails do chamado {numero}")
+    thread = threading.Thread(target=_enviar, daemon=True, name=f"email-{numero}")
     thread.start()
-    logger.info(f"[THREAD] Thread iniciada para chamado {numero}")
+    logger.info(f"[MAIN] Thread iniciada: {thread.name}")
 
 def gerar_html_confirmacao_solicitante(numero, solicitante, bloco, sala, categoria):
     """Email SIMPLES para solicitante - SEM botão"""
