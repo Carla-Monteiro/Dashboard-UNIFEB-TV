@@ -1110,7 +1110,7 @@
 
         function getBadgePrio(p) { return p === 'Alta' ? 'alta' : p === 'Baixa' ? 'baixa' : 'media'; }
         function getBadgeStatus(s) { return s === 'Aberto' ? 'aberto' : s === 'Resolvido' ? 'resolvido' : 'andamento'; }
-        function formatarData(d) { try { return new Date(d).toLocaleDateString('pt-BR'); } catch { return d; } }
+        function formatarData(d) { try { return new Date(d).toLocaleString('pt-BR'); } catch { return d; } }
         function limparHTML(t) { return (t || '').replace(/<[^>]*>/g, ''); }
         function sincronizar() { alert('Execute no terminal: python sync_sharepoint_tv.py'); }
         function limparCache() { localStorage.clear(); location.reload(); }
