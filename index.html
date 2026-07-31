@@ -598,7 +598,7 @@
                     <option value="">-- Todos os Status --</option>
                     <option value="Aberto">Aberto</option>
                     <option value="Em andamento">Em andamento</option>
-                    <option value="Resolvido">Resolvido</option>
+                    <option value="Concluído">Concluído</option>
                 </select>
             </div>
             <div class="filter-item">
@@ -671,8 +671,8 @@
                 </div>
                 <div class="stat-card success">
                     <div class="stat-icon">✅</div>
-                    <div class="stat-label">Resolvidos</div>
-                    <div class="stat-number" id="statResolvidos">0</div>
+                    <div class="stat-label">Concluídos</div>
+                    <div class="stat-number" id="statConcluídos">0</div>
                 </div>
             </div>
 
@@ -805,7 +805,7 @@
                     <select id="status" style="width: 100%; padding: 12px 14px; background: #1a2f4d; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
                         <option value="Aberto" style="background: #1a2f4d; color: #fff;">Aberto</option>
                         <option value="Em andamento" style="background: #1a2f4d; color: #fff;">Em andamento</option>
-                        <option value="Resolvido" style="background: #1a2f4d; color: #fff;">Resolvido</option>
+                        <option value="Concluído" style="background: #1a2f4d; color: #fff;">Concluído</option>
                     </select>
                 </div>
                 <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 2px solid rgba(255, 165, 0, 0.2);">
@@ -841,7 +841,7 @@
                 </div>
                 
                 <div class="kpi-card" style="background: rgba(76, 175, 80, 0.15); border-left: 4px solid #4CAF50; padding: 20px; border-radius: 8px;">
-                    <div style="color: #aaa; font-size: 12px; text-transform: uppercase;">Resolvidos</div>
+                    <div style="color: #aaa; font-size: 12px; text-transform: uppercase;">Concluídos</div>
                     <div id="kpi-resolvidos" style="font-size: 32px; font-weight: bold; color: #4CAF50;">0</div>
                 </div>
             </div>
@@ -1054,7 +1054,7 @@
             document.getElementById('statSLA').textContent = CHAMADOS.filter(c => c.slaVencido).length;
             document.getElementById('statAbertos').textContent = CHAMADOS.filter(c => c.status === 'Aberto').length;
             document.getElementById('statAndamento').textContent = CHAMADOS.filter(c => c.status === 'Em andamento').length;
-            document.getElementById('statResolvidos').textContent = CHAMADOS.filter(c => c.status === 'Resolvido').length;
+            document.getElementById('statConcluídos').textContent = CHAMADOS.filter(c => c.status === 'Concluído').length;
 
             const cores = ['#ffa500', '#64c8ff', '#00c864', '#ff6464'];
 
@@ -1109,7 +1109,7 @@
         }
 
         function getBadgePrio(p) { return p === 'Alta' ? 'alta' : p === 'Baixa' ? 'baixa' : 'media'; }
-        function getBadgeStatus(s) { return s === 'Aberto' ? 'aberto' : s === 'Resolvido' ? 'resolvido' : 'andamento'; }
+        function getBadgeStatus(s) { return s === 'Aberto' ? 'aberto' : s === 'Concluído' ? 'resolvido' : 'andamento'; }
         function formatarData(d) { try { return new Date(d).toLocaleString('pt-BR'); } catch { return d; } }
         function limparHTML(t) { return (t || '').replace(/<[^>]*>/g, ''); }
         function sincronizar() { alert('Execute no terminal: python sync_sharepoint_tv.py'); }

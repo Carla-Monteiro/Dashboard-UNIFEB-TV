@@ -130,7 +130,7 @@ def calcular_metricas(chamados):
     total = len(chamados)
     vencidos = sum(1 for c in chamados if c.get('slaVencido'))
     abertos = sum(1 for c in chamados if c.get('status') == 'Aberto')
-    resolvidos = sum(1 for c in chamados if c.get('status') == 'Resolvido')
+    resolvidos = sum(1 for c in chamados if c.get('status') == 'Concluído')
     
     por_prioridade = {
         'Alta': sum(1 for c in chamados if c.get('prioridade') == 'Alta'),
@@ -141,7 +141,7 @@ def calcular_metricas(chamados):
     por_status = {
         'Aberto': abertos,
         'Em andamento': sum(1 for c in chamados if c.get('status') == 'Em andamento'),
-        'Resolvido': resolvidos
+        'Concluído': resolvidos
     }
     
     return {
@@ -168,5 +168,5 @@ if __name__ == "__main__":
     print(f"  Total: {metricas['total']}")
     print(f"  Vencidos: {metricas['vencidos']} ({metricas['percentual_vencidos']:.1f}%)")
     print(f"  Abertos: {metricas['abertos']}")
-    print(f"  Resolvidos: {metricas['resolvidos']}")
+    print(f"  Concluídos: {metricas['resolvidos']}")
     print(f"  Saúde: {metricas['saude_geral']}")
