@@ -66,18 +66,40 @@ GRAPH_API = "https://graph.microsoft.com/v1.0"
 
 def extrair_setor_do_email(email):
     """Extrai o setor baseado no padrão do email (nome.setor@feb.br)"""
+    print(f"\n🔍 [DEBUG] Extraindo setor do email: '{email}'")
+    
     try:
-        # Extrair a parte do meio: nome.SETOR@feb.br → SETOR
-        if '@' in email and '.' in email:
-            parte_email = email.split('@')[0]  # nome.setor
-            partes = parte_email.split('.')
-            if len(partes) >= 2:
-                departamento_sigla = partes[-1].lower()  # última parte (setor)
-                # Buscar no mapeamento
-                return EMAIL_SETOR_MAPPING.get(departamento_sigla, 'Geral')
-    except:
-        pass
-    return 'Geral'
+        if not email:
+            print("❌ Email vazio")
+            return 'Geral'
+            
+        email_lower = email.lower().strip()
+        print(f"📧 Email normalizado: '{email_lower}'")
+        
+        if '@' not in email_lower:
+            print("❌ Email sem @")
+            return 'Geral'
+        
+        # Extrair parte antes do @
+        parte_email = email_lower.split('@')[0]
+        print(f"📝 Parte do email: '{parte_email}'")
+        
+        if '.' not in parte_email:
+            print("❌ Sem ponto no email")
+            return 'Geral'
+        
+        # Extrair última parte após ponto
+        departamento_sigla = parte_email.split('.')[-1]
+        print(f"🏢 Departamento extraído: '{departamento_sigla}'")
+        print(f"🗺️  Mapeamento disponível: {list(EMAIL_SETOR_MAPPING.keys())}")
+        
+        setor = EMAIL_SETOR_MAPPING.get(departamento_sigla, 'Geral')
+        print(f"✅ Setor final: '{setor}'")
+        return setor
+        
+    except Exception as e:
+        print(f"❌ Erro: {e}")
+        return 'Geral'
 
 app = Flask(__name__)
 CORS(app)
