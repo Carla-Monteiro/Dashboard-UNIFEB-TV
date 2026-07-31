@@ -113,6 +113,8 @@ def enviar_email(destinatario, assunto, html):
     try:
         logger.info(f"[EMAIL] Iniciando envio para: {destinatario}")
         logger.info(f"[EMAIL] Assunto: {assunto}")
+        logger.info(f"[EMAIL] EMAIL_FROM: {EMAIL_FROM}")
+        logger.info(f"[EMAIL] EMAIL_PASSWORD: {'*' * len(EMAIL_PASSWORD) if EMAIL_PASSWORD else 'NÃO CONFIGURADO!'}")
         
         msg = MIMEMultipart('alternative')
         msg['Subject'] = assunto
@@ -120,24 +122,54 @@ def enviar_email(destinatario, assunto, html):
         msg['To'] = destinatario
         
         msg.attach(MIMEText(html, 'html', 'utf-8'))
+        logger.info(f"[EMAIL] Mensagem montada")
         
-        logger.info(f"[EMAIL] Conectando ao servidor SMTP: smtp.office365.com:587")
-        server = smtplib.SMTP("smtp.office365.com", 587, timeout=10)
-        logger.info(f"[EMAIL] Iniciando TLS...")
-        server.starttls()
+        try:
+            logger.info(f"[EMAIL] Conectando ao servidor SMTP: smtp.office365.com:587")
+            server = smtplib.SMTP("smtp.office365.com", 587, timeout=10)
+            logger.info(f"[EMAIL] ✅ Conectado ao servidor!")
+        except Exception as e:
+            logger.error(f"[EMAIL] ❌ ERRO ao conectar: {e}", exc_info=True)
+            return False
         
-        logger.info(f"[EMAIL] Fazendo login com: {EMAIL_FROM}")
-        server.login(EMAIL_FROM, EMAIL_PASSWORD)
-        logger.info(f"[EMAIL] Login bem-sucedido!")
+        try:
+            logger.info(f"[EMAIL] Iniciando TLS...")
+            server.starttls()
+            logger.info(f"[EMAIL] ✅ TLS iniciado!")
+        except Exception as e:
+            logger.error(f"[EMAIL] ❌ ERRO ao iniciar TLS: {e}", exc_info=True)
+            server.quit()
+            return False
         
-        logger.info(f"[EMAIL] Enviando mensagem...")
-        server.send_message(msg)
-        server.quit()
+        try:
+            logger.info(f"[EMAIL] Fazendo login com: {EMAIL_FROM}")
+            server.login(EMAIL_FROM, EMAIL_PASSWORD)
+            logger.info(f"[EMAIL] ✅ Login bem-sucedido!")
+        except Exception as e:
+            logger.error(f"[EMAIL] ❌ ERRO ao fazer login: {e}", exc_info=True)
+            server.quit()
+            return False
+        
+        try:
+            logger.info(f"[EMAIL] Enviando mensagem...")
+            server.send_message(msg)
+            logger.info(f"[EMAIL] ✅ Mensagem enviada!")
+        except Exception as e:
+            logger.error(f"[EMAIL] ❌ ERRO ao enviar: {e}", exc_info=True)
+            server.quit()
+            return False
+        
+        try:
+            server.quit()
+            logger.info(f"[EMAIL] ✅ Conexão fechada")
+        except Exception as e:
+            logger.error(f"[EMAIL] ⚠️ ERRO ao fechar conexão: {e}")
         
         logger.info(f"✅ [EMAIL] Email enviado com sucesso para {destinatario}")
         return True
+        
     except Exception as e:
-        logger.error(f"❌ [EMAIL] Erro ao enviar email para {destinatario}: {e}", exc_info=True)
+        logger.error(f"❌ [EMAIL] ERRO GERAL: {e}", exc_info=True)
         return False
 
 def enviar_emails_background(numero, email_solicitante, emails_destino, html_solicitante, html_responsavel, categoria, bloco, sala, solicitante):
