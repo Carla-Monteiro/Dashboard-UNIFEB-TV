@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>#SuporteTi UNIFEB - Aviso de Manutenção</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 550px;
+            width: 100%;
+            padding: 40px;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .logo img {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            color: #1a237e;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: #1a237e;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: all 0.3s;
+        }
+
+        select option {
+            font-size: 14px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 10px;
+            line-height: 1.5;
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: #ffa500;
+            box-shadow: 0 0 0 3px rgba(255, 165, 0, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-enviar {
+            background: linear-gradient(135deg, #ffa500, #ff6b35);
+            color: white;
+        }
+
+        .btn-enviar:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 165, 0, 0.4);
+        }
+
+        .btn-enviar:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-limpar {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-limpar:hover {
+            background: #e0e0e0;
+        }
+
+        .mensagem {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .mensagem.sucesso {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+            display: block;
+        }
+
+        .mensagem.erro {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+            display: block;
+        }
+
+        .info-box {
+            background: #f5f5f5;
+            border-left: 4px solid #ffa500;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #ffa500;
+        }
+
+        .spinner {
+            border: 4px solid #f0f0f0;
+            border-top: 4px solid #ffa500;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .outros-input {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .outros-input.show {
+            display: block;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                padding: 25px;
+            }
+            h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <img src="https://dashboard-unifeb-tv.vercel.app/logo-UNIFEB.png" alt="Logo UNIFEB">
+            </div>
+            <h1>#SuporteUNIFEB</h1>
+            <p class="subtitle">Central de Avisos e Solicitações</p>
+        </div>
+
+        <div id="mensagem" class="mensagem"></div>
+
+        <form id="formulario">
+            <!-- EMAIL -->
+            <div class="form-group">
+                <label for="email">📧 Email (Corporativo ou Pessoal) *</label>
+                <input type="email" id="email" placeholder="seu.email@feb.br ou seu.email@pessoal.com" required>
+            </div>
+
+            <!-- BLOCO -->
+            <div class="form-group">
+                <label for="bloco">📍 Bloco *</label>
+                <select id="bloco" required>
+                    <option value="">Selecione o bloco</option>
+                </select>
+            </div>
+
+            <!-- SALA -->
+            <div class="form-group">
+                <label for="sala">🚪 Sala/Laboratório *</label>
+                <select id="sala" required>
+                    <option value="">Selecione a sala</option>
+                </select>
+                <div class="outros-input">
+                    <input type="text" id="sala-outros" placeholder="Digite o nome da sala/laboratório">
+                </div>
+            </div>
+
+            <!-- TIPO -->
+            <div class="form-group">
+                <label for="tipo">⚙️ Tipo de Problema *</label>
+                <select id="tipo" required>
+                    <option value="">Selecione o tipo</option>
+                    <option value="manutencao">🔧 Manutenção Predial</option>
+                    <option value="naem">📡 Multimídia (NAEM)</option>
+                    <option value="ti">💻 TI / Internet</option>
+                </select>
+            </div>
+
+            <!-- CATEGORIA -->
+            <div class="form-group">
+                <label for="categoria">📋 Categoria *</label>
+                <select id="categoria" required>
+                    <option value="">Selecione após escolher tipo</option>
+                </select>
+            </div>
+
+            <!-- DESCRIÇÃO -->
+            <div class="form-group">
+                <label for="descricao">📝 Descrição Detalhada *</label>
+                <textarea id="descricao" placeholder="Descreva o problema em detalhes..." required></textarea>
+            </div>
+
+            <!-- BOTÕES -->
+            <div class="button-group">
+                <button type="submit" class="btn-enviar">
+                    <span>📤 Enviar Aviso</span>
+                </button>
+                <button type="reset" class="btn-limpar">Limpar</button>
+            </div>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Enviando...</p>
+        </div>
+
+        <div class="info-box">
+            💡 Seu aviso será analisado e você receberá um retorno em breve. Obrigado!
+        </div>
+    </div>
+
+    <script>
+        // DADOS DA UNIFEB
+        const blocosESalas = {
+            'BLOCO INFORMÁTICA': ['Lab 3', 'Lab 4', 'Lab 5', 'Lab 6', 'OUTROS'],
+            'BLOCO JOÃO MONTEIRO DE BARROS FILHO': ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'C16', 'C17', 'C18', 'OUTROS'],
+            'BLOCO ELVIRA PARADA': ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'OUTROS'],
+            'BLOCO LAURO KFOURI': ['1', '2', '3', '4', '5', '6', 'OUTROS'],
+            'BLOCO LARANJÃO': ['1', '2', '3', '4', '5', '6', 'OUTROS'],
+            'BLOCO RAEL VIDAL': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'OUTROS'],
+            'Núcleo de Prática Jurídica': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', 'OUTROS'],
+            'Marcelo Ramos': ['01', '03', '05', '06', '07', '08', '09', '10', '11', 'OUTROS'],
+            'Biblioteca': ['Acervo', 'Sala 1', 'Sala 2', 'OUTROS'],
+            'Núcleo de Ensino a Distância (NEAD)': ['NEAD 01', 'NEAD 02', 'NEAD 03', 'NEAD 04', 'OUTROS'],
+            'Teatro Jorge Andrade': ['Auditório', 'OUTROS'],
+            'Tribunal do Júri': ['Auditório', 'OUTROS'],
+            'Sala de Pós Graduação': ['Sala 01', 'Sala 02', 'Sala Completa', 'OUTROS'],
+        };
+
+        // CATEGORIAS POR TIPO
+        const categoriasPorTipo = {
+            'manutencao': [
+                '💡 Energia Elétrica',
+                '❄️ Ar Condicionado',
+                '🔐 Fechadura/Porta',
+                '🪟 Janela',
+                '🔘 Interruptores',
+                '🚪 Outra'
+            ],
+            'naem': [
+                '📽️ Projetor',
+                '🎮 Controle Projetor',
+                '📺 Cabo VGA',
+                '🔌 Adaptador VGA/HDMI',
+                '📡 Cabo HDMI',
+                '🔊 Cabos de Som',
+                '❄️ Controle A/C',
+                '📻 Outro'
+            ],
+            'ti': [
+                '🌐 Internet/Wi-Fi',
+                '💻 Computador',
+                '⌨️ Teclado',
+                '🖱️ Mouse',
+                '📞 Telefone',
+                '🔴 Outro'
+            ]
+        };
+
+        // PREENCHER BLOCOS
+        const blocoSelect = document.getElementById('bloco');
+        Object.keys(blocosESalas).forEach(bloco => {
+            const option = document.createElement('option');
+            option.value = bloco;
+            option.textContent = bloco;
+            blocoSelect.appendChild(option);
+        });
+
+        // ATUALIZAR SALAS CONFORME BLOCO
+        document.getElementById('bloco').addEventListener('change', (e) => {
+            const blocoSelecionado = e.target.value;
+            const salaSelect = document.getElementById('sala');
+            salaSelect.innerHTML = '<option value="">Selecione a sala</option>';
+
+            if (blocoSelecionado && blocosESalas[blocoSelecionado]) {
+                blocosESalas[blocoSelecionado].forEach(sala => {
+                    const option = document.createElement('option');
+                    option.value = sala === 'OUTROS' ? 'OUTROS' : blocoSelecionado + '-' + sala;
+                    option.textContent = sala === 'OUTROS' ? '✏️ OUTROS (Digite abaixo)' : 'Sala ' + sala;
+                    salaSelect.appendChild(option);
+                });
+            }
+        });
+
+        // MOSTRAR/ESCONDER INPUT "OUTROS" PARA SALA
+        document.getElementById('sala').addEventListener('change', (e) => {
+            const outrosInput = document.querySelector('.outros-input');
+            if (e.target.value === 'OUTROS') {
+                outrosInput.classList.add('show');
+                document.getElementById('sala-outros').required = true;
+            } else {
+                outrosInput.classList.remove('show');
+                document.getElementById('sala-outros').required = false;
+                document.getElementById('sala-outros').value = '';
+            }
+        });
+
+        // ATUALIZAR CATEGORIAS CONFORME TIPO
+        document.getElementById('tipo').addEventListener('change', (e) => {
+            const tipoSelecionado = e.target.value;
+            const categoriaSelect = document.getElementById('categoria');
+            categoriaSelect.innerHTML = '<option value="">Selecione o problema</option>';
+
+            if (tipoSelecionado && categoriasPorTipo[tipoSelecionado]) {
+                categoriasPorTipo[tipoSelecionado].forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = cat;
+                    categoriaSelect.appendChild(option);
+                });
+            }
+        });
+
+        // ENVIAR FORMULÁRIO
+        document.getElementById('formulario').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const bloco = document.getElementById('bloco').value;
+            let sala = document.getElementById('sala').value;
+            
+            // Se sala é "OUTROS", usar o input manual
+            if (sala === 'OUTROS') {
+                sala = 'OUTROS: ' + document.getElementById('sala-outros').value;
+            }
+            
+            const tipo = document.getElementById('tipo').value;
+            const categoria = document.getElementById('categoria').value;
+            const descricao = document.getElementById('descricao').value;
+
+            if (!categoria) {
+                mostrarMensagem('Selecione um tipo de problema', 'erro');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch('https://unifeb-backend.onrender.com/api/criar-manutencao', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email,
+                        bloco,
+                        sala,
+                        tipo,
+                        categoria,
+                        descricao,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    mostrarMensagem('✅ Aviso enviado com sucesso! Obrigado por reportar.', 'sucesso');
+                    document.getElementById('formulario').reset();
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2500);
+                } else {
+                    mostrarMensagem('❌ Erro ao enviar. Tente novamente.', 'erro');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                mostrarMensagem('❌ Erro de conexão. Verifique sua internet.', 'erro');
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+
+        function mostrarMensagem(texto, tipo) {
+            const div = document.getElementById('mensagem');
+            div.textContent = texto;
+            div.className = 'mensagem ' + tipo;
+            
+            setTimeout(() => {
+                div.classList.remove(tipo);
+                div.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

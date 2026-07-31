@@ -333,6 +333,248 @@ def export_excel():
         return jsonify({"erro": str(e)}), 500
 
 
+# ========== SISTEMA QR CODE #SuporteUNIFEB - MANUTENÇÃO ==========
+
+# MAPEAMENTO DE CATEGORIAS E EMAILS
+CATEGORIAS_ROTEAMENTO = {
+    # MANUTENÇÃO
+    '💡 Energia Elétrica': {'tipo': 'manutencao', 'emails': ['mendes.engenharia@feb.br', 'suporte.dti@feb.br']},
+    '❄️ Ar Condicionado': {'tipo': 'manutencao', 'emails': ['mendes.engenharia@feb.br', 'suporte.dti@feb.br']},
+    '🔐 Fechadura/Porta': {'tipo': 'manutencao', 'emails': ['mendes.engenharia@feb.br', 'suporte.dti@feb.br']},
+    '🪟 Janela': {'tipo': 'manutencao', 'emails': ['mendes.engenharia@feb.br', 'suporte.dti@feb.br']},
+    '🔘 Interruptores': {'tipo': 'manutencao', 'emails': ['mendes.engenharia@feb.br', 'suporte.dti@feb.br']},
+    '🚪 Outra': {'tipo': 'manutencao', 'emails': ['mendes.engenharia@feb.br', 'suporte.dti@feb.br']},
+    
+    # NAEM
+    '📽️ Projetor': {'tipo': 'naem', 'emails': ['naem@feb.br', 'suporte.dti@feb.br']},
+    '🎮 Controle Projetor': {'tipo': 'naem', 'emails': ['naem@feb.br', 'suporte.dti@feb.br']},
+    '📺 Cabo VGA': {'tipo': 'naem', 'emails': ['naem@feb.br', 'suporte.dti@feb.br']},
+    '🔌 Adaptador VGA/HDMI': {'tipo': 'naem', 'emails': ['naem@feb.br', 'suporte.dti@feb.br']},
+    '📡 Cabo HDMI': {'tipo': 'naem', 'emails': ['naem@feb.br', 'suporte.dti@feb.br']},
+    '🔊 Cabos de Som': {'tipo': 'naem', 'emails': ['naem@feb.br', 'suporte.dti@feb.br']},
+    '❄️ Controle A/C': {'tipo': 'naem', 'emails': ['naem@feb.br', 'suporte.dti@feb.br']},
+    '📻 Outro': {'tipo': 'naem', 'emails': ['naem@feb.br', 'suporte.dti@feb.br']},
+    
+    # TI
+    '🌐 Internet/Wi-Fi': {'tipo': 'ti', 'emails': ['suporte.dti@feb.br']},
+    '💻 Computador': {'tipo': 'ti', 'emails': ['suporte.dti@feb.br']},
+    '⌨️ Teclado': {'tipo': 'ti', 'emails': ['suporte.dti@feb.br']},
+    '🖱️ Mouse': {'tipo': 'ti', 'emails': ['suporte.dti@feb.br']},
+    '📞 Telefone': {'tipo': 'ti', 'emails': ['suporte.dti@feb.br']},
+    '🔴 Outro': {'tipo': 'ti', 'emails': ['suporte.dti@feb.br']},
+}
+
+NOMES_SETORES = {
+    'manutencao': 'Manutenção Predial',
+    'naem': 'Multimídia (NAEM)',
+    'ti': 'TI / Internet'
+}
+
+def gerar_numero_chamado():
+    """Gera número único do chamado"""
+    return datetime.now().strftime('%Y%m%d%H%M%S')
+
+def obter_roteamento(categoria):
+    """Obtém emails de destino"""
+    if categoria in CATEGORIAS_ROTEAMENTO:
+        return CATEGORIAS_ROTEAMENTO[categoria]
+    return {'tipo': 'ti', 'emails': ['suporte.dti@feb.br']}
+
+def gerar_html_email(numero, bloco, sala, solicitante, email_solicitante, categoria, descricao, tipo):
+    """Gera HTML do email"""
+    nome_setor = NOMES_SETORES.get(tipo, 'Suporte')
+    icons = {'manutencao': '🔧', 'naem': '📡', 'ti': '💻'}
+    
+    html = f"""
+    <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body {{ font-family: Arial, sans-serif; background-color: #f5f5f5; }}
+                .container {{ max-width: 600px; margin: 0 auto; background-color: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+                .header {{ background: linear-gradient(135deg, #1a237e, #283593); color: white; padding: 20px; border-radius: 10px 10px 0 0; text-align: center; }}
+                .icon {{ font-size: 40px; margin-bottom: 10px; }}
+                h1 {{ margin: 0; font-size: 24px; }}
+                .content {{ padding: 20px; }}
+                .info-row {{ display: flex; margin-bottom: 15px; }}
+                .label {{ font-weight: bold; color: #1a237e; width: 140px; }}
+                .value {{ color: #333; flex: 1; }}
+                .badge {{ display: inline-block; padding: 5px 15px; background: #ffa500; color: white; border-radius: 20px; font-weight: bold; }}
+                .descricao-box {{ background: #f5f5f5; padding: 15px; border-left: 4px solid #ffa500; margin-top: 20px; border-radius: 5px; }}
+                .numero {{ font-size: 24px; color: #ffa500; font-weight: bold; margin: 10px 0; }}
+                .footer {{ background: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #999; border-radius: 0 0 10px 10px; }}
+                .instrucoes {{ background: #e8f5e9; padding: 15px; border-radius: 5px; margin-top: 15px; color: #2e7d32; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <div class="icon">{icons[tipo]}</div>
+                    <h1>Novo Aviso de {nome_setor}</h1>
+                </div>
+                
+                <div class="content">
+                    <div class="numero">Chamado #: {numero}</div>
+                    
+                    <h2 style="color: #1a237e; margin-bottom: 20px;">Detalhes do Aviso</h2>
+                    
+                    <div class="info-row">
+                        <span class="label">📍 Bloco:</span>
+                        <span class="value"><strong>{bloco}</strong></span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="label">🚪 Sala:</span>
+                        <span class="value"><strong>{sala}</strong></span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="label">👤 Solicitante:</span>
+                        <span class="value"><strong>{solicitante}</strong></span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="label">📧 Email:</span>
+                        <span class="value"><strong>{email_solicitante}</strong></span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="label">⚙️ Tipo:</span>
+                        <span class="value"><span class="badge">{categoria}</span></span>
+                    </div>
+                    
+                    <div class="descricao-box">
+                        <strong>📝 Descrição Detalhada:</strong><br><br>
+                        {descricao.replace(chr(10), '<br>')}
+                    </div>
+                    
+                    <div class="instrucoes">
+                        <strong>ℹ️ Próximos Passos:</strong><br>
+                        1. Verifique o problema<br>
+                        2. Resolva quando possível<br>
+                        3. Marque como "Concluído" no Dashboard/SharePoint<br>
+                        4. Sistema enviará pesquisa de satisfação automaticamente<br><br>
+                        <strong>⏰ Data/Hora:</strong> {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+                    </div>
+                </div>
+                
+                <div class="footer">
+                    <p>Sistema #SuporteUNIFEB | Gerenciamento em Tempo Real</p>
+                    <p>Não é necessário responder este e-mail. Use o Dashboard para gerenciar o chamado.</p>
+                </div>
+            </div>
+        </body>
+    </html>
+    """
+    return html
+
+def enviar_emails_suporte(numero, bloco, sala, solicitante, email_solicitante, categoria, descricao, tipo, emails_destino):
+    """Envia emails para os responsáveis"""
+    try:
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        
+        html = gerar_html_email(numero, bloco, sala, solicitante, email_solicitante, categoria, descricao, tipo)
+        
+        for email_destino in emails_destino:
+            try:
+                msg = MIMEMultipart('alternative')
+                msg['Subject'] = f"[AVISO #{numero}] {categoria} - {bloco}/{sala}"
+                msg['From'] = "suporte.dti@feb.br"
+                msg['To'] = email_destino
+                
+                msg.attach(MIMEText(html, 'html'))
+                
+                server = smtplib.SMTP("smtp.office365.com", 587)
+                server.starttls()
+                server.login("suporte.dti@feb.br", os.getenv('EMAIL_PASSWORD'))
+                server.send_message(msg)
+                server.quit()
+                
+                print(f"✅ Email enviado para {email_destino}")
+            except Exception as e:
+                print(f"❌ Erro ao enviar para {email_destino}: {e}")
+    except Exception as e:
+        print(f"❌ Erro em enviar_emails_suporte: {e}")
+
+@app.route('/api/criar-manutencao', methods=['POST'])
+def criar_manutencao():
+    """Endpoint para criar aviso via QR Code"""
+    try:
+        data = request.json
+        email = data.get('email')
+        bloco = data.get('bloco')
+        sala = data.get('sala')
+        tipo = data.get('tipo')
+        categoria = data.get('categoria')
+        descricao = data.get('descricao')
+        
+        # Validar campos
+        if not all([email, bloco, sala, tipo, categoria, descricao]):
+            return jsonify({"status": "erro", "mensagem": "Campos obrigatórios faltando"}), 400
+        
+        # Gerar número único
+        numero = gerar_numero_chamado()
+        
+        # Obter roteamento
+        roteamento = obter_roteamento(categoria)
+        emails_destino = roteamento['emails']
+        tipo_problema = roteamento['tipo']
+        
+        # Extrair nome do email
+        solicitante = email.split('@')[0].replace('.', ' ').title()
+        
+        # 1. SALVAR NO SHAREPOINT
+        token = get_access_token()
+        if not token:
+            return jsonify({"status": "erro", "mensagem": "Falha ao conectar"}), 401
+        
+        headers = {'Authorization': f'Bearer {token}'}
+        
+        # URLs do SharePoint
+        site_url = f"{GRAPH_API}/sites/{SHAREPOINT_DOMAIN}:{SITE_PATH}"
+        site_response = requests.get(site_url, headers=headers, timeout=10)
+        site_id = site_response.json().get('id')
+        
+        list_url = f"{GRAPH_API}/sites/{site_id}/lists/{LIST_NAME}"
+        list_response = requests.get(list_url, headers=headers, timeout=10)
+        list_id = list_response.json().get('id')
+        
+        create_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items"
+        
+        # Payload
+        payload = {
+            "fields": {
+                "Title": f"[{numero}] {categoria} - {bloco}/{sala}",
+                "Descricao": descricao,
+                "Solicitante": solicitante,
+                "Email": email,
+                "SetordeAtendimento": NOMES_SETORES.get(tipo_problema, 'Geral'),
+                "Prioridade": "Alta",
+                "Status": "Aberto"
+            }
+        }
+        
+        response = requests.post(create_url, headers=headers, json=payload, timeout=10)
+        
+        if response.status_code not in [200, 201]:
+            return jsonify({"status": "erro", "mensagem": "Erro ao salvar no SharePoint"}), 400
+        
+        # 2. ENVIAR EMAILS
+        enviar_emails_suporte(numero, bloco, sala, solicitante, email, categoria, descricao, tipo_problema, emails_destino)
+        
+        return jsonify({
+            "status": "sucesso",
+            "mensagem": "Aviso enviado com sucesso!",
+            "numero": numero
+        }), 201
+        
+    except Exception as e:
+        print(f"Erro em criar_manutencao: {e}")
+        return jsonify({"status": "erro", "mensagem": str(e)}), 500
+
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
     print(f"Starting Flask app on port {port}")
