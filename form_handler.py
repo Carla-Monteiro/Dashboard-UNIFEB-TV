@@ -129,8 +129,8 @@ def enviar_email(destinatario, assunto, html):
         logger.error(f"❌ Erro ao enviar email: {e}")
         return False
 
-def gerar_html_confirmacao(numero, solicitante, bloco, sala, categoria):
-    """Email de confirmação para o solicitante"""
+def gerar_html_confirmacao_solicitante(numero, solicitante, bloco, sala, categoria):
+    """Email SIMPLES para solicitante - SEM botão"""
     html = f"""
     <html>
         <head>
@@ -186,7 +186,7 @@ def gerar_html_confirmacao(numero, solicitante, bloco, sala, categoria):
     """
     return html
 
-def gerar_html_responsavel(numero, bloco, sala, solicitante, email_solicitante, categoria, descricao, tipo):
+def gerar_html_responsavel_com_botao(numero, bloco, sala, solicitante, email_solicitante, categoria, descricao, tipo):
     """Email para mendes/naem/dti COM BOTÃO CONCLUIR"""
     nome_setor = NOMES_SETORES.get(tipo, 'Suporte')
     icons = {'manutencao': '🔧', 'naem': '📡', 'ti': '💻'}
@@ -478,8 +478,21 @@ def criar_manutencao():
         
         logger.info("Item criado com sucesso no SharePoint")
         
-        # 2. ENVIAR EMAILS (DESATIVADO POR ENQUANTO - DEBUG)
-        logger.info("Ignorando envio de emails por enquanto (debug)")
+        # 2. ENVIAR EMAILS
+        logger.info("Iniciando envio de emails...")
+        
+        # Email SIMPLES para solicitante (SEM botão)
+        html_solicitante = gerar_html_confirmacao_solicitante(numero, solicitante, bloco, sala, categoria)
+        enviar_email(email, f"✅ Chamado #{numero} Aberto", html_solicitante)
+        logger.info(f"Email enviado para solicitante: {email}")
+        
+        # Email COM BOTÃO para mendes/naem/dti
+        html_responsavel = gerar_html_responsavel_com_botao(numero, bloco, sala, solicitante, email, categoria, descricao, tipo_problema)
+        for email_destino in emails_destino:
+            enviar_email(email_destino, f"[AVISO #{numero}] {categoria} - {bloco}/{sala}", html_responsavel)
+            logger.info(f"Email enviado para responsável: {email_destino}")
+        
+        logger.info("Todos os emails enviados com sucesso")
         
         return jsonify({
             "status": "sucesso",
@@ -503,16 +516,159 @@ def concluir_chamado():
         if not numero:
             return jsonify({"status": "erro", "mensagem": "Número não informado"}), 400
         
-        # TODO: Atualizar SharePoint com Status = "Concluído"
-        # TODO: Disparar pesquisa de satisfação
+        # 1. OBTER TOKEN DO SHAREPOINT
+        token = get_access_token()
+        if not token:
+            logger.error("Falha ao obter token SharePoint")
+            return jsonify({"status": "erro", "mensagem": "Falha ao conectar"}), 401
+        
+        headers = {'Authorization': f'Bearer {token}'}
+        
+        # 2. OBTER ITEM PELO TÍTULO (contém o número)
+        site_url = f"{GRAPH_API}/sites/{SHAREPOINT_DOMAIN}:{SITE_PATH}"
+        site_response = requests.get(site_url, headers=headers, timeout=10)
+        site_id = site_response.json().get('id')
+        
+        list_url = f"{GRAPH_API}/sites/{site_id}/lists/{LIST_NAME}"
+        list_response = requests.get(list_url, headers=headers, timeout=10)
+        list_id = list_response.json().get('id')
+        
+        # Query para encontrar item com o número
+        query_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$filter=contains(fields/Title, '{numero}')"
+        query_response = requests.get(query_url, headers=headers, timeout=10)
+        
+        if query_response.status_code != 200:
+            logger.error(f"Erro ao procurar item: {query_response.text}")
+            return jsonify({"status": "erro", "mensagem": "Item não encontrado"}), 404
+        
+        items = query_response.json().get('value', [])
+        if not items:
+            logger.error(f"Chamado não encontrado: {numero}")
+            return jsonify({"status": "erro", "mensagem": "Chamado não encontrado"}), 404
+        
+        item = items[0]
+        item_id = item.get('id')
+        email_solicitante = item.get('fields', {}).get('Email', '')
+        titulo = item.get('fields', {}).get('Title', '')
+        
+        logger.info(f"Item encontrado: {item_id}, Email: {email_solicitante}")
+        
+        # 3. ATUALIZAR STATUS PARA "CONCLUÍDO"
+        update_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items/{item_id}"
+        update_payload = {
+            "fields": {
+                "Status": "Concluído"
+            }
+        }
+        
+        update_response = requests.patch(update_url, headers=headers, json=update_payload, timeout=10)
+        
+        if update_response.status_code not in [200, 204]:
+            logger.error(f"Erro ao atualizar: {update_response.text}")
+            return jsonify({"status": "erro", "mensagem": "Erro ao atualizar SharePoint"}), 400
+        
+        logger.info(f"Status atualizado para Concluído: {numero}")
+        
+        # 4. ENVIAR EMAIL DE PESQUISA PARA SOLICITANTE
+        if email_solicitante:
+            html_pesquisa = f"""
+            <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        body {{ font-family: Arial, sans-serif; background-color: #f5f5f5; }}
+                        .container {{ max-width: 600px; margin: 0 auto; background-color: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+                        .header {{ background: linear-gradient(135deg, #1a237e, #283593); color: white; padding: 20px; border-radius: 10px 10px 0 0; text-align: center; }}
+                        .content {{ padding: 20px; }}
+                        .opcoes {{ margin: 20px 0; }}
+                        .botao {{ display: inline-block; padding: 10px 20px; margin: 5px; border-radius: 5px; text-decoration: none; font-weight: bold; }}
+                        .otimo {{ background: #4caf50; color: white; }}
+                        .bom {{ background: #2196F3; color: white; }}
+                        .ruim {{ background: #f44336; color: white; }}
+                        .footer {{ background: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #999; border-radius: 0 0 10px 10px; }}
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>#SuporteUNIFEB</h1>
+                        </div>
+                        
+                        <div class="content">
+                            <h2 style="color: #1a237e;">✅ Seu Chamado foi Concluído!</h2>
+                            
+                            <p>Olá,</p>
+                            
+                            <p>Seu chamado <strong>#{numero}</strong> foi resolvido com sucesso!</p>
+                            
+                            <p><strong>Como você avalia o atendimento?</strong></p>
+                            
+                            <div class="opcoes">
+                                <a href="https://unifeb-backend.onrender.com/api/registrar-pesquisa?numero={numero}&avaliacao=otimo" class="botao otimo">⭐ Ótimo</a>
+                                <a href="https://unifeb-backend.onrender.com/api/registrar-pesquisa?numero={numero}&avaliacao=bom" class="botao bom">👍 Bom</a>
+                                <a href="https://unifeb-backend.onrender.com/api/registrar-pesquisa?numero={numero}&avaliacao=ruim" class="botao ruim">👎 Ruim</a>
+                            </div>
+                            
+                            <p>Sua avaliação nos ajuda a melhorar! 😊</p>
+                        </div>
+                        
+                        <div class="footer">
+                            <p>Sistema #SuporteUNIFEB | Gerenciamento em Tempo Real</p>
+                        </div>
+                    </div>
+                </body>
+            </html>
+            """
+            
+            enviar_email(email_solicitante, f"📊 Pesquisa de Satisfação - Chamado #{numero}", html_pesquisa)
+            logger.info(f"Pesquisa enviada para: {email_solicitante}")
         
         return jsonify({
             "status": "sucesso",
-            "mensagem": "Chamado marcado como concluído! Pesquisa enviada."
+            "mensagem": "✅ Chamado concluído! Pesquisa enviada ao solicitante."
         }), 200
         
     except Exception as e:
-        logger.error(f"Erro em concluir_chamado: {e}")
+        logger.error(f"Erro em concluir_chamado: {e}", exc_info=True)
+        return jsonify({"status": "erro", "mensagem": str(e)}), 500
+
+@app.route('/api/registrar-pesquisa', methods=['GET'])
+def registrar_pesquisa():
+    """Registra avaliação da pesquisa"""
+    try:
+        numero = request.args.get('numero')
+        avaliacao = request.args.get('avaliacao')
+        
+        logger.info(f"Pesquisa registrada - Chamado: {numero}, Avaliação: {avaliacao}")
+        
+        # TODO: Salvar avaliação no SharePoint
+        
+        html_obrigado = f"""
+        <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body {{ font-family: Arial, sans-serif; background-color: #f5f5f5; text-align: center; padding: 40px; }}
+                    .container {{ max-width: 600px; margin: 0 auto; background-color: white; border-radius: 10px; padding: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+                    .icon {{ font-size: 60px; margin-bottom: 20px; }}
+                    h1 {{ color: #1a237e; }}
+                    p {{ color: #666; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="icon">🙏</div>
+                    <h1>Obrigado!</h1>
+                    <p>Sua avaliação foi registrada e nos ajudará a melhorar nossos serviços.</p>
+                </div>
+            </body>
+        </html>
+        """
+        
+        return html_obrigado, 200, {'Content-Type': 'text/html; charset=utf-8'}
+        
+    except Exception as e:
+        logger.error(f"Erro em registrar_pesquisa: {e}")
         return jsonify({"status": "erro", "mensagem": str(e)}), 500
 
 if __name__ == '__main__':
