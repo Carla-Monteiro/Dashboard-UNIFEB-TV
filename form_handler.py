@@ -558,19 +558,9 @@ def criar_manutencao():
         
         logger.info("Item criado com sucesso no SharePoint")
         
-        # 2. ENVIAR EMAILS EM BACKGROUND (SEM BLOQUEAR)
-        logger.info("Iniciando envio de emails em background...")
+        # 2. EMAILS: DESATIVADO - Power Automate vai fazer!
+        logger.info("Emails desativados - Power Automate vai rotear automaticamente")
         
-        # Email SIMPLES para solicitante (SEM botão)
-        html_solicitante = gerar_html_confirmacao_solicitante(numero, solicitante, bloco, sala, categoria)
-        
-        # Email COM BOTÃO para mendes/naem/dti
-        html_responsavel = gerar_html_responsavel_com_botao(numero, bloco, sala, solicitante, email, categoria, descricao, tipo_problema)
-        
-        # Chamar função que envia em thread (não bloqueia)
-        enviar_emails_background(numero, email, emails_destino, html_solicitante, html_responsavel, categoria, bloco, sala, solicitante)
-        
-        # Retorna IMEDIATAMENTE sem esperar emails
         return jsonify({
             "status": "sucesso",
             "mensagem": "✅ Aviso enviado com sucesso!",
