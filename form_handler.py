@@ -54,6 +54,20 @@ def get_access_token():
 def health():
     return jsonify({"status": "ok"}), 200
 
+# ========== ENDPOINT NOVO: Retornar Chamados Sincronizados ==========
+@app.route('/api/chamados', methods=['GET'])
+def get_chamados():
+    """Retorna os chamados sincronizados do arquivo JSON"""
+    try:
+        with open('chamados_sync.json', 'r', encoding='utf-8') as f:
+            dados = json.load(f)
+            return jsonify(dados), 200
+    except FileNotFoundError:
+        return jsonify({"chamados": [], "total_chamados": 0}), 200
+    except Exception as e:
+        print(f"Erro ao ler chamados_sync.json: {e}")
+        return jsonify({"chamados": [], "total_chamados": 0}), 200
+
 @app.route('/api/criar-chamado', methods=['POST'])
 def criar_chamado():
     try:
