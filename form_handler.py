@@ -332,8 +332,6 @@ def export_excel():
         print(f"Export error: {e}")
         return jsonify({"erro": str(e)}), 500
 
-# ========== IMPORTS NECESSÁRIOS ==========
-from datetime import datetime
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
