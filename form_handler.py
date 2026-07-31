@@ -18,6 +18,7 @@ import openpyxl
 from io import BytesIO
 from dotenv import load_dotenv
 import logging
+import threading  # ← NOVO!
 
 # Setup logging para debug
 logging.basicConfig(level=logging.DEBUG)
@@ -128,6 +129,28 @@ def enviar_email(destinatario, assunto, html):
     except Exception as e:
         logger.error(f"❌ Erro ao enviar email: {e}")
         return False
+
+def enviar_emails_background(numero, email_solicitante, emails_destino, html_solicitante, html_responsavel, categoria, bloco, sala, solicitante):
+    """Envia emails em thread separada (não bloqueia resposta)"""
+    def _enviar():
+        try:
+            logger.info(f"[THREAD] Iniciando envio de emails para chamado {numero}")
+            
+            # Email para solicitante
+            enviar_email(email_solicitante, f"✅ Chamado #{numero} Aberto", html_solicitante)
+            
+            # Emails para responsáveis
+            for email_destino in emails_destino:
+                enviar_email(email_destino, f"[AVISO #{numero}] {categoria} - {bloco}/{sala}", html_responsavel)
+            
+            logger.info(f"[THREAD] Emails enviados com sucesso para chamado {numero}")
+        except Exception as e:
+            logger.error(f"[THREAD] Erro ao enviar emails: {e}")
+    
+    # Cria thread e executa sem bloquear
+    thread = threading.Thread(target=_enviar, daemon=True)
+    thread.start()
+    logger.info(f"[THREAD] Thread iniciada para chamado {numero}")
 
 def gerar_html_confirmacao_solicitante(numero, solicitante, bloco, sala, categoria):
     """Email SIMPLES para solicitante - SEM botão"""
@@ -478,9 +501,19 @@ def criar_manutencao():
         
         logger.info("Item criado com sucesso no SharePoint")
         
-        # 2. EMAILS - DESATIVADO (DEBUG)
-        logger.info("Emails desativados temporariamente")
+        # 2. ENVIAR EMAILS EM BACKGROUND (SEM BLOQUEAR)
+        logger.info("Iniciando envio de emails em background...")
         
+        # Email SIMPLES para solicitante (SEM botão)
+        html_solicitante = gerar_html_confirmacao_solicitante(numero, solicitante, bloco, sala, categoria)
+        
+        # Email COM BOTÃO para mendes/naem/dti
+        html_responsavel = gerar_html_responsavel_com_botao(numero, bloco, sala, solicitante, email, categoria, descricao, tipo_problema)
+        
+        # Chamar função que envia em thread (não bloqueia)
+        enviar_emails_background(numero, email, emails_destino, html_solicitante, html_responsavel, categoria, bloco, sala, solicitante)
+        
+        # Retorna IMEDIATAMENTE sem esperar emails
         return jsonify({
             "status": "sucesso",
             "mensagem": "✅ Aviso enviado com sucesso!",
@@ -556,7 +589,7 @@ def concluir_chamado():
         
         logger.info(f"Status atualizado para Concluído: {numero}")
         
-        # 4. ENVIAR EMAIL DE PESQUISA PARA SOLICITANTE
+        # 4. ENVIAR EMAIL DE PESQUISA EM BACKGROUND
         if email_solicitante:
             html_pesquisa = f"""
             <html>
@@ -607,8 +640,13 @@ def concluir_chamado():
             </html>
             """
             
-            enviar_email(email_solicitante, f"📊 Pesquisa de Satisfação - Chamado #{numero}", html_pesquisa)
-            logger.info(f"Pesquisa enviada para: {email_solicitante}")
+            # Enviar em background
+            thread = threading.Thread(
+                target=lambda: enviar_email(email_solicitante, f"📊 Pesquisa de Satisfação - Chamado #{numero}", html_pesquisa),
+                daemon=True
+            )
+            thread.start()
+            logger.info(f"Thread iniciada para enviar pesquisa: {email_solicitante}")
         
         return jsonify({
             "status": "sucesso",
