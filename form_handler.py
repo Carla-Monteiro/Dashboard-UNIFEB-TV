@@ -23,10 +23,61 @@ CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 TENANT_ID = os.getenv('TENANT_ID')
 
+# ========== MAPEAMENTO COMPLETO DE DEPARTAMENTOS POR EMAIL ==========
+EMAIL_SETOR_MAPPING = {
+    'almoxarifado': 'Almoxarifado',
+    'biblioteca': 'Biblioteca',
+    'coordenacao': 'Coordenação de Professores',
+    'clinica': 'Clínica Odontológica',
+    'colegio': 'Colégio FEB',
+    'dti': 'Departamento de Tecnologia',
+    'matricula': 'Matrícula',
+    'coordenacao_lab': 'Coordenação Laboratórios',
+    'laboratorio': 'Coordenação Laboratórios',
+    'manutencao': 'Manutenção',
+    'cpa': 'Comissão Própria de Avaliação (CPA)',
+    'neu': 'NEU',
+    'marketing': 'Marketing',
+    'nape': 'NAPE',
+    'npj': 'Núcleo Práticas Jurídicas',
+    'financeiro': 'Atendimento Financeiro',
+    'pradm': 'PRADM',
+    'dejur': 'Departamento Jurídico - DEJUR',
+    'proaluno': 'Pró Aluno',
+    'reitoria': 'Reitoria',
+    'rh': 'RH',
+    'secretaria': 'Secretaria',
+    'conselho': 'Conselho Curador',
+    'clivet': 'Clínica Medicina Veterinária',
+    'sala_professor': 'Sala Atendimento Professor ao Aluno',
+    'cartorio': 'Cartório - Núcleo Práticas Jurídicas',
+    'sala_professores': 'Sala dos Professores',
+    'ouvidoria': 'Ouvidoria',
+    'sustentabilidade': 'Núcleo de Sustentabilidade',
+    'labinfo': 'Laboratórios de Informática',
+    'fisio': 'Clínica de Fisioterapia',
+    'nac': 'NAC',
+}
+
 SHAREPOINT_DOMAIN = "unifeb.sharepoint.com"
 SITE_PATH = "/sites/SuporteDTI"
 LIST_NAME = "Chamados"
 GRAPH_API = "https://graph.microsoft.com/v1.0"
+
+def extrair_setor_do_email(email):
+    """Extrai o setor baseado no padrão do email (nome.setor@feb.br)"""
+    try:
+        # Extrair a parte do meio: nome.SETOR@feb.br → SETOR
+        if '@' in email and '.' in email:
+            parte_email = email.split('@')[0]  # nome.setor
+            partes = parte_email.split('.')
+            if len(partes) >= 2:
+                departamento_sigla = partes[-1].lower()  # última parte (setor)
+                # Buscar no mapeamento
+                return EMAIL_SETOR_MAPPING.get(departamento_sigla, 'Geral')
+    except:
+        pass
+    return 'Geral'
 
 app = Flask(__name__)
 CORS(app)
@@ -99,7 +150,7 @@ def criar_chamado():
                 "Descricao": data.get('descricao'),
                 "Solicitante": data.get('solicitante'),
                 "Email": data.get('email'),
-                "SetordeAtendimento": data.get('setor'),
+                "SetordeAtendimento": extrair_setor_do_email(data.get('email', '')),
                 "Prioridade": data.get('prioridade'),
                 "Status": "Aberto"
             }
