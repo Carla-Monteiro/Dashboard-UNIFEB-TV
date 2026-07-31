@@ -44,7 +44,16 @@ def gerar_relatorio_excel(chamados, periodo='mensal'):
             ws.cell(row=row, column=4).value = chamado.get('prioridade')
             ws.cell(row=row, column=5).value = chamado.get('status')
             ws.cell(row=row, column=6).value = chamado.get('setorAtendimento')
-            ws.cell(row=row, column=7).value = chamado.get('data')
+            
+            # Formatar data/hora corretamente
+            data_str = chamado.get('data', '')
+            try:
+                from datetime import datetime
+                data_obj = datetime.fromisoformat(data_str.replace('Z', '+00:00'))
+                data_formatada = data_obj.strftime('%d/%m/%Y, %H:%M:%S')
+                ws.cell(row=row, column=7).value = data_formatada
+            except:
+                ws.cell(row=row, column=7).value = data_str
             
             # Cor por SLA
             sla_cell = ws.cell(row=row, column=8)
