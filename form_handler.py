@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""API Backend para Gerenciar Chamados - Render Ready com Endpoint de Chamados"""
+"""API Backend para Gerenciar Chamados - Render Ready"""
 
 import os
 import json
 import sys
 import requests
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from dotenv import load_dotenv
+import sys
+sys.path.insert(0, '/home/claude')
+try:
+    from alertas import verificar_alertas_criticos
+    from relatorios import calcular_metricas, gerar_relatorio_excel
+except:
+    pass
 
 load_dotenv()
 
@@ -42,22 +49,6 @@ def get_access_token():
     except Exception as e:
         print(f"Auth exception: {e}")
         return None
-
-# ========== ENDPOINT NOVO: Retornar Chamados Sincronizados ==========
-@app.route('/api/chamados', methods=['GET'])
-def get_chamados():
-    """Retorna os chamados sincronizados do arquivo JSON"""
-    try:
-        with open('chamados_sync.json', 'r', encoding='utf-8') as f:
-            dados = json.load(f)
-            return jsonify(dados), 200
-    except FileNotFoundError:
-        return jsonify({"chamados": [], "total_chamados": 0}), 200
-    except Exception as e:
-        print(f"Erro ao ler chamados_sync.json: {e}")
-        return jsonify({"chamados": [], "total_chamados": 0}), 200
-
-# ========== ENDPOINTS ANTIGOS (Manter funcionando) ==========
 
 @app.route('/health', methods=['GET'])
 def health():
@@ -143,9 +134,21 @@ def editar_chamado(item_id):
         response = requests.patch(update_url, headers=headers, json=payload, timeout=10)
         
         if response.status_code == 200:
+            # ✅ NOVO: Retornar os dados atualizados para o frontend atualizar IMEDIATAMENTE
+            chamado_atualizado = {
+                "id": item_id,
+                "titulo": data.get('titulo'),
+                "solicitante": data.get('solicitante', ''),
+                "status": data.get('status'),
+                "prioridade": data.get('prioridade'),
+                "setorAtendimento": data.get('setor'),
+                "descricao": data.get('descricao'),
+                "data": data.get('data', '')
+            }
             return jsonify({
                 "status": "sucesso", 
-                "mensagem": "✅ Atualizado com sucesso!"
+                "mensagem": "✅ Atualizado com sucesso!",
+                "chamado": chamado_atualizado
             }), 200
         else:
             return jsonify({"status": "erro", "mensagem": "Update falhou"}), response.status_code
@@ -181,6 +184,69 @@ def deletar_chamado(item_id):
     except Exception as e:
         print(f"Delete error: {e}")
         return jsonify({"status": "erro", "mensagem": str(e)}), 500
+
+# ========== NOVOS ENDPOINTS: ALERTAS, MÉTRICAS E RELATÓRIOS ==========
+
+@app.route('/api/alertas', methods=['GET'])
+def get_alertas():
+    """Retorna chamados com SLA crítico (< 1h)"""
+    try:
+        with open('chamados_sync.json', 'r', encoding='utf-8') as f:
+            dados = json.load(f)
+        
+        chamados = dados.get('chamados', [])
+        alertas = verificar_alertas_criticos(chamados)
+        
+        return jsonify({
+            "alertas": alertas,
+            "total_alertas": len(alertas),
+            "data": datetime.now().isoformat()
+        }), 200
+    except Exception as e:
+        print(f"Alertas error: {e}")
+        return jsonify({"alertas": []}), 200
+
+@app.route('/api/metricas', methods=['GET'])
+def get_metricas():
+    """Retorna KPIs para dashboard executivo"""
+    try:
+        with open('chamados_sync.json', 'r', encoding='utf-8') as f:
+            dados = json.load(f)
+        
+        chamados = dados.get('chamados', [])
+        metricas = calcular_metricas(chamados)
+        
+        return jsonify(metricas), 200
+    except Exception as e:
+        print(f"Metricas error: {e}")
+        return jsonify({"erro": str(e)}), 500
+
+@app.route('/api/export-excel', methods=['GET'])
+def export_excel():
+    """Exportar relatório em Excel"""
+    try:
+        with open('chamados_sync.json', 'r', encoding='utf-8') as f:
+            dados = json.load(f)
+        
+        chamados = dados.get('chamados', [])
+        excel_file = gerar_relatorio_excel(chamados)
+        
+        if excel_file:
+            return send_file(
+                excel_file,
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                as_attachment=True,
+                download_name=f'relatorio_chamados_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+            )
+        else:
+            return jsonify({"erro": "Erro ao gerar Excel"}), 500
+            
+    except Exception as e:
+        print(f"Export error: {e}")
+        return jsonify({"erro": str(e)}), 500
+
+# ========== IMPORTS NECESSÁRIOS ==========
+from datetime import datetime
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))

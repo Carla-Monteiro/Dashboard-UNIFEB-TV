@@ -1,0 +1,32 @@
+===============================================
+PROCFILE - CONFIGURAÇÃO DO RENDER
+===============================================
+
+COPIE EXATAMENTE ISSO (sem comentários):
+
+===============================================
+web: bash start.sh
+===============================================
+
+Explicação:
+- "web:" = Tipo de processo (web service)
+- "bash start.sh" = Comando que inicia tudo
+  - start.sh vai rodar:
+    1. sync_loop.py (sincronização background)
+    2. form_handler.py (backend Flask)
+
+===============================================
+
+COMO USAR:
+
+1. Crie um arquivo chamado "Procfile" (SEM extensão)
+   Pasta: C:\Users\carla.monteiro\Dashboard-UNIFEB-TV\
+
+2. Cole EXATAMENTE isto dentro:
+   web: bash start.sh
+
+3. Salve o arquivo (Procfile, sem .txt)
+
+4. Git push como os outros arquivos
+
+===============================================
