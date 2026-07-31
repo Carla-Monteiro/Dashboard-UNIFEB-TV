@@ -478,21 +478,8 @@ def criar_manutencao():
         
         logger.info("Item criado com sucesso no SharePoint")
         
-        # 2. ENVIAR EMAILS
-        logger.info("Iniciando envio de emails...")
-        
-        # Email SIMPLES para solicitante (SEM botão)
-        html_solicitante = gerar_html_confirmacao_solicitante(numero, solicitante, bloco, sala, categoria)
-        enviar_email(email, f"✅ Chamado #{numero} Aberto", html_solicitante)
-        logger.info(f"Email enviado para solicitante: {email}")
-        
-        # Email COM BOTÃO para mendes/naem/dti
-        html_responsavel = gerar_html_responsavel_com_botao(numero, bloco, sala, solicitante, email, categoria, descricao, tipo_problema)
-        for email_destino in emails_destino:
-            enviar_email(email_destino, f"[AVISO #{numero}] {categoria} - {bloco}/{sala}", html_responsavel)
-            logger.info(f"Email enviado para responsável: {email_destino}")
-        
-        logger.info("Todos os emails enviados com sucesso")
+        # 2. EMAILS - DESATIVADO (DEBUG)
+        logger.info("Emails desativados temporariamente")
         
         return jsonify({
             "status": "sucesso",
