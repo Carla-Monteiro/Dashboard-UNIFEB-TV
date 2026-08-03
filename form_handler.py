@@ -1,6 +1,6 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Versão: 4.0 - Com /api/chamados + fix na query URL"""
+"""Versão: 5.0 - Com /api/concluir-chamado corrigido para JSON silencioso"""
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -152,6 +152,7 @@ def criar_manutencao():
         if response.status_code not in [200, 201]:
             return jsonify({"status": "erro", "mensagem": "Erro ao salvar"}), 400
         
+        logger.info(f"✅ Chamado {numero} criado com sucesso")
         return jsonify({
             "status": "sucesso",
             "mensagem": "✅ Aviso enviado com sucesso!",
@@ -159,7 +160,7 @@ def criar_manutencao():
         }), 201
         
     except Exception as e:
-        logger.error(f"ERRO: {e}")
+        logger.error(f"ERRO em criar_manutencao: {e}")
         return jsonify({"status": "erro", "mensagem": str(e)}), 500
 
 @app.route('/api/chamados', methods=['GET'])
@@ -221,50 +222,84 @@ def obter_chamados():
         logger.error(f"ERRO em obter_chamados: {e}")
         return jsonify([]), 200
 
-@app.route('/api/concluir-chamado', methods=['GET'])
+@app.route('/api/concluir-chamado', methods=['GET', 'OPTIONS'])
 def concluir_chamado():
+    """Conclui um chamado e retorna JSON (sem abrir página)"""
+    # Handle CORS preflight request
+    if request.method == 'OPTIONS':
+        return '', 200
+    
     try:
         numero = request.args.get('numero')
         if not numero:
+            logger.warning("❌ Número não informado")
             return jsonify({"status": "erro", "mensagem": "Número não informado"}), 400
+        
+        logger.info(f"🔄 Processando conclusão do chamado #{numero}")
         
         token = get_access_token()
         if not token:
+            logger.error("❌ Falha ao obter token")
             return jsonify({"status": "erro", "mensagem": "Falha ao conectar"}), 401
         
         headers = {'Authorization': f'Bearer {token}'}
+        
+        # Obter site
         site_url = f"{GRAPH_API}/sites/{SHAREPOINT_DOMAIN}:{SITE_PATH}"
         site_response = requests.get(site_url, headers=headers, timeout=10)
+        if site_response.status_code != 200:
+            logger.error(f"❌ Erro ao conectar site: {site_response.status_code}")
+            return jsonify({"status": "erro", "mensagem": "Erro ao conectar site"}), 400
         site_id = site_response.json().get('id')
+        logger.info(f"✅ Site ID: {site_id}")
         
+        # Obter lista
         list_url = f"{GRAPH_API}/sites/{site_id}/lists/{LIST_NAME}"
         list_response = requests.get(list_url, headers=headers, timeout=10)
+        if list_response.status_code != 200:
+            logger.error(f"❌ Erro ao conectar lista: {list_response.status_code}")
+            return jsonify({"status": "erro", "mensagem": "Erro ao conectar lista"}), 400
         list_id = list_response.json().get('id')
+        logger.info(f"✅ List ID: {list_id}")
         
+        # Procurar item por número
         query_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$filter=contains(fields/Title, '{numero}')"
         query_response = requests.get(query_url, headers=headers, timeout=10)
+        if query_response.status_code != 200:
+            logger.error(f"❌ Erro na query: {query_response.status_code}")
+            return jsonify({"status": "erro", "mensagem": "Erro ao procurar chamado"}), 400
         
         items = query_response.json().get('value', [])
         if not items:
+            logger.warning(f"❌ Chamado #{numero} não encontrado")
             return jsonify({"status": "erro", "mensagem": "Chamado não encontrado"}), 404
         
         item = items[0]
         item_id = item.get('id')
+        logger.info(f"✅ Chamado encontrado: ID={item_id}")
         
+        # Atualizar status para "Concluído"
         update_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items/{item_id}"
         update_payload = {"fields": {"Status": "Concluído"}}
         
         update_response = requests.patch(update_url, headers=headers, json=update_payload, timeout=10)
         
         if update_response.status_code not in [200, 204]:
-            return jsonify({"status": "erro", "mensagem": "Erro ao atualizar"}), 400
+            logger.error(f"❌ Erro ao atualizar: {update_response.status_code}")
+            return jsonify({"status": "erro", "mensagem": "Erro ao atualizar chamado"}), 400
         
+        logger.info(f"✅ Chamado #{numero} concluído com sucesso!")
+        
+        # Retorna APENAS JSON (sem abrir página)
         return jsonify({
             "status": "sucesso",
-            "mensagem": "✅ Chamado concluído!"
+            "mensagem": "✅ Chamado concluído com sucesso!",
+            "numero": numero,
+            "timestamp": datetime.now().isoformat()
         }), 200
         
     except Exception as e:
+        logger.error(f"❌ ERRO em concluir_chamado: {e}")
         return jsonify({"status": "erro", "mensagem": str(e)}), 500
 
 if __name__ == '__main__':
