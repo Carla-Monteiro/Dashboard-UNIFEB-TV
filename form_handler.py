@@ -1,6 +1,6 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Versão: 3.0 - Com campos Bloco, Sala, Categoria e Origem"""
+"""Versão 4.0 - COMPLETO com todos os endpoints"""
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -83,6 +83,53 @@ def obter_roteamento(categoria):
         return CATEGORIAS_ROTEAMENTO[categoria]
     return {'tipo': 'ti'}
 
+def obter_chamados_sharepoint():
+    """Busca todos os chamados do SharePoint"""
+    try:
+        token = get_access_token()
+        if not token:
+            return []
+        
+        headers = {'Authorization': f'Bearer {token}'}
+        site_url = f"{GRAPH_API}/sites/{SHAREPOINT_DOMAIN}:{SITE_PATH}"
+        site_response = requests.get(site_url, headers=headers, timeout=10)
+        site_id = site_response.json().get('id')
+        
+        list_url = f"{GRAPH_API}/sites/{site_id}/lists/{LIST_NAME}"
+        list_response = requests.get(list_url, headers=headers, timeout=10)
+        list_id = list_response.json().get('id')
+        
+        items_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$expand=fields"
+        items_response = requests.get(items_url, headers=headers, timeout=10)
+        
+        if items_response.status_code != 200:
+            return []
+        
+        items = items_response.json().get('value', [])
+        chamados = []
+        
+        for item in items:
+            fields = item.get('fields', {})
+            chamados.append({
+                'id': item.get('id'),
+                'titulo': fields.get('Title', ''),
+                'solicitante': fields.get('Solicitante', ''),
+                'email': fields.get('Email', ''),
+                'status': fields.get('Status', ''),
+                'prioridade': fields.get('Prioridade', ''),
+                'dataAbertura': fields.get('DataAbertura', ''),
+                'descricao': fields.get('Descricao', ''),
+                'bloco': fields.get('Bloco', ''),
+                'sala': fields.get('Sala', ''),
+                'categoria': fields.get('Categoria', ''),
+                'setor': fields.get('SetordeAtendimento', ''),
+            })
+        
+        return chamados
+    except Exception as e:
+        logger.error(f"Erro ao obter chamados: {e}")
+        return []
+
 @app.route('/api/criar-manutencao', methods=['POST', 'OPTIONS'])
 def criar_manutencao():
     if request.method == 'OPTIONS':
@@ -150,6 +197,7 @@ def criar_manutencao():
         response = requests.post(create_url, headers=headers, json=payload, timeout=10)
         
         if response.status_code not in [200, 201]:
+            logger.error(f"Erro: {response.text}")
             return jsonify({"status": "erro", "mensagem": "Erro ao salvar"}), 400
         
         return jsonify({
@@ -161,6 +209,45 @@ def criar_manutencao():
     except Exception as e:
         logger.error(f"ERRO: {e}")
         return jsonify({"status": "erro", "mensagem": str(e)}), 500
+
+@app.route('/api/chamados', methods=['GET'])
+def get_chamados():
+    """Retorna todos os chamados"""
+    try:
+        chamados = obter_chamados_sharepoint()
+        return jsonify(chamados), 200
+    except Exception as e:
+        logger.error(f"Erro: {e}")
+        return jsonify({"erro": str(e)}), 500
+
+@app.route('/api/alertas', methods=['GET'])
+def get_alertas():
+    """Retorna chamados em alerta"""
+    try:
+        chamados = obter_chamados_sharepoint()
+        alertas = [c for c in chamados if c.get('status') == 'Aberto']
+        return jsonify(alertas), 200
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+
+@app.route('/api/metricas', methods=['GET'])
+def get_metricas():
+    """Retorna métricas do dashboard"""
+    try:
+        chamados = obter_chamados_sharepoint()
+        
+        total = len(chamados)
+        abertos = len([c for c in chamados if c.get('status') == 'Aberto'])
+        resolvidos = len([c for c in chamados if c.get('status') == 'Concluído'])
+        
+        return jsonify({
+            "total": total,
+            "abertos": abertos,
+            "resolvidos": resolvidos,
+            "taxa_resolucao": round((resolvidos / total * 100) if total > 0 else 0, 2)
+        }), 200
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
 
 @app.route('/api/concluir-chamado', methods=['GET'])
 def concluir_chamado():
@@ -182,7 +269,7 @@ def concluir_chamado():
         list_response = requests.get(list_url, headers=headers, timeout=10)
         list_id = list_response.json().get('id')
         
-        query_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?=contains(fields/Title, '{numero}')"
+        query_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$filter=contains(fields/Title, '{numero}')"
         query_response = requests.get(query_url, headers=headers, timeout=10)
         
         items = query_response.json().get('value', [])
