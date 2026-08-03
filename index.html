@@ -585,7 +585,10 @@
 
         <!-- ABAS -->
         <div class="tabs-section">
-            <button class="tab active" onclick="mostrarAba('chamados')">📋 Chamados Detalhados</button>
+            <button class="tab active" onclick="mostrarAba('manutencao')">🔧 Manutenção Predial</button>
+            <button class="tab" onclick="mostrarAba('naem')">📡 Multimídia (NAEM)</button>
+            <button class="tab" onclick="mostrarAba('ti')">💻 TI / Internet</button>
+            <button class="tab" onclick="mostrarAba('chamados')">📋 Todos os Chamados</button>
             <button class="tab" onclick="mostrarAba('graficos')">📊 Gráficos</button>
             <button class="tab" onclick="mostrarAba('executivo')">🎯 Executivo</button>
         </div>
@@ -616,8 +619,92 @@
             </div>
         </div>
 
+        <!-- ABA: MANUTENÇÃO PREDIAL -->
+        <div id="manutencao" class="tab-content active">
+            <div class="table-wrapper">
+                <table id="tabelaManutencao">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Solicitante</th>
+                            <th>Prioridade</th>
+                            <th>Status</th>
+                            <th>Abertura</th>
+                            <th>Descrição</th>
+                            <th>SLA</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyManutencao">
+                        <tr>
+                            <td colspan="8" class="loading-spinner">
+                                <div class="spinner"></div>
+                                Carregando chamados...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ABA: MULTIMÍDIA (NAEM) -->
+        <div id="naem" class="tab-content" style="display: none;">
+            <div class="table-wrapper">
+                <table id="tabelaNAEM">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Solicitante</th>
+                            <th>Prioridade</th>
+                            <th>Status</th>
+                            <th>Abertura</th>
+                            <th>Descrição</th>
+                            <th>SLA</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyNAEM">
+                        <tr>
+                            <td colspan="8" class="loading-spinner">
+                                <div class="spinner"></div>
+                                Carregando chamados...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ABA: TI / INTERNET -->
+        <div id="ti" class="tab-content" style="display: none;">
+            <div class="table-wrapper">
+                <table id="tabelaTI">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Solicitante</th>
+                            <th>Prioridade</th>
+                            <th>Status</th>
+                            <th>Abertura</th>
+                            <th>Descrição</th>
+                            <th>SLA</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyTI">
+                        <tr>
+                            <td colspan="8" class="loading-spinner">
+                                <div class="spinner"></div>
+                                Carregando chamados...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- ABA: CHAMADOS DETALHADOS -->
-        <div id="chamados" class="tab-content active">
+        <div id="chamados" class="tab-content" style="display: none;">
             <div class="table-wrapper">
                 <table id="tabela">
                     <thead>
@@ -646,7 +733,7 @@
         </div>
 
         <!-- ABA: GRÁFICOS -->
-        <div id="graficos" class="tab-content">
+        <div id="graficos" class="tab-content" style="display: none;">
             <!-- ESTATÍSTICAS -->
             <div class="stats-section">
                 <div class="stat-card">
@@ -818,7 +905,7 @@
     </div>
 
     <!-- ABA EXECUTIVO - DASHBOARD EXECUTIVO COM KPIs -->
-    <div id="executivo" class="tab-content">
+    <div id="executivo" class="tab-content" style="display: none;">
         <div style="padding: 20px;">
             <h2 style="color: #ffa500; margin-bottom: 20px;">📊 Dashboard Executivo</h2>
             
@@ -898,10 +985,14 @@
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             
             document.getElementById(abaName).classList.add('active');
+            document.getElementById(abaName).style.display = 'block';
             event.target.classList.add('active');
             
             if (abaName === 'graficos') setTimeout(() => desenharGraficos(), 200);
             if (abaName === 'executivo') setTimeout(() => carregarExecutivo(), 200);
+            if (abaName === 'manutencao' || abaName === 'naem' || abaName === 'ti') {
+                setTimeout(() => renderizarAbas(), 100);
+            }
         }
 
         async function carregarExecutivo() {
@@ -968,6 +1059,40 @@
             });
 
             renderizar();
+            renderizarAbas();
+        }
+
+        function renderizarAbas() {
+            // Filtrar por tipo de setor
+            const manutencao = CHAMADOS.filter(c => c.setorAtendimento === 'Manutenção Predial');
+            const naem = CHAMADOS.filter(c => c.setorAtendimento === 'Multimídia (NAEM)');
+            const ti = CHAMADOS.filter(c => c.setorAtendimento === 'TI / Internet');
+
+            renderizarTabela('tbodyManutencao', manutencao);
+            renderizarTabela('tbodyNAEM', naem);
+            renderizarTabela('tbodyTI', ti);
+        }
+
+        function renderizarTabela(tbodyId, chamados) {
+            const tbody = document.getElementById(tbodyId);
+
+            if (chamados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="empty-state">📭 Nenhum chamado encontrado</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = chamados.map(c => `
+                <tr onclick="abrirFormularioEditar('${c.id}')">
+                    <td><strong>#${c.id}</strong></td>
+                    <td>${c.titulo}</td>
+                    <td>${c.solicitante}</td>
+                    <td><span class="badge badge-${getBadgePrio(c.prioridade)}">${c.prioridade}</span></td>
+                    <td><span class="badge badge-${getBadgeStatus(c.status)}">${c.status}</span></td>
+                    <td>${formatarData(c.data)}</td>
+                    <td><small>${limparHTML(c.descricao).substring(0, 40)}...</small></td>
+                    <td><span class="badge ${c.slaVencido ? 'sla-vencido' : 'sla-ok'}" onclick="event.stopPropagation(); abrirSLA('${c.id}')">${c.slaVencido ? '🔴 VENCIDO' : '✅ OK'}</span></td>
+                </tr>
+            `).join('');
         }
 
         function renderizar() {
