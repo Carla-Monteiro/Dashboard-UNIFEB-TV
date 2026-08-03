@@ -239,9 +239,9 @@
         }
 
         .badge-andamento {
-            background: rgba(255, 87, 34, 0.2);
-            color: #FF5722;
-            border-color: #FF5722;
+            background: rgba(255, 165, 0, 0.2);
+            color: #ffa500;
+            border-color: #ffa500;
         }
 
         .badge-resolvido {
@@ -257,9 +257,9 @@
         }
 
         .badge-media {
-            background: rgba(33, 150, 243, 0.2);
-            color: #2196F3;
-            border-color: #2196F3;
+            background: rgba(255, 165, 0, 0.25);
+            color: #ffa500;
+            border-color: #ffa500;
         }
 
         .badge-baixa {
@@ -585,12 +585,11 @@
 
         <!-- ABAS -->
         <div class="tabs-section">
-            <button class="tab active" onclick="mostrarAba('manutencao')">🔧 Manutenção Predial</button>
-            <button class="tab" onclick="mostrarAba('naem')">📡 Multimídia (NAEM)</button>
-            <button class="tab" onclick="mostrarAba('ti')">💻 TI / Internet</button>
-            <button class="tab" onclick="mostrarAba('chamados')">📋 Todos os Chamados</button>
+            <button class="tab active" onclick="mostrarAba('chamados')">📋 Chamados Detalhados</button>
             <button class="tab" onclick="mostrarAba('graficos')">📊 Gráficos</button>
-            <button class="tab" onclick="mostrarAba('executivo')">🎯 Executivo</button>
+            <button class="tab" onclick="mostrarAba('manutencao')">🔧 Manutenção</button>
+            <button class="tab" onclick="mostrarAba('naem')">📡 NAEM</button>
+            <button class="tab" onclick="mostrarAba('ti')">💻 TI</button>
         </div>
 
         <!-- FILTROS -->
@@ -601,7 +600,7 @@
                     <option value="">-- Todos os Status --</option>
                     <option value="Aberto">Aberto</option>
                     <option value="Em andamento">Em andamento</option>
-                    <option value="Concluído">Concluído</option>
+                    <option value="Resolvido">Resolvido</option>
                 </select>
             </div>
             <div class="filter-item">
@@ -619,92 +618,8 @@
             </div>
         </div>
 
-        <!-- ABA: MANUTENÇÃO PREDIAL -->
-        <div id="manutencao" class="tab-content active">
-            <div class="table-wrapper">
-                <table id="tabelaManutencao">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Título</th>
-                            <th>Solicitante</th>
-                            <th>Prioridade</th>
-                            <th>Status</th>
-                            <th>Abertura</th>
-                            <th>Descrição</th>
-                            <th>SLA</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbodyManutencao">
-                        <tr>
-                            <td colspan="8" class="loading-spinner">
-                                <div class="spinner"></div>
-                                Carregando chamados...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- ABA: MULTIMÍDIA (NAEM) -->
-        <div id="naem" class="tab-content" style="display: none;">
-            <div class="table-wrapper">
-                <table id="tabelaNAEM">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Título</th>
-                            <th>Solicitante</th>
-                            <th>Prioridade</th>
-                            <th>Status</th>
-                            <th>Abertura</th>
-                            <th>Descrição</th>
-                            <th>SLA</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbodyNAEM">
-                        <tr>
-                            <td colspan="8" class="loading-spinner">
-                                <div class="spinner"></div>
-                                Carregando chamados...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- ABA: TI / INTERNET -->
-        <div id="ti" class="tab-content" style="display: none;">
-            <div class="table-wrapper">
-                <table id="tabelaTI">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Título</th>
-                            <th>Solicitante</th>
-                            <th>Prioridade</th>
-                            <th>Status</th>
-                            <th>Abertura</th>
-                            <th>Descrição</th>
-                            <th>SLA</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbodyTI">
-                        <tr>
-                            <td colspan="8" class="loading-spinner">
-                                <div class="spinner"></div>
-                                Carregando chamados...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
         <!-- ABA: CHAMADOS DETALHADOS -->
-        <div id="chamados" class="tab-content" style="display: none;">
+        <div id="chamados" class="tab-content active">
             <div class="table-wrapper">
                 <table id="tabela">
                     <thead>
@@ -733,7 +648,7 @@
         </div>
 
         <!-- ABA: GRÁFICOS -->
-        <div id="graficos" class="tab-content" style="display: none;">
+        <div id="graficos" class="tab-content">
             <!-- ESTATÍSTICAS -->
             <div class="stats-section">
                 <div class="stat-card">
@@ -758,8 +673,8 @@
                 </div>
                 <div class="stat-card success">
                     <div class="stat-icon">✅</div>
-                    <div class="stat-label">Concluídos</div>
-                    <div class="stat-number" id="statConcluídos">0</div>
+                    <div class="stat-label">Resolvidos</div>
+                    <div class="stat-number" id="statResolvidos">0</div>
                 </div>
             </div>
 
@@ -778,6 +693,69 @@
                     <canvas id="graficoSetor"></canvas>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- ABA: MANUTENÇÃO -->
+    <div id="manutencao" class="tab-content">
+        <div class="table-wrapper">
+            <table id="tabelaManutencao">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Status</th>
+                        <th>Prioridade</th>
+                        <th>Título</th>
+                        <th>Solicitante</th>
+                        <th>Data</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="manutencaoBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ABA: NAEM -->
+    <div id="naem" class="tab-content">
+        <div class="table-wrapper">
+            <table id="tabelaNAEM">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Status</th>
+                        <th>Prioridade</th>
+                        <th>Título</th>
+                        <th>Solicitante</th>
+                        <th>Data</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="naemBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ABA: TI -->
+    <div id="ti" class="tab-content">
+        <div class="table-wrapper">
+            <table id="tabelaTI">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Status</th>
+                        <th>Prioridade</th>
+                        <th>Título</th>
+                        <th>Solicitante</th>
+                        <th>Data</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tiBody">
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -892,7 +870,7 @@
                     <select id="status" style="width: 100%; padding: 12px 14px; background: #1a2f4d; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
                         <option value="Aberto" style="background: #1a2f4d; color: #fff;">Aberto</option>
                         <option value="Em andamento" style="background: #1a2f4d; color: #fff;">Em andamento</option>
-                        <option value="Concluído" style="background: #1a2f4d; color: #fff;">Concluído</option>
+                        <option value="Resolvido" style="background: #1a2f4d; color: #fff;">Resolvido</option>
                     </select>
                 </div>
                 <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 2px solid rgba(255, 165, 0, 0.2);">
@@ -901,58 +879,6 @@
                     <button type="button" id="btnDeletar" style="display: none; flex: 1; padding: 11px 20px; background: rgba(255, 165, 0, 0.15); border: 2px solid rgba(255, 165, 0, 0.5); border-radius: 8px; color: #ff6464; font-weight: 600; cursor: pointer; font-size: 12px;" onclick="deletarChamadoAtual()">🗑️ Deletar</button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <!-- ABA EXECUTIVO - DASHBOARD EXECUTIVO COM KPIs -->
-    <div id="executivo" class="tab-content" style="display: none;">
-        <div style="padding: 20px;">
-            <h2 style="color: #ffa500; margin-bottom: 20px;">📊 Dashboard Executivo</h2>
-            
-            <!-- KPIS -->
-            <div class="kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
-                <div class="kpi-card" style="background: rgba(76, 175, 80, 0.15); border-left: 4px solid #4CAF50; padding: 20px; border-radius: 8px;">
-                    <div style="color: #aaa; font-size: 12px; text-transform: uppercase;">Total de Chamados</div>
-                    <div id="kpi-total" style="font-size: 32px; font-weight: bold; color: #4CAF50;">0</div>
-                </div>
-                
-                <div class="kpi-card" style="background: rgba(244, 67, 54, 0.15); border-left: 4px solid #f44336; padding: 20px; border-radius: 8px;">
-                    <div style="color: #aaa; font-size: 12px; text-transform: uppercase;">SLA Vencido</div>
-                    <div id="kpi-vencidos" style="font-size: 32px; font-weight: bold; color: #f44336;">0</div>
-                    <div id="kpi-percentual" style="font-size: 12px; color: #aaa; margin-top: 5px;">0%</div>
-                </div>
-                
-                <div class="kpi-card" style="background: rgba(33, 150, 243, 0.15); border-left: 4px solid #2196F3; padding: 20px; border-radius: 8px;">
-                    <div style="color: #aaa; font-size: 12px; text-transform: uppercase;">Abertos</div>
-                    <div id="kpi-abertos" style="font-size: 32px; font-weight: bold; color: #2196F3;">0</div>
-                </div>
-                
-                <div class="kpi-card" style="background: rgba(76, 175, 80, 0.15); border-left: 4px solid #4CAF50; padding: 20px; border-radius: 8px;">
-                    <div style="color: #aaa; font-size: 12px; text-transform: uppercase;">Concluídos</div>
-                    <div id="kpi-resolvidos" style="font-size: 32px; font-weight: bold; color: #4CAF50;">0</div>
-                </div>
-            </div>
-            
-            <!-- SAÚDE GERAL -->
-            <div style="background: rgba(255, 165, 0, 0.15); border: 2px solid #ffa500; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                <div style="color: #aaa; font-size: 12px; text-transform: uppercase;">Saúde Geral do Sistema</div>
-                <div id="saude-geral" style="font-size: 24px; font-weight: bold; color: #ffa500; margin-top: 10px;">Carregando...</div>
-            </div>
-            
-            <!-- BOTÃO EXPORTAR -->
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button onclick="exportarExcel()" style="padding: 12px 20px; background: linear-gradient(135deg, #4CAF50, #45a049); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                    📥 Exportar Excel
-                </button>
-            </div>
-            
-            <!-- CHAMADOS CRÍTICOS -->
-            <div style="margin-top: 30px;">
-                <h3 style="color: #ffa500; margin-bottom: 15px;">⚠️ Chamados Críticos (< 1h)</h3>
-                <div id="alertas-list" style="background: rgba(255, 165, 0, 0.1); padding: 15px; border-radius: 8px; min-height: 50px;">
-                    <p style="color: #aaa;">Carregando alertas...</p>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -985,61 +911,83 @@
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             
             document.getElementById(abaName).classList.add('active');
-            document.getElementById(abaName).style.display = 'block';
             event.target.classList.add('active');
             
-            if (abaName === 'graficos') setTimeout(() => desenharGraficos(), 200);
-            if (abaName === 'executivo') setTimeout(() => carregarExecutivo(), 200);
-            if (abaName === 'manutencao' || abaName === 'naem' || abaName === 'ti') {
-                setTimeout(() => renderizarAbas(), 100);
+            if (abaName === 'graficos') {
+                setTimeout(() => desenharGraficos(), 200);
+            } else if (abaName === 'manutencao') {
+                renderizarManutencao();
+            } else if (abaName === 'naem') {
+                renderizarNAEM();
+            } else if (abaName === 'ti') {
+                renderizarTI();
             }
         }
 
-        async function carregarExecutivo() {
-            try {
-                // Carregar Métricas
-                const metricas = await fetch('https://unifeb-backend.onrender.com/api/metricas').then(r => r.json());
-                
-                document.getElementById('kpi-total').textContent = metricas.total || 0;
-                document.getElementById('kpi-vencidos').textContent = metricas.vencidos || 0;
-                document.getElementById('kpi-percentual').textContent = `${metricas.percentual_vencidos?.toFixed(1) || 0}%`;
-                document.getElementById('kpi-abertos').textContent = metricas.abertos || 0;
-                document.getElementById('kpi-resolvidos').textContent = metricas.resolvidos || 0;
-                
-                // Saúde Geral
-                const saude = metricas.saude_geral || 'Desconhecida';
-                const corSaude = saude === 'Crítica' ? '#f44336' : saude === 'Alerta' ? '#ffa500' : '#4CAF50';
-                const emoji = saude === 'Crítica' ? '🔴' : saude === 'Alerta' ? '🟡' : '🟢';
-                document.getElementById('saude-geral').innerHTML = `${emoji} ${saude}`;
-                document.getElementById('saude-geral').style.color = corSaude;
-                
-                // Carregar Alertas
-                const alertas = await fetch('https://unifeb-backend.onrender.com/api/alertas').then(r => r.json());
-                
-                if (alertas.alertas && alertas.alertas.length > 0) {
-                    let html = '';
-                    for (let alerta of alertas.alertas) {
-                        const statusCor = alerta.vencido ? '#f44336' : '#ffa500';
-                        html += `
-                        <div style="background: rgba(255, 107, 107, 0.1); border-left: 4px solid ${statusCor}; padding: 10px; margin: 8px 0; border-radius: 4px;">
-                            <strong>#${alerta.id}</strong> - ${alerta.titulo}
-                            <br><small style="color: #aaa;">Prioridade: ${alerta.prioridade} | ${alerta.vencido ? '❌ VENCIDO' : '⏰ ' + alerta.tempo_restante_minutos + 'min'}</small>
-                        </div>
-                        `;
-                    }
-                    document.getElementById('alertas-list').innerHTML = html;
-                } else {
-                    document.getElementById('alertas-list').innerHTML = '<p style="color: #4CAF50;">✅ Nenhum chamado crítico!</p>';
-                }
-                
-            } catch (erro) {
-                console.error('Erro ao carregar executivo:', erro);
-                document.getElementById('alertas-list').innerHTML = '<p style="color: #f44336;">❌ Erro ao carregar</p>';
+        function renderizarManutencao() {
+            const tbody = document.getElementById('manutencaoBody');
+            const chamadosManutencao = CHAMADOS.filter(c => c.setorAtendimento === 'Manutenção Predial');
+            
+            if (chamadosManutencao.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="empty-state">📭 Nenhum chamado de manutenção</td></tr>`;
+                return;
             }
+
+            tbody.innerHTML = chamadosManutencao.map(c => `
+                <tr onclick="abrirFormularioEditar('${c.id}')">
+                    <td><strong>#${c.id}</strong></td>
+                    <td><span class="badge badge-${getBadgeStatus(c.status)}">${c.status}</span></td>
+                    <td><span class="badge badge-${getBadgePrio(c.prioridade)}">${c.prioridade}</span></td>
+                    <td>${c.titulo}</td>
+                    <td>${c.solicitante}</td>
+                    <td>${formatarData(c.data)}</td>
+                    <td><button class="btn" onclick="event.stopPropagation(); abrirFormularioEditar('${c.id}')" style="padding: 5px 10px; font-size: 11px;">Editar</button></td>
+                </tr>
+            `).join('');
         }
 
-        function exportarExcel() {
-            window.location.href = 'https://unifeb-backend.onrender.com/api/export-excel';
+        function renderizarNAEM() {
+            const tbody = document.getElementById('naemBody');
+            const chamadosNAEM = CHAMADOS.filter(c => c.setorAtendimento === 'Multimídia (NAEM)');
+            
+            if (chamadosNAEM.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="empty-state">📭 Nenhum chamado de NAEM</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = chamadosNAEM.map(c => `
+                <tr onclick="abrirFormularioEditar('${c.id}')">
+                    <td><strong>#${c.id}</strong></td>
+                    <td><span class="badge badge-${getBadgeStatus(c.status)}">${c.status}</span></td>
+                    <td><span class="badge badge-${getBadgePrio(c.prioridade)}">${c.prioridade}</span></td>
+                    <td>${c.titulo}</td>
+                    <td>${c.solicitante}</td>
+                    <td>${formatarData(c.data)}</td>
+                    <td><button class="btn" onclick="event.stopPropagation(); abrirFormularioEditar('${c.id}')" style="padding: 5px 10px; font-size: 11px;">Editar</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderizarTI() {
+            const tbody = document.getElementById('tiBody');
+            const chamadosTI = CHAMADOS.filter(c => c.setorAtendimento === 'TI / Internet');
+            
+            if (chamadosTI.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="empty-state">📭 Nenhum chamado de TI</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = chamadosTI.map(c => `
+                <tr onclick="abrirFormularioEditar('${c.id}')">
+                    <td><strong>#${c.id}</strong></td>
+                    <td><span class="badge badge-${getBadgeStatus(c.status)}">${c.status}</span></td>
+                    <td><span class="badge badge-${getBadgePrio(c.prioridade)}">${c.prioridade}</span></td>
+                    <td>${c.titulo}</td>
+                    <td>${c.solicitante}</td>
+                    <td>${formatarData(c.data)}</td>
+                    <td><button class="btn" onclick="event.stopPropagation(); abrirFormularioEditar('${c.id}')" style="padding: 5px 10px; font-size: 11px;">Editar</button></td>
+                </tr>
+            `).join('');
         }
 
         function filtrar() {
@@ -1059,40 +1007,6 @@
             });
 
             renderizar();
-            renderizarAbas();
-        }
-
-        function renderizarAbas() {
-            // Filtrar por tipo de setor
-            const manutencao = CHAMADOS.filter(c => c.setorAtendimento === 'Manutenção Predial');
-            const naem = CHAMADOS.filter(c => c.setorAtendimento === 'Multimídia (NAEM)');
-            const ti = CHAMADOS.filter(c => c.setorAtendimento === 'TI / Internet');
-
-            renderizarTabela('tbodyManutencao', manutencao);
-            renderizarTabela('tbodyNAEM', naem);
-            renderizarTabela('tbodyTI', ti);
-        }
-
-        function renderizarTabela(tbodyId, chamados) {
-            const tbody = document.getElementById(tbodyId);
-
-            if (chamados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="empty-state">📭 Nenhum chamado encontrado</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = chamados.map(c => `
-                <tr onclick="abrirFormularioEditar('${c.id}')">
-                    <td><strong>#${c.id}</strong></td>
-                    <td>${c.titulo}</td>
-                    <td>${c.solicitante}</td>
-                    <td><span class="badge badge-${getBadgePrio(c.prioridade)}">${c.prioridade}</span></td>
-                    <td><span class="badge badge-${getBadgeStatus(c.status)}">${c.status}</span></td>
-                    <td>${formatarData(c.data)}</td>
-                    <td><small>${limparHTML(c.descricao).substring(0, 40)}...</small></td>
-                    <td><span class="badge ${c.slaVencido ? 'sla-vencido' : 'sla-ok'}" onclick="event.stopPropagation(); abrirSLA('${c.id}')">${c.slaVencido ? '🔴 VENCIDO' : '✅ OK'}</span></td>
-                </tr>
-            `).join('');
         }
 
         function renderizar() {
@@ -1179,7 +1093,7 @@
             document.getElementById('statSLA').textContent = CHAMADOS.filter(c => c.slaVencido).length;
             document.getElementById('statAbertos').textContent = CHAMADOS.filter(c => c.status === 'Aberto').length;
             document.getElementById('statAndamento').textContent = CHAMADOS.filter(c => c.status === 'Em andamento').length;
-            document.getElementById('statConcluídos').textContent = CHAMADOS.filter(c => c.status === 'Concluído').length;
+            document.getElementById('statResolvidos').textContent = CHAMADOS.filter(c => c.status === 'Resolvido').length;
 
             const cores = ['#ffa500', '#64c8ff', '#00c864', '#ff6464'];
 
@@ -1234,8 +1148,8 @@
         }
 
         function getBadgePrio(p) { return p === 'Alta' ? 'alta' : p === 'Baixa' ? 'baixa' : 'media'; }
-        function getBadgeStatus(s) { return s === 'Aberto' ? 'aberto' : s === 'Concluído' ? 'resolvido' : 'andamento'; }
-        function formatarData(d) { try { return new Date(d).toLocaleString('pt-BR'); } catch { return d; } }
+        function getBadgeStatus(s) { return s === 'Aberto' ? 'aberto' : s === 'Resolvido' ? 'resolvido' : 'andamento'; }
+        function formatarData(d) { try { return new Date(d).toLocaleDateString('pt-BR'); } catch { return d; } }
         function limparHTML(t) { return (t || '').replace(/<[^>]*>/g, ''); }
         function sincronizar() { alert('Execute no terminal: python sync_sharepoint_tv.py'); }
         function limparCache() { localStorage.clear(); location.reload(); }

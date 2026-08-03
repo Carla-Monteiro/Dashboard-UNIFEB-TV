@@ -52,12 +52,6 @@
             margin-bottom: 10px;
         }
 
-        .logo img {
-            max-width: 200px;
-            height: auto;
-            margin-bottom: 15px;
-        }
-
         h1 {
             color: #1a237e;
             font-size: 24px;
@@ -87,15 +81,8 @@
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             font-size: 14px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             transition: all 0.3s;
-        }
-
-        select option {
-            font-size: 14px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding: 10px;
-            line-height: 1.5;
+            font-family: inherit;
         }
 
         select:focus, input:focus, textarea:focus {
@@ -231,9 +218,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">
-                <img src="https://dashboard-unifeb-tv.vercel.app/logo-UNIFEB.png" alt="Logo UNIFEB">
-            </div>
+            <img src="logo-UNIFEB.png" alt="UNIFEB" style="width: 80px; height: auto; margin-bottom: 15px;">
             <h1>#SuporteUNIFEB</h1>
             <p class="subtitle">Central de Avisos e Solicitações</p>
         </div>
@@ -244,7 +229,7 @@
             <!-- EMAIL -->
             <div class="form-group">
                 <label for="email">📧 Email (Corporativo ou Pessoal) *</label>
-                <input type="email" id="email" placeholder="seu.email@feb.br ou seu.email@pessoal.com" required>
+                <input type="email" id="email" required>
             </div>
 
             <!-- BLOCO -->
@@ -294,7 +279,7 @@
             <!-- BOTÕES -->
             <div class="button-group">
                 <button type="submit" class="btn-enviar">
-                    <span>📤 Enviar Aviso</span>
+                    <span>📤 Enviar</span>
                 </button>
                 <button type="reset" class="btn-limpar">Limpar</button>
             </div>
@@ -313,19 +298,20 @@
     <script>
         // DADOS DA UNIFEB
         const blocosESalas = {
-            'BLOCO INFORMÁTICA': ['Lab 3', 'Lab 4', 'Lab 5', 'Lab 6', 'OUTROS'],
-            'BLOCO JOÃO MONTEIRO DE BARROS FILHO': ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'C16', 'C17', 'C18', 'OUTROS'],
-            'BLOCO ELVIRA PARADA': ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'OUTROS'],
-            'BLOCO LAURO KFOURI': ['1', '2', '3', '4', '5', '6', 'OUTROS'],
-            'BLOCO LARANJÃO': ['1', '2', '3', '4', '5', '6', 'OUTROS'],
-            'BLOCO RAEL VIDAL': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'OUTROS'],
-            'Núcleo de Prática Jurídica': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', 'OUTROS'],
-            'Marcelo Ramos': ['01', '03', '05', '06', '07', '08', '09', '10', '11', 'OUTROS'],
+            'Laboratórios de Informática': ['Lab 3', 'Lab 4', 'Lab 5', 'Lab 6', 'OUTROS'],
+            'João Monteiro de Barros Filho': ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'C16', 'C17', 'C18', 'OUTROS'],
             'Biblioteca': ['Acervo', 'Sala 1', 'Sala 2', 'OUTROS'],
             'Núcleo de Ensino a Distância (NEAD)': ['NEAD 01', 'NEAD 02', 'NEAD 03', 'NEAD 04', 'OUTROS'],
+            'Sala de Metodologia Ativa (Pós)': ['Sala 01', 'Sala 02', 'Sala Completa', 'OUTROS'],
+            'Laboratórios de Informática': ['Lab 3', 'Lab 4', 'Lab 5', 'Lab 6', 'OUTROS'],
+            'Elvira Parada': ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'OUTROS'],
+            'Lauro Kfouri': ['1', '2', '3', '4', '5', '6', 'OUTROS'],
+            'Laranjão': ['1', '2', '3', '4', '5', '6', 'OUTROS'],
+            'Rael Vidal': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'OUTROS'],
+            'Núcleo de Prática Jurídica': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', 'OUTROS'],
+            'Marcelo Ramos': ['01', '03', '05', '06', '07', '08', '09', '10', '11', 'OUTROS'],
             'Teatro Jorge Andrade': ['Auditório', 'OUTROS'],
-            'Tribunal do Júri': ['Auditório', 'OUTROS'],
-            'Sala de Pós Graduação': ['Sala 01', 'Sala 02', 'Sala Completa', 'OUTROS'],
+            'Tribunal do Júri': ['Auditório', 'OUTROS']
         };
 
         // CATEGORIAS POR TIPO
@@ -353,6 +339,7 @@
                 '💻 Computador',
                 '⌨️ Teclado',
                 '🖱️ Mouse',
+                '🔌 Energia/Tomada',
                 '📞 Telefone',
                 '🔴 Outro'
             ]
