@@ -88,46 +88,64 @@ def obter_chamados_sharepoint():
     try:
         token = get_access_token()
         if not token:
+            logger.error("Token não obtido")
             return []
         
         headers = {'Authorization': f'Bearer {token}'}
         site_url = f"{GRAPH_API}/sites/{SHAREPOINT_DOMAIN}:{SITE_PATH}"
         site_response = requests.get(site_url, headers=headers, timeout=10)
+        
+        if site_response.status_code != 200:
+            logger.error(f"Erro ao obter site: {site_response.status_code}")
+            return []
+        
         site_id = site_response.json().get('id')
+        logger.info(f"Site ID: {site_id}")
         
         list_url = f"{GRAPH_API}/sites/{site_id}/lists/{LIST_NAME}"
         list_response = requests.get(list_url, headers=headers, timeout=10)
+        
+        if list_response.status_code != 200:
+            logger.error(f"Erro ao obter lista: {list_response.status_code}")
+            return []
+        
         list_id = list_response.json().get('id')
+        logger.info(f"List ID: {list_id}")
         
         items_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$expand=fields"
         items_response = requests.get(items_url, headers=headers, timeout=10)
         
         if items_response.status_code != 200:
+            logger.error(f"Erro ao obter items: {items_response.status_code}")
             return []
         
         items = items_response.json().get('value', [])
-        chamados = []
+        logger.info(f"Total de items: {len(items)}")
         
+        chamados = []
         for item in items:
             fields = item.get('fields', {})
-            chamados.append({
+            chamado = {
                 'id': item.get('id'),
-                'titulo': fields.get('Title', ''),
+                'titulo': fields.get('Title', 'Sem título'),
                 'solicitante': fields.get('Solicitante', ''),
                 'email': fields.get('Email', ''),
-                'status': fields.get('Status', ''),
-                'prioridade': fields.get('Prioridade', ''),
-                'dataAbertura': fields.get('DataAbertura', ''),
+                'status': fields.get('Status', 'Aberto'),
+                'prioridade': fields.get('Prioridade', 'Normal'),
+                'dataAbertura': fields.get('DataAbertura', datetime.now().isoformat()),
                 'descricao': fields.get('Descricao', ''),
                 'bloco': fields.get('Bloco', ''),
                 'sala': fields.get('Sala', ''),
                 'categoria': fields.get('Categoria', ''),
-                'setor': fields.get('SetordeAtendimento', ''),
-            })
+                'setor': fields.get('SetordeAtendimento', 'Geral'),
+            }
+            chamados.append(chamado)
+            logger.info(f"Item adicionado: {chamado['titulo']}")
         
+        logger.info(f"Total de chamados retornados: {len(chamados)}")
         return chamados
     except Exception as e:
-        logger.error(f"Erro ao obter chamados: {e}")
+        logger.error(f"Erro ao obter chamados: {e}", exc_info=True)
         return []
 
 @app.route('/api/criar-manutencao', methods=['POST', 'OPTIONS'])
