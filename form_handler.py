@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🚀 UNIFEB BACKEND - QR CODE SUPPORT V4.0
+🚀 UNIFEB BACKEND - QR CODE SUPPORT V3.0
 ✅ Cria chamados no SharePoint
-✅ Retorna chamados para Dashboard
 ✅ Suporta 3 tipos: Manutenção, NAEM, TI
 ✅ Power Automate dispara emails automáticos
-✅ Campo Origem diferencia QRCode de Email
 """
 
 from flask import Flask, request, jsonify
@@ -162,7 +160,6 @@ def criar_chamado():
                 "SetordeAtendimento": NOMES_SETORES[tipo],
                 "Status": "Aberto",
                 "Prioridade": "Média",
-                "Origem": "QRCode",
                 "Created": datetime.utcnow().isoformat() + "Z"
             }
         }
@@ -190,130 +187,14 @@ def criar_chamado():
         logger.error(f"Erro em criar_chamado: {e}")
         return jsonify({'erro': str(e)}), 500
 
-@app.route('/api/chamados', methods=['GET'])
-def obter_chamados():
-    """
-    Retorna todos os chamados do SharePoint (para Dashboard)
-    """
-    try:
-        token = obter_token()
-        if not token:
-            return jsonify({'erro': 'Erro de autenticação'}), 500
-        
-        site_id, list_id = obter_ids_sharepoint()
-        if not site_id or not list_id:
-            return jsonify({'erro': 'Erro ao acessar SharePoint'}), 500
-        
-        headers = {'Authorization': f'Bearer {token}'}
-        
-        # Buscar todos os itens
-        items_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$expand=fields"
-        items_resp = requests.get(items_url, headers=headers, timeout=10)
-        
-        if items_resp.status_code != 200:
-            logger.error(f"Erro ao obter itens: {items_resp.text}")
-            return jsonify({'erro': 'Erro ao obter chamados'}), 500
-        
-        items = items_resp.json().get('value', [])
-        
-        # Formatar resposta
-        chamados = []
-        for item in items:
-            fields = item.get('fields', {})
-            chamados.append({
-                'id': fields.get('id'),
-                'title': fields.get('Title'),
-                'solicitante': fields.get('Solicitante'),
-                'email': fields.get('Email'),
-                'status': fields.get('Status'),
-                'setor': fields.get('SetordeAtendimento'),
-                'tipo': fields.get('Tipo'),
-                'bloco': fields.get('Bloco'),
-                'sala': fields.get('Sala'),
-                'categoria': fields.get('Categoria'),
-                'descricao': fields.get('Descricao'),
-                'prioridade': fields.get('Prioridade'),
-                'created': fields.get('Created'),
-                'origem': fields.get('Origem', 'Email')
-            })
-        
-        logger.info(f"✅ Retornando {len(chamados)} chamados")
-        
-        return jsonify({
-            'sucesso': True,
-            'total': len(chamados),
-            'chamados': chamados
-        }), 200
-        
-    except Exception as e:
-        logger.error(f"Erro em obter_chamados: {e}")
-        return jsonify({'erro': str(e)}), 500
-
-@app.route('/api/chamados/<chamado_id>', methods=['GET'])
-def obter_chamado(chamado_id):
-    """
-    Retorna um chamado específico
-    """
-    try:
-        token = obter_token()
-        if not token:
-            return jsonify({'erro': 'Erro de autenticação'}), 500
-        
-        site_id, list_id = obter_ids_sharepoint()
-        if not site_id or not list_id:
-            return jsonify({'erro': 'Erro ao acessar SharePoint'}), 500
-        
-        headers = {'Authorization': f'Bearer {token}'}
-        
-        # Buscar item específico
-        search_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$expand=fields&$filter=fields/id eq '{chamado_id}'"
-        search_resp = requests.get(search_url, headers=headers, timeout=10)
-        
-        if search_resp.status_code != 200 or not search_resp.json().get('value'):
-            return jsonify({'erro': 'Chamado não encontrado'}), 404
-        
-        item = search_resp.json().get('value')[0]
-        fields = item.get('fields', {})
-        
-        chamado = {
-            'id': fields.get('id'),
-            'title': fields.get('Title'),
-            'solicitante': fields.get('Solicitante'),
-            'email': fields.get('Email'),
-            'status': fields.get('Status'),
-            'setor': fields.get('SetordeAtendimento'),
-            'tipo': fields.get('Tipo'),
-            'bloco': fields.get('Bloco'),
-            'sala': fields.get('Sala'),
-            'categoria': fields.get('Categoria'),
-            'descricao': fields.get('Descricao'),
-            'prioridade': fields.get('Prioridade'),
-            'created': fields.get('Created'),
-            'origem': fields.get('Origem', 'Email')
-        }
-        
-        return jsonify({
-            'sucesso': True,
-            'chamado': chamado
-        }), 200
-        
-    except Exception as e:
-        logger.error(f"Erro em obter_chamado: {e}")
-        return jsonify({'erro': str(e)}), 500
-
-@app.route('/api/concluir-chamado', methods=['POST', 'GET'])
+@app.route('/api/concluir-chamado', methods=['POST'])
 def concluir_chamado():
     """
     Conclui um chamado (usado pelo botão no email)
-    Aceita POST e GET para flexibilidade
     """
     try:
-        # Suportar tanto POST quanto GET
-        if request.method == 'POST':
-            dados = request.get_json() or {}
-            chamado_id = dados.get('chamado_id') or dados.get('id')
-        else:  # GET
-            chamado_id = request.args.get('id') or request.args.get('chamado_id')
+        dados = request.get_json()
+        chamado_id = dados.get('chamado_id')
         
         if not chamado_id:
             return jsonify({'erro': 'ID do chamado não fornecido'}), 400
@@ -359,7 +240,7 @@ def concluir_chamado():
 @app.route('/health', methods=['GET'])
 def health():
     """Health check"""
-    return jsonify({'status': 'ok', 'version': '4.0'}), 200
+    return jsonify({'status': 'ok'}), 200
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=5000)
