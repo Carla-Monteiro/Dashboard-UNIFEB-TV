@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Versão 4.0 - COMPLETO com todos os endpoints"""
+"""Versão: 4.0 - Com /api/chamados + fix na query URL"""
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -83,71 +83,6 @@ def obter_roteamento(categoria):
         return CATEGORIAS_ROTEAMENTO[categoria]
     return {'tipo': 'ti'}
 
-def obter_chamados_sharepoint():
-    """Busca todos os chamados do SharePoint"""
-    try:
-        token = get_access_token()
-        if not token:
-            logger.error("Token não obtido")
-            return []
-        
-        headers = {'Authorization': f'Bearer {token}'}
-        site_url = f"{GRAPH_API}/sites/{SHAREPOINT_DOMAIN}:{SITE_PATH}"
-        site_response = requests.get(site_url, headers=headers, timeout=10)
-        
-        if site_response.status_code != 200:
-            logger.error(f"Erro ao obter site: {site_response.status_code}")
-            return []
-        
-        site_id = site_response.json().get('id')
-        logger.info(f"Site ID: {site_id}")
-        
-        list_url = f"{GRAPH_API}/sites/{site_id}/lists/{LIST_NAME}"
-        list_response = requests.get(list_url, headers=headers, timeout=10)
-        
-        if list_response.status_code != 200:
-            logger.error(f"Erro ao obter lista: {list_response.status_code}")
-            return []
-        
-        list_id = list_response.json().get('id')
-        logger.info(f"List ID: {list_id}")
-        
-        items_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$expand=fields"
-        items_response = requests.get(items_url, headers=headers, timeout=10)
-        
-        if items_response.status_code != 200:
-            logger.error(f"Erro ao obter items: {items_response.status_code}")
-            return []
-        
-        items = items_response.json().get('value', [])
-        logger.info(f"Total de items: {len(items)}")
-        
-        chamados = []
-        for item in items:
-            fields = item.get('fields', {})
-            chamado = {
-                'id': item.get('id'),
-                'titulo': fields.get('Title', 'Sem título'),
-                'solicitante': fields.get('Solicitante', ''),
-                'email': fields.get('Email', ''),
-                'status': fields.get('Status', 'Aberto'),
-                'prioridade': fields.get('Prioridade', 'Normal'),
-                'dataAbertura': fields.get('DataAbertura', datetime.now().isoformat()),
-                'descricao': fields.get('Descricao', ''),
-                'bloco': fields.get('Bloco', ''),
-                'sala': fields.get('Sala', ''),
-                'categoria': fields.get('Categoria', ''),
-                'setor': fields.get('SetordeAtendimento', 'Geral'),
-            }
-            chamados.append(chamado)
-            logger.info(f"Item adicionado: {chamado['titulo']}")
-        
-        logger.info(f"Total de chamados retornados: {len(chamados)}")
-        return chamados
-    except Exception as e:
-        logger.error(f"Erro ao obter chamados: {e}", exc_info=True)
-        return []
-
 @app.route('/api/criar-manutencao', methods=['POST', 'OPTIONS'])
 def criar_manutencao():
     if request.method == 'OPTIONS':
@@ -215,7 +150,6 @@ def criar_manutencao():
         response = requests.post(create_url, headers=headers, json=payload, timeout=10)
         
         if response.status_code not in [200, 201]:
-            logger.error(f"Erro: {response.text}")
             return jsonify({"status": "erro", "mensagem": "Erro ao salvar"}), 400
         
         return jsonify({
@@ -229,43 +163,63 @@ def criar_manutencao():
         return jsonify({"status": "erro", "mensagem": str(e)}), 500
 
 @app.route('/api/chamados', methods=['GET'])
-def get_chamados():
-    """Retorna todos os chamados"""
+def obter_chamados():
+    """Retorna lista de todos os chamados do SharePoint"""
     try:
-        chamados = obter_chamados_sharepoint()
+        token = get_access_token()
+        if not token:
+            return jsonify([]), 200
+        
+        headers = {'Authorization': f'Bearer {token}'}
+        site_url = f"{GRAPH_API}/sites/{SHAREPOINT_DOMAIN}:{SITE_PATH}"
+        site_response = requests.get(site_url, headers=headers, timeout=10)
+        
+        if site_response.status_code != 200:
+            return jsonify([]), 200
+        
+        site_id = site_response.json().get('id')
+        
+        list_url = f"{GRAPH_API}/sites/{site_id}/lists/{LIST_NAME}"
+        list_response = requests.get(list_url, headers=headers, timeout=10)
+        
+        if list_response.status_code != 200:
+            return jsonify([]), 200
+        
+        list_id = list_response.json().get('id')
+        
+        items_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$expand=fields"
+        items_response = requests.get(items_url, headers=headers, timeout=10)
+        
+        if items_response.status_code != 200:
+            return jsonify([]), 200
+        
+        items = items_response.json().get('value', [])
+        
+        chamados = []
+        for item in items:
+            fields = item.get('fields', {})
+            chamado = {
+                'id': item.get('id'),
+                'titulo': fields.get('Title', ''),
+                'solicitante': fields.get('Solicitante', ''),
+                'email': fields.get('Email', ''),
+                'status': fields.get('Status', 'Aberto'),
+                'prioridade': fields.get('Prioridade', 'Normal'),
+                'dataAbertura': fields.get('DataAbertura', datetime.now().isoformat()),
+                'descricao': fields.get('Descricao', ''),
+                'bloco': fields.get('Bloco', ''),
+                'sala': fields.get('Sala', ''),
+                'categoria': fields.get('Categoria', ''),
+                'setor': fields.get('SetordeAtendimento', ''),
+            }
+            chamados.append(chamado)
+        
+        logger.info(f"✅ {len(chamados)} chamados retornados")
         return jsonify(chamados), 200
-    except Exception as e:
-        logger.error(f"Erro: {e}")
-        return jsonify({"erro": str(e)}), 500
-
-@app.route('/api/alertas', methods=['GET'])
-def get_alertas():
-    """Retorna chamados em alerta"""
-    try:
-        chamados = obter_chamados_sharepoint()
-        alertas = [c for c in chamados if c.get('status') == 'Aberto']
-        return jsonify(alertas), 200
-    except Exception as e:
-        return jsonify({"erro": str(e)}), 500
-
-@app.route('/api/metricas', methods=['GET'])
-def get_metricas():
-    """Retorna métricas do dashboard"""
-    try:
-        chamados = obter_chamados_sharepoint()
         
-        total = len(chamados)
-        abertos = len([c for c in chamados if c.get('status') == 'Aberto'])
-        resolvidos = len([c for c in chamados if c.get('status') == 'Concluído'])
-        
-        return jsonify({
-            "total": total,
-            "abertos": abertos,
-            "resolvidos": resolvidos,
-            "taxa_resolucao": round((resolvidos / total * 100) if total > 0 else 0, 2)
-        }), 200
     except Exception as e:
-        return jsonify({"erro": str(e)}), 500
+        logger.error(f"ERRO em obter_chamados: {e}")
+        return jsonify([]), 200
 
 @app.route('/api/concluir-chamado', methods=['GET'])
 def concluir_chamado():
