@@ -586,10 +586,10 @@
         <!-- ABAS -->
         <div class="tabs-section">
             <button class="tab active" onclick="mostrarAba('chamados')">📋 Chamados Detalhados</button>
-            <button class="tab" onclick="mostrarAba('graficos')">📊 Gráficos</button>
-            <button class="tab" onclick="mostrarAba('manutencao')">🔧 Manutenção</button>
-            <button class="tab" onclick="mostrarAba('naem')">📡 NAEM</button>
             <button class="tab" onclick="mostrarAba('ti')">💻 TI</button>
+            <button class="tab" onclick="mostrarAba('naem')">📽️ NAEM</button>
+            <button class="tab" onclick="mostrarAba('manutencao')">🔧 Manutenção</button>
+            <button class="tab" onclick="mostrarAba('graficos')">📊 Gráficos</button>
         </div>
 
         <!-- FILTROS -->
@@ -889,11 +889,32 @@
 
         async function carregarDados() {
             try {
-                // ✅ NOVO: Buscar do endpoint /api/chamados do Backend (Render) - dados sempre sincronizados!
+                // ✅ Buscar do endpoint /api/chamados do Backend (Render) - dados sempre sincronizados!
                 const response = await fetch('https://unifeb-backend.onrender.com/api/chamados');
                 const dados = await response.json();
                 
-                CHAMADOS = dados.chamados || [];
+                // ✅ CORRIGIDO: O backend retorna um ARRAY direto, não um objeto
+                CHAMADOS = Array.isArray(dados) ? dados : (dados.chamados || []);
+                
+                // Mapear campos do backend para o formato esperado
+                CHAMADOS = CHAMADOS.map(c => ({
+                    id: c.id || '',
+                    titulo: c.titulo || '',
+                    solicitante: c.solicitante || '',
+                    email: c.email || '',
+                    status: c.status || 'Aberto',
+                    prioridade: c.prioridade || 'Média',
+                    data: c.dataAbertura || new Date().toISOString(),
+                    descricao: c.descricao || '',
+                    setorAtendimento: c.setor || '',
+                    bloco: c.bloco || '',
+                    sala: c.sala || '',
+                    categoria: c.categoria || '',
+                    slaVencido: false,
+                    slaAberto: '0h',
+                    slaAtraso: 'No prazo'
+                }));
+                
                 console.log(`✅ ${CHAMADOS.length} chamados carregados do Backend em tempo real`);
                 
                 document.getElementById('syncStatus').textContent = '🟢 Sincronizado';
