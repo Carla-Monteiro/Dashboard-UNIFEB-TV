@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Versão: 5.0 - Com /api/concluir-chamado corrigido para JSON silencioso"""
+"""Versão: 6.0 - Adiciona /api/criar-chamado, /api/editar-chamado, /api/deletar-chamado (usados pelo Dashboard)"""
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -83,6 +83,24 @@ def obter_roteamento(categoria):
         return CATEGORIAS_ROTEAMENTO[categoria]
     return {'tipo': 'ti'}
 
+def obter_site_e_lista(headers):
+    """Helper: retorna (site_id, list_id) ou (None, None) em caso de erro"""
+    site_url = f"{GRAPH_API}/sites/{SHAREPOINT_DOMAIN}:{SITE_PATH}"
+    site_response = requests.get(site_url, headers=headers, timeout=10)
+    if site_response.status_code != 200:
+        logger.error(f"❌ Erro ao conectar site: {site_response.status_code}")
+        return None, None
+    site_id = site_response.json().get('id')
+
+    list_url = f"{GRAPH_API}/sites/{site_id}/lists/{LIST_NAME}"
+    list_response = requests.get(list_url, headers=headers, timeout=10)
+    if list_response.status_code != 200:
+        logger.error(f"❌ Erro ao conectar lista: {list_response.status_code}")
+        return None, None
+    list_id = list_response.json().get('id')
+
+    return site_id, list_id
+
 @app.route('/api/criar-manutencao', methods=['POST', 'OPTIONS'])
 def criar_manutencao():
     if request.method == 'OPTIONS':
@@ -113,21 +131,9 @@ def criar_manutencao():
         
         headers = {'Authorization': f'Bearer {token}'}
         
-        site_url = f"{GRAPH_API}/sites/{SHAREPOINT_DOMAIN}:{SITE_PATH}"
-        site_response = requests.get(site_url, headers=headers, timeout=10)
-        
-        if site_response.status_code != 200:
-            return jsonify({"status": "erro", "mensagem": "Erro ao conectar site"}), 400
-        
-        site_id = site_response.json().get('id')
-        
-        list_url = f"{GRAPH_API}/sites/{site_id}/lists/{LIST_NAME}"
-        list_response = requests.get(list_url, headers=headers, timeout=10)
-        
-        if list_response.status_code != 200:
-            return jsonify({"status": "erro", "mensagem": "Erro ao conectar lista"}), 400
-        
-        list_id = list_response.json().get('id')
+        site_id, list_id = obter_site_e_lista(headers)
+        if not site_id or not list_id:
+            return jsonify({"status": "erro", "mensagem": "Erro ao conectar SharePoint"}), 400
         
         create_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items"
         
@@ -172,21 +178,9 @@ def obter_chamados():
             return jsonify([]), 200
         
         headers = {'Authorization': f'Bearer {token}'}
-        site_url = f"{GRAPH_API}/sites/{SHAREPOINT_DOMAIN}:{SITE_PATH}"
-        site_response = requests.get(site_url, headers=headers, timeout=10)
-        
-        if site_response.status_code != 200:
+        site_id, list_id = obter_site_e_lista(headers)
+        if not site_id or not list_id:
             return jsonify([]), 200
-        
-        site_id = site_response.json().get('id')
-        
-        list_url = f"{GRAPH_API}/sites/{site_id}/lists/{LIST_NAME}"
-        list_response = requests.get(list_url, headers=headers, timeout=10)
-        
-        if list_response.status_code != 200:
-            return jsonify([]), 200
-        
-        list_id = list_response.json().get('id')
         
         items_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$expand=fields"
         items_response = requests.get(items_url, headers=headers, timeout=10)
@@ -212,6 +206,8 @@ def obter_chamados():
                 'sala': fields.get('Sala', ''),
                 'categoria': fields.get('Categoria', ''),
                 'setor': fields.get('SetordeAtendimento', ''),
+                'setorAtendimento': fields.get('SetordeAtendimento', ''),
+                'data': fields.get('DataAbertura', datetime.now().isoformat()),
             }
             chamados.append(chamado)
         
@@ -225,7 +221,6 @@ def obter_chamados():
 @app.route('/api/concluir-chamado', methods=['GET', 'OPTIONS'])
 def concluir_chamado():
     """Conclui um chamado e retorna JSON (sem abrir página)"""
-    # Handle CORS preflight request
     if request.method == 'OPTIONS':
         return '', 200
     
@@ -244,25 +239,10 @@ def concluir_chamado():
         
         headers = {'Authorization': f'Bearer {token}'}
         
-        # Obter site
-        site_url = f"{GRAPH_API}/sites/{SHAREPOINT_DOMAIN}:{SITE_PATH}"
-        site_response = requests.get(site_url, headers=headers, timeout=10)
-        if site_response.status_code != 200:
-            logger.error(f"❌ Erro ao conectar site: {site_response.status_code}")
-            return jsonify({"status": "erro", "mensagem": "Erro ao conectar site"}), 400
-        site_id = site_response.json().get('id')
-        logger.info(f"✅ Site ID: {site_id}")
+        site_id, list_id = obter_site_e_lista(headers)
+        if not site_id or not list_id:
+            return jsonify({"status": "erro", "mensagem": "Erro ao conectar SharePoint"}), 400
         
-        # Obter lista
-        list_url = f"{GRAPH_API}/sites/{site_id}/lists/{LIST_NAME}"
-        list_response = requests.get(list_url, headers=headers, timeout=10)
-        if list_response.status_code != 200:
-            logger.error(f"❌ Erro ao conectar lista: {list_response.status_code}")
-            return jsonify({"status": "erro", "mensagem": "Erro ao conectar lista"}), 400
-        list_id = list_response.json().get('id')
-        logger.info(f"✅ List ID: {list_id}")
-        
-        # Procurar item por número
         query_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$filter=contains(fields/Title, '{numero}')"
         query_response = requests.get(query_url, headers=headers, timeout=10)
         if query_response.status_code != 200:
@@ -278,7 +258,6 @@ def concluir_chamado():
         item_id = item.get('id')
         logger.info(f"✅ Chamado encontrado: ID={item_id}")
         
-        # Atualizar status para "Concluído"
         update_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items/{item_id}"
         update_payload = {"fields": {"Status": "Concluído"}}
         
@@ -290,7 +269,6 @@ def concluir_chamado():
         
         logger.info(f"✅ Chamado #{numero} concluído com sucesso!")
         
-        # Retorna APENAS JSON (sem abrir página)
         return jsonify({
             "status": "sucesso",
             "mensagem": "✅ Chamado concluído com sucesso!",
@@ -301,6 +279,161 @@ def concluir_chamado():
     except Exception as e:
         logger.error(f"❌ ERRO em concluir_chamado: {e}")
         return jsonify({"status": "erro", "mensagem": str(e)}), 500
+
+
+# ============================================================
+# ✅ NOVOS ENDPOINTS - Usados pelo Dashboard (index.html)
+# ============================================================
+
+@app.route('/api/criar-chamado', methods=['POST', 'OPTIONS'])
+def criar_chamado_dashboard():
+    """Cria um chamado manualmente pelo Dashboard"""
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    try:
+        data = request.json
+        titulo = data.get('titulo', '').strip()
+        descricao = data.get('descricao', '').strip()
+        solicitante = data.get('solicitante', '').strip()
+        email = data.get('email', '').strip()
+        setor = data.get('setor', '').strip()
+        prioridade = data.get('prioridade', 'Média').strip()
+
+        if not titulo or not solicitante or not setor:
+            return jsonify({"status": "erro", "mensagem": "Campos obrigatórios faltando"}), 400
+
+        token = get_access_token()
+        if not token:
+            return jsonify({"status": "erro", "mensagem": "Falha ao conectar SharePoint"}), 401
+
+        headers = {'Authorization': f'Bearer {token}'}
+        site_id, list_id = obter_site_e_lista(headers)
+        if not site_id or not list_id:
+            return jsonify({"status": "erro", "mensagem": "Erro ao conectar SharePoint"}), 400
+
+        create_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items"
+
+        payload = {
+            "fields": {
+                "Title": titulo,
+                "Descricao": descricao,
+                "Solicitante": solicitante,
+                "Email": email,
+                "SetordeAtendimento": setor,
+                "Prioridade": prioridade,
+                "Status": "Aberto",
+                "Origem": "Dashboard"
+            }
+        }
+
+        response = requests.post(create_url, headers=headers, json=payload, timeout=10)
+
+        if response.status_code not in [200, 201]:
+            logger.error(f"❌ Erro ao criar: {response.status_code} - {response.text}")
+            return jsonify({"status": "erro", "mensagem": "Erro ao salvar no SharePoint"}), 400
+
+        logger.info(f"✅ Chamado '{titulo}' criado via Dashboard")
+        return jsonify({"status": "sucesso", "mensagem": "✅ Chamado criado com sucesso!"}), 201
+
+    except Exception as e:
+        logger.error(f"❌ ERRO em criar_chamado_dashboard: {e}")
+        return jsonify({"status": "erro", "mensagem": str(e)}), 500
+
+
+@app.route('/api/editar-chamado/<item_id>', methods=['PATCH', 'OPTIONS'])
+def editar_chamado(item_id):
+    """Edita um chamado existente pelo Dashboard (usa o ID direto do SharePoint)"""
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    try:
+        data = request.json
+        logger.info(f"🔄 Editando chamado ID={item_id} | dados={data}")
+
+        token = get_access_token()
+        if not token:
+            return jsonify({"status": "erro", "mensagem": "Falha ao conectar SharePoint"}), 401
+
+        headers = {'Authorization': f'Bearer {token}'}
+        site_id, list_id = obter_site_e_lista(headers)
+        if not site_id or not list_id:
+            return jsonify({"status": "erro", "mensagem": "Erro ao conectar SharePoint"}), 400
+
+        # Monta apenas os campos que vieram preenchidos
+        campos = {}
+        if 'titulo' in data and data['titulo']:
+            campos['Title'] = data['titulo']
+        if 'descricao' in data:
+            campos['Descricao'] = data['descricao']
+        if 'solicitante' in data:
+            campos['Solicitante'] = data['solicitante']
+        if 'email' in data:
+            campos['Email'] = data['email']
+        if 'setor' in data:
+            campos['SetordeAtendimento'] = data['setor']
+        if 'prioridade' in data:
+            campos['Prioridade'] = data['prioridade']
+        if 'status' in data:
+            campos['Status'] = data['status']
+
+        if not campos:
+            return jsonify({"status": "erro", "mensagem": "Nenhum campo para atualizar"}), 400
+
+        update_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items/{item_id}"
+        update_payload = {"fields": campos}
+
+        update_response = requests.patch(update_url, headers=headers, json=update_payload, timeout=10)
+
+        if update_response.status_code not in [200, 204]:
+            logger.error(f"❌ Erro ao atualizar: {update_response.status_code} - {update_response.text}")
+            return jsonify({"status": "erro", "mensagem": "Erro ao atualizar no SharePoint"}), 400
+
+        logger.info(f"✅ Chamado ID={item_id} atualizado com sucesso")
+        return jsonify({"status": "sucesso", "mensagem": "✅ Chamado atualizado com sucesso!"}), 200
+
+    except Exception as e:
+        logger.error(f"❌ ERRO em editar_chamado: {e}")
+        return jsonify({"status": "erro", "mensagem": str(e)}), 500
+
+
+@app.route('/api/deletar-chamado/<item_id>', methods=['DELETE', 'OPTIONS'])
+def deletar_chamado(item_id):
+    """Deleta um chamado pelo Dashboard (usa o ID direto do SharePoint)"""
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    try:
+        logger.info(f"🗑️ Deletando chamado ID={item_id}")
+
+        token = get_access_token()
+        if not token:
+            return jsonify({"status": "erro", "mensagem": "Falha ao conectar SharePoint"}), 401
+
+        headers = {'Authorization': f'Bearer {token}'}
+        site_id, list_id = obter_site_e_lista(headers)
+        if not site_id or not list_id:
+            return jsonify({"status": "erro", "mensagem": "Erro ao conectar SharePoint"}), 400
+
+        delete_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items/{item_id}"
+        delete_response = requests.delete(delete_url, headers=headers, timeout=10)
+
+        if delete_response.status_code not in [200, 204]:
+            logger.error(f"❌ Erro ao deletar: {delete_response.status_code} - {delete_response.text}")
+            return jsonify({"status": "erro", "mensagem": "Erro ao deletar no SharePoint"}), 400
+
+        logger.info(f"✅ Chamado ID={item_id} deletado com sucesso")
+        return jsonify({"status": "sucesso", "mensagem": "✅ Chamado deletado com sucesso!"}), 200
+
+    except Exception as e:
+        logger.error(f"❌ ERRO em deletar_chamado: {e}")
+        return jsonify({"status": "erro", "mensagem": str(e)}), 500
+
+
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({"status": "ok"}), 200
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
