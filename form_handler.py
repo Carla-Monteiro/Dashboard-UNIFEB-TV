@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Versão: 7.0 - Suporte a ?id= direto no concluir-chamado (usado pelo QR Code)"""
+"""Versão: 8.0 - Título sem timestamp duplicado + Prioridade padrão Média"""
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -120,7 +120,6 @@ def criar_manutencao():
         if not all([email, bloco, sala, tipo, categoria, descricao]):
             return jsonify({"status": "erro", "mensagem": "Campos obrigatórios faltando"}), 400
         
-        numero = gerar_numero_chamado()
         roteamento = obter_roteamento(categoria)
         tipo_problema = roteamento['tipo']
         solicitante = email.split('@')[0].replace('.', ' ').title()
@@ -139,7 +138,7 @@ def criar_manutencao():
         
         payload = {
             "fields": {
-                "Title": f"[{numero}] {categoria} - {bloco}/{sala}",
+                "Title": f"{categoria} - {bloco}/{sala}",
                 "Descricao": descricao,
                 "Solicitante": solicitante,
                 "Email": email,
@@ -147,7 +146,7 @@ def criar_manutencao():
                 "Sala": sala,
                 "Categoria": categoria,
                 "SetordeAtendimento": NOMES_SETORES.get(tipo_problema, 'Geral'),
-                "Prioridade": "Alta",
+                "Prioridade": "Média",
                 "Status": "Aberto",
                 "Origem": "QR Code"
             }
@@ -158,7 +157,11 @@ def criar_manutencao():
         if response.status_code not in [200, 201]:
             return jsonify({"status": "erro", "mensagem": "Erro ao salvar"}), 400
         
-        logger.info(f"✅ Chamado {numero} criado com sucesso")
+        # Captura o ID real do item criado no SharePoint (usado como "número do chamado")
+        item_criado = response.json()
+        numero = item_criado.get('id', '')
+        
+        logger.info(f"✅ Chamado #{numero} criado com sucesso")
         return jsonify({
             "status": "sucesso",
             "mensagem": "✅ Aviso enviado com sucesso!",

@@ -363,7 +363,7 @@
             if (blocoSelecionado && blocosESalas[blocoSelecionado]) {
                 blocosESalas[blocoSelecionado].forEach(sala => {
                     const option = document.createElement('option');
-                    option.value = sala === 'OUTROS' ? 'OUTROS' : blocoSelecionado + '-' + sala;
+                    option.value = sala === 'OUTROS' ? 'OUTROS' : sala;
                     option.textContent = sala === 'OUTROS' ? '✏️ OUTROS (Digite abaixo)' : 'Sala ' + sala;
                     salaSelect.appendChild(option);
                 });
