@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Versão: 10.1 - concluir-chamado agora retorna página HTML bonita (nao mais JSON cru)"""
+"""Versão: 12.0 - Recupera preenchimento automático de setor por email (nome.setor@feb.br)"""
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -33,6 +33,44 @@ NOMES_SETORES = {
     'manutencao': 'Manutenção Predial',
     'naem': 'Multimídia (NAEM)',
     'ti': 'TI / Internet'
+}
+
+# Mapeamento usado para PREENCHER AUTOMATICAMENTE o Setor de Atendimento
+# quando um chamado chega sem esse campo definido (ex: chamados abertos
+# por e-mail, cujo endereço segue o padrão nome.setor@feb.br)
+EMAIL_SETOR_MAPPING = {
+    'almoxarifado': 'Almoxarifado',
+    'biblioteca': 'Biblioteca',
+    'coordenacao': 'Coordenação de Professores',
+    'clinica': 'Clínica Odontológica',
+    'colegio': 'Colégio FEB',
+    'dti': 'Departamento de Tecnologia',
+    'matricula': 'Matrícula',
+    'coordenacao_lab': 'Coordenação Laboratórios',
+    'laboratorio': 'Coordenação Laboratórios',
+    'manutencao': 'Manutenção',
+    'cpa': 'Comissão Própria de Avaliação (CPA)',
+    'neu': 'NEU',
+    'marketing': 'Marketing',
+    'nape': 'NAPE',
+    'npj': 'Núcleo Práticas Jurídicas',
+    'financeiro': 'Atendimento Financeiro',
+    'pradm': 'PRADM',
+    'dejur': 'Departamento Jurídico - DEJUR',
+    'proaluno': 'Pró Aluno',
+    'reitoria': 'Reitoria',
+    'rh': 'RH',
+    'secretaria': 'Secretaria',
+    'conselho': 'Conselho Curador',
+    'clivet': 'Clínica Medicina Veterinária',
+    'sala_professor': 'Sala Atendimento Professor ao Aluno',
+    'cartorio': 'Cartório - Núcleo Práticas Jurídicas',
+    'sala_professores': 'Sala dos Professores',
+    'ouvidoria': 'Ouvidoria',
+    'sustentabilidade': 'Núcleo de Sustentabilidade',
+    'labinfo': 'Laboratórios de Informática',
+    'fisio': 'Clínica de Fisioterapia',
+    'nac': 'NAC',
 }
 
 CATEGORIAS_ROTEAMENTO = {
@@ -193,6 +231,63 @@ def criar_manutencao():
         logger.error(f"ERRO em criar_manutencao: {e}")
         return jsonify({"status": "erro", "mensagem": str(e)}), 500
 
+def extrair_setor_do_email(email):
+    """Extrai o setor baseado no padrão do email (nome.setor@feb.br)"""
+    try:
+        if not email:
+            return None
+
+        email_lower = email.lower().strip()
+        if '@' not in email_lower or '.' not in email_lower:
+            return None
+
+        parte_email = email_lower.split('@')[0]
+        departamento_sigla = parte_email.split('.')[-1]
+
+        setor = EMAIL_SETOR_MAPPING.get(departamento_sigla)
+        if setor:
+            logger.info(f"✅ Setor extraído do email '{email}': {setor}")
+        return setor
+
+    except Exception as e:
+        logger.warning(f"⚠️ Erro ao extrair setor do email '{email}': {e}")
+        return None
+
+
+def preencher_setores_faltantes(items, headers, site_id, list_id):
+    """Detecta chamados sem 'SetordeAtendimento' e preenche automaticamente
+    com base no padrão do e-mail (nome.setor@feb.br). Atualiza no SharePoint
+    e retorna um dict {item_id: setor_novo} para refletir na resposta atual
+    sem precisar esperar a próxima consulta."""
+    setores_preenchidos = {}
+    try:
+        for item in items:
+            item_id = item.get('id')
+            fields = item.get('fields', {})
+            setor_atual = (fields.get('SetordeAtendimento') or '').strip()
+            email = (fields.get('Email') or '').strip()
+
+            if not setor_atual and email:
+                setor_novo = extrair_setor_do_email(email)
+                if setor_novo:
+                    update_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items/{item_id}"
+                    update_response = requests.patch(
+                        update_url,
+                        headers=headers,
+                        json={"fields": {"SetordeAtendimento": setor_novo}},
+                        timeout=10
+                    )
+                    if update_response.status_code in [200, 204]:
+                        logger.info(f"✅ Setor preenchido automaticamente para chamado #{item_id}: {setor_novo}")
+                        setores_preenchidos[item_id] = setor_novo
+                    else:
+                        logger.warning(f"⚠️ Falha ao preencher setor do chamado #{item_id}: {update_response.status_code}")
+    except Exception as e:
+        logger.error(f"❌ Erro em preencher_setores_faltantes: {e}")
+
+    return setores_preenchidos
+
+
 @app.route('/api/chamados', methods=['GET'])
 def obter_chamados():
     """Retorna lista de todos os chamados do SharePoint"""
@@ -213,12 +308,18 @@ def obter_chamados():
             return jsonify([]), 200
         
         items = items_response.json().get('value', [])
+
+        # Preenche automaticamente o setor de chamados que chegaram sem esse
+        # campo (tipicamente chamados abertos por e-mail, ex: carla.dti@feb.br)
+        setores_preenchidos = preencher_setores_faltantes(items, headers, site_id, list_id)
         
         chamados = []
         for item in items:
             fields = item.get('fields', {})
+            item_id = item.get('id')
+            setor = fields.get('SetordeAtendimento', '') or setores_preenchidos.get(item_id, '')
             chamado = {
-                'id': item.get('id'),
+                'id': item_id,
                 'titulo': fields.get('Title', ''),
                 'solicitante': fields.get('Solicitante', ''),
                 'email': fields.get('Email', ''),
@@ -229,8 +330,8 @@ def obter_chamados():
                 'bloco': fields.get('Bloco', ''),
                 'sala': fields.get('Sala', ''),
                 'categoria': fields.get('Categoria', ''),
-                'setor': fields.get('SetordeAtendimento', ''),
-                'setorAtendimento': fields.get('SetordeAtendimento', ''),
+                'setor': setor,
+                'setorAtendimento': setor,
                 'numeroChamado': fields.get('NumeroChamado', ''),
                 'data': fields.get('DataAbertura', datetime.now().isoformat()),
             }
