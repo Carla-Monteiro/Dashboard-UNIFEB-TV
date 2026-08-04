@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Versão: 6.0 - Adiciona /api/criar-chamado, /api/editar-chamado, /api/deletar-chamado (usados pelo Dashboard)"""
+"""Versão: 7.0 - Suporte a ?id= direto no concluir-chamado (usado pelo QR Code)"""
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -220,18 +220,22 @@ def obter_chamados():
 
 @app.route('/api/concluir-chamado', methods=['GET', 'OPTIONS'])
 def concluir_chamado():
-    """Conclui um chamado e retorna JSON (sem abrir página)"""
+    """Conclui um chamado e retorna JSON (sem abrir página).
+    Aceita DOIS modos:
+      - ?id=123        -> atualiza DIRETO o item pelo ID do SharePoint (recomendado / usado pelo QR Code)
+      - ?numero=XXXX   -> procura pelo número embutido no Title (modo antigo / e-mail dos funcionários)
+    """
     if request.method == 'OPTIONS':
         return '', 200
     
     try:
+        item_id_direto = request.args.get('id')
         numero = request.args.get('numero')
-        if not numero:
-            logger.warning("❌ Número não informado")
-            return jsonify({"status": "erro", "mensagem": "Número não informado"}), 400
-        
-        logger.info(f"🔄 Processando conclusão do chamado #{numero}")
-        
+
+        if not item_id_direto and not numero:
+            logger.warning("❌ Nem 'id' nem 'numero' foram informados")
+            return jsonify({"status": "erro", "mensagem": "Informe 'id' ou 'numero'"}), 400
+
         token = get_access_token()
         if not token:
             logger.error("❌ Falha ao obter token")
@@ -242,21 +246,29 @@ def concluir_chamado():
         site_id, list_id = obter_site_e_lista(headers)
         if not site_id or not list_id:
             return jsonify({"status": "erro", "mensagem": "Erro ao conectar SharePoint"}), 400
-        
-        query_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$filter=contains(fields/Title, '{numero}')"
-        query_response = requests.get(query_url, headers=headers, timeout=10)
-        if query_response.status_code != 200:
-            logger.error(f"❌ Erro na query: {query_response.status_code}")
-            return jsonify({"status": "erro", "mensagem": "Erro ao procurar chamado"}), 400
-        
-        items = query_response.json().get('value', [])
-        if not items:
-            logger.warning(f"❌ Chamado #{numero} não encontrado")
-            return jsonify({"status": "erro", "mensagem": "Chamado não encontrado"}), 404
-        
-        item = items[0]
-        item_id = item.get('id')
-        logger.info(f"✅ Chamado encontrado: ID={item_id}")
+
+        # ===== MODO 1: ID direto do SharePoint (usado pelo QR Code) =====
+        if item_id_direto:
+            item_id = item_id_direto
+            logger.info(f"🔄 Concluindo chamado por ID direto: {item_id}")
+        # ===== MODO 2: busca por número embutido no Title (usado pelo e-mail) =====
+        else:
+            logger.info(f"🔄 Processando conclusão do chamado #{numero} (busca por Title)")
+            query_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$filter=contains(fields/Title, '{numero}')"
+            query_response = requests.get(query_url, headers=headers, timeout=10)
+            if query_response.status_code != 200:
+                logger.error(f"❌ Erro na query: {query_response.status_code}")
+                return jsonify({"status": "erro", "mensagem": "Erro ao procurar chamado"}), 400
+            
+            items = query_response.json().get('value', [])
+            if not items:
+                logger.warning(f"❌ Chamado #{numero} não encontrado")
+                return jsonify({"status": "erro", "mensagem": "Chamado não encontrado"}), 404
+            
+            item = items[0]
+            item_id = item.get('id')
+
+        logger.info(f"✅ Atualizando chamado ID={item_id}")
         
         update_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items/{item_id}"
         update_payload = {"fields": {"Status": "Concluído"}}
@@ -267,12 +279,12 @@ def concluir_chamado():
             logger.error(f"❌ Erro ao atualizar: {update_response.status_code}")
             return jsonify({"status": "erro", "mensagem": "Erro ao atualizar chamado"}), 400
         
-        logger.info(f"✅ Chamado #{numero} concluído com sucesso!")
+        logger.info(f"✅ Chamado ID={item_id} concluído com sucesso!")
         
         return jsonify({
             "status": "sucesso",
             "mensagem": "✅ Chamado concluído com sucesso!",
-            "numero": numero,
+            "id": item_id,
             "timestamp": datetime.now().isoformat()
         }), 200
         
