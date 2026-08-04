@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Versão: 8.0 - Título sem timestamp duplicado + Prioridade padrão Média"""
+"""Versão: 9.0 - DataAbertura+NumeroChamado gravados no SharePoint | Dashboard: data+hora e Salas de Aula"""
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -49,7 +49,7 @@ CATEGORIAS_ROTEAMENTO = {
     '🔊 Cabos de Som': {'tipo': 'naem'},
     '❄️ Controle A/C': {'tipo': 'naem'},
     '📻 Outro': {'tipo': 'naem'},
-    '🌐 Internet/Wi-Fi': {'tipo': 'ti'},
+    '🌐 TI / Internet': {'tipo': 'ti'},
     '💻 Computador': {'tipo': 'ti'},
     '⌨️ Teclado': {'tipo': 'ti'},
     '🖱️ Mouse': {'tipo': 'ti'},
@@ -136,6 +136,9 @@ def criar_manutencao():
         
         create_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items"
         
+        agora = datetime.now()
+        data_abertura_iso = agora.strftime('%Y-%m-%dT%H:%M:%SZ')
+        
         payload = {
             "fields": {
                 "Title": f"{categoria} - {bloco}/{sala}",
@@ -148,18 +151,33 @@ def criar_manutencao():
                 "SetordeAtendimento": NOMES_SETORES.get(tipo_problema, 'Geral'),
                 "Prioridade": "Média",
                 "Status": "Aberto",
-                "Origem": "QR Code"
+                "Origem": "QR Code",
+                "DataAbertura": data_abertura_iso
             }
         }
         
         response = requests.post(create_url, headers=headers, json=payload, timeout=10)
         
         if response.status_code not in [200, 201]:
+            logger.error(f"❌ Erro ao criar item: {response.status_code} - {response.text}")
             return jsonify({"status": "erro", "mensagem": "Erro ao salvar"}), 400
         
         # Captura o ID real do item criado no SharePoint (usado como "número do chamado")
         item_criado = response.json()
         numero = item_criado.get('id', '')
+        
+        # Grava o NumeroChamado formatado (ex: CH-0995) de volta no item
+        try:
+            numero_formatado = f"CH-{int(numero):04d}"
+            update_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items/{numero}"
+            requests.patch(
+                update_url,
+                headers=headers,
+                json={"fields": {"NumeroChamado": numero_formatado}},
+                timeout=10
+            )
+        except Exception as e:
+            logger.warning(f"⚠️ Não foi possível gravar NumeroChamado: {e}")
         
         logger.info(f"✅ Chamado #{numero} criado com sucesso")
         return jsonify({
@@ -210,6 +228,7 @@ def obter_chamados():
                 'categoria': fields.get('Categoria', ''),
                 'setor': fields.get('SetordeAtendimento', ''),
                 'setorAtendimento': fields.get('SetordeAtendimento', ''),
+                'numeroChamado': fields.get('NumeroChamado', ''),
                 'data': fields.get('DataAbertura', datetime.now().isoformat()),
             }
             chamados.append(chamado)
@@ -329,6 +348,8 @@ def criar_chamado_dashboard():
 
         create_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items"
 
+        data_abertura_iso = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+
         payload = {
             "fields": {
                 "Title": titulo,
@@ -338,7 +359,8 @@ def criar_chamado_dashboard():
                 "SetordeAtendimento": setor,
                 "Prioridade": prioridade,
                 "Status": "Aberto",
-                "Origem": "Dashboard"
+                "Origem": "Dashboard",
+                "DataAbertura": data_abertura_iso
             }
         }
 
@@ -347,6 +369,20 @@ def criar_chamado_dashboard():
         if response.status_code not in [200, 201]:
             logger.error(f"❌ Erro ao criar: {response.status_code} - {response.text}")
             return jsonify({"status": "erro", "mensagem": "Erro ao salvar no SharePoint"}), 400
+
+        item_criado = response.json()
+        novo_id = item_criado.get('id', '')
+        try:
+            numero_formatado = f"CH-{int(novo_id):04d}"
+            update_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items/{novo_id}"
+            requests.patch(
+                update_url,
+                headers=headers,
+                json={"fields": {"NumeroChamado": numero_formatado}},
+                timeout=10
+            )
+        except Exception as e:
+            logger.warning(f"⚠️ Não foi possível gravar NumeroChamado: {e}")
 
         logger.info(f"✅ Chamado '{titulo}' criado via Dashboard")
         return jsonify({"status": "sucesso", "mensagem": "✅ Chamado criado com sucesso!"}), 201
