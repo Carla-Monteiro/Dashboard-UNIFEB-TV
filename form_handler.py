@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Versão: 10.0 - Endpoint /api/pesquisas (pesquisa de satisfação) adicionado"""
+"""Versão: 10.1 - concluir-chamado agora retorna página HTML bonita (nao mais JSON cru)"""
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -243,34 +243,121 @@ def obter_chamados():
         logger.error(f"ERRO em obter_chamados: {e}")
         return jsonify([]), 200
 
+def pagina_confirmacao(sucesso, mensagem, item_id=None):
+    """Gera uma página HTML simples e bonita de confirmação/erro,
+    usada como retorno visual ao clicar no botão 'Marcar como Resolvido'."""
+    cor_principal = "#00c864" if sucesso else "#ff6464"
+    icone = "✅" if sucesso else "⚠️"
+    titulo = "Chamado Concluído!" if sucesso else "Ops, algo deu errado"
+    subtitulo = f"Chamado #{item_id} foi marcado como concluído com sucesso." if sucesso else mensagem
+
+    html = f"""
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>#SuporteUNIFEB</title>
+        <style>
+            * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+            body {{
+                font-family: 'Segoe UI', Arial, sans-serif;
+                background: linear-gradient(135deg, #1a2a5e 0%, #2a3a7e 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }}
+            .card {{
+                background: #fff;
+                border-radius: 16px;
+                padding: 50px 40px;
+                max-width: 420px;
+                width: 100%;
+                text-align: center;
+                box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            }}
+            .icone {{
+                font-size: 64px;
+                margin-bottom: 20px;
+            }}
+            .titulo {{
+                font-size: 24px;
+                font-weight: bold;
+                color: {cor_principal};
+                margin-bottom: 12px;
+            }}
+            .subtitulo {{
+                font-size: 15px;
+                color: #555;
+                line-height: 1.5;
+                margin-bottom: 25px;
+            }}
+            .rodape {{
+                font-size: 12px;
+                color: #999;
+                border-top: 1px solid #eee;
+                padding-top: 18px;
+                margin-top: 10px;
+            }}
+            .fechar-aviso {{
+                font-size: 13px;
+                color: #888;
+                margin-top: 8px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <div class="icone">{icone}</div>
+            <div class="titulo">{titulo}</div>
+            <div class="subtitulo">{subtitulo}</div>
+            <div class="fechar-aviso">Você já pode fechar esta aba.</div>
+            <div class="rodape">Sistema #SuporteUNIFEB &bull; Gerenciamento em Tempo Real</div>
+        </div>
+    </body>
+    </html>
+    """
+    return html
+
 @app.route('/api/concluir-chamado', methods=['GET', 'OPTIONS'])
 def concluir_chamado():
-    """Conclui um chamado e retorna JSON (sem abrir página).
+    """Conclui um chamado e retorna uma página HTML de confirmação (amigável para clique em email).
     Aceita DOIS modos:
       - ?id=123        -> atualiza DIRETO o item pelo ID do SharePoint (recomendado / usado pelo QR Code)
       - ?numero=XXXX   -> procura pelo número embutido no Title (modo antigo / e-mail dos funcionários)
+    Para integrações que precisam de JSON puro, adicione ?formato=json na URL.
     """
     if request.method == 'OPTIONS':
         return '', 200
-    
+
+    quer_json = request.args.get('formato') == 'json'
+
     try:
         item_id_direto = request.args.get('id')
         numero = request.args.get('numero')
 
         if not item_id_direto and not numero:
             logger.warning("❌ Nem 'id' nem 'numero' foram informados")
-            return jsonify({"status": "erro", "mensagem": "Informe 'id' ou 'numero'"}), 400
+            if quer_json:
+                return jsonify({"status": "erro", "mensagem": "Informe 'id' ou 'numero'"}), 400
+            return pagina_confirmacao(False, "Informe o número do chamado."), 400
 
         token = get_access_token()
         if not token:
             logger.error("❌ Falha ao obter token")
-            return jsonify({"status": "erro", "mensagem": "Falha ao conectar"}), 401
+            if quer_json:
+                return jsonify({"status": "erro", "mensagem": "Falha ao conectar"}), 401
+            return pagina_confirmacao(False, "Falha ao conectar com o SharePoint."), 401
         
         headers = {'Authorization': f'Bearer {token}'}
         
         site_id, list_id = obter_site_e_lista(headers)
         if not site_id or not list_id:
-            return jsonify({"status": "erro", "mensagem": "Erro ao conectar SharePoint"}), 400
+            if quer_json:
+                return jsonify({"status": "erro", "mensagem": "Erro ao conectar SharePoint"}), 400
+            return pagina_confirmacao(False, "Erro ao conectar com o SharePoint."), 400
 
         # ===== MODO 1: ID direto do SharePoint (usado pelo QR Code) =====
         if item_id_direto:
@@ -283,12 +370,16 @@ def concluir_chamado():
             query_response = requests.get(query_url, headers=headers, timeout=10)
             if query_response.status_code != 200:
                 logger.error(f"❌ Erro na query: {query_response.status_code}")
-                return jsonify({"status": "erro", "mensagem": "Erro ao procurar chamado"}), 400
+                if quer_json:
+                    return jsonify({"status": "erro", "mensagem": "Erro ao procurar chamado"}), 400
+                return pagina_confirmacao(False, "Erro ao procurar o chamado."), 400
             
             items = query_response.json().get('value', [])
             if not items:
                 logger.warning(f"❌ Chamado #{numero} não encontrado")
-                return jsonify({"status": "erro", "mensagem": "Chamado não encontrado"}), 404
+                if quer_json:
+                    return jsonify({"status": "erro", "mensagem": "Chamado não encontrado"}), 404
+                return pagina_confirmacao(False, "Chamado não encontrado."), 404
             
             item = items[0]
             item_id = item.get('id')
@@ -302,20 +393,27 @@ def concluir_chamado():
         
         if update_response.status_code not in [200, 204]:
             logger.error(f"❌ Erro ao atualizar: {update_response.status_code}")
-            return jsonify({"status": "erro", "mensagem": "Erro ao atualizar chamado"}), 400
+            if quer_json:
+                return jsonify({"status": "erro", "mensagem": "Erro ao atualizar chamado"}), 400
+            return pagina_confirmacao(False, "Erro ao atualizar o chamado no SharePoint."), 400
         
         logger.info(f"✅ Chamado ID={item_id} concluído com sucesso!")
         
-        return jsonify({
-            "status": "sucesso",
-            "mensagem": "✅ Chamado concluído com sucesso!",
-            "id": item_id,
-            "timestamp": datetime.now().isoformat()
-        }), 200
+        if quer_json:
+            return jsonify({
+                "status": "sucesso",
+                "mensagem": "✅ Chamado concluído com sucesso!",
+                "id": item_id,
+                "timestamp": datetime.now().isoformat()
+            }), 200
+
+        return pagina_confirmacao(True, "", item_id), 200
         
     except Exception as e:
         logger.error(f"❌ ERRO em concluir_chamado: {e}")
-        return jsonify({"status": "erro", "mensagem": str(e)}), 500
+        if quer_json:
+            return jsonify({"status": "erro", "mensagem": str(e)}), 500
+        return pagina_confirmacao(False, "Ocorreu um erro inesperado. Tente novamente."), 500
 
 
 # ============================================================
