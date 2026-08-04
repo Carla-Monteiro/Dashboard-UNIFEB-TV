@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Versão: 9.0 - DataAbertura+NumeroChamado gravados no SharePoint | Dashboard: data+hora e Salas de Aula"""
+"""Versão: 10.0 - Endpoint /api/pesquisas (pesquisa de satisfação) adicionado"""
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -23,6 +23,7 @@ GRAPH_API = "https://graph.microsoft.com/v1.0"
 SHAREPOINT_DOMAIN = "unifeb.sharepoint.com"
 SITE_PATH = "/sites/SuporteDTI"
 LIST_NAME = "Chamados"
+LISTA_PESQUISAS = "PesquisasSatisfacao"
 
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
@@ -83,8 +84,10 @@ def obter_roteamento(categoria):
         return CATEGORIAS_ROTEAMENTO[categoria]
     return {'tipo': 'ti'}
 
-def obter_site_e_lista(headers):
-    """Helper: retorna (site_id, list_id) ou (None, None) em caso de erro"""
+def obter_site_e_lista(headers, nome_lista=None):
+    """Helper: retorna (site_id, list_id) ou (None, None) em caso de erro.
+    Se nome_lista não for informado, usa a lista padrão 'Chamados'."""
+    lista = nome_lista or LIST_NAME
     site_url = f"{GRAPH_API}/sites/{SHAREPOINT_DOMAIN}:{SITE_PATH}"
     site_response = requests.get(site_url, headers=headers, timeout=10)
     if site_response.status_code != 200:
@@ -92,10 +95,10 @@ def obter_site_e_lista(headers):
         return None, None
     site_id = site_response.json().get('id')
 
-    list_url = f"{GRAPH_API}/sites/{site_id}/lists/{LIST_NAME}"
+    list_url = f"{GRAPH_API}/sites/{site_id}/lists/{lista}"
     list_response = requests.get(list_url, headers=headers, timeout=10)
     if list_response.status_code != 200:
-        logger.error(f"❌ Erro ao conectar lista: {list_response.status_code}")
+        logger.error(f"❌ Erro ao conectar lista '{lista}': {list_response.status_code}")
         return None, None
     list_id = list_response.json().get('id')
 
@@ -479,6 +482,46 @@ def deletar_chamado(item_id):
     except Exception as e:
         logger.error(f"❌ ERRO em deletar_chamado: {e}")
         return jsonify({"status": "erro", "mensagem": str(e)}), 500
+
+
+@app.route('/api/pesquisas', methods=['GET'])
+def obter_pesquisas():
+    """Retorna todas as respostas da Pesquisa de Satisfação (lista PesquisasSatisfacao)"""
+    try:
+        token = get_access_token()
+        if not token:
+            return jsonify([]), 200
+
+        headers = {'Authorization': f'Bearer {token}'}
+        site_id, list_id = obter_site_e_lista(headers, LISTA_PESQUISAS)
+        if not site_id or not list_id:
+            return jsonify([]), 200
+
+        items_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$expand=fields"
+        items_response = requests.get(items_url, headers=headers, timeout=10)
+
+        if items_response.status_code != 200:
+            return jsonify([]), 200
+
+        items = items_response.json().get('value', [])
+
+        pesquisas = []
+        for item in items:
+            fields = item.get('fields', {})
+            pesquisas.append({
+                'id': item.get('id'),
+                'avaliacao': fields.get('Avaliacao', ''),
+                'comentario': fields.get('Comentario', ''),
+                'numeroChamado': fields.get('NumeroChamado', ''),
+                'dataResposta': fields.get('Created', datetime.now().isoformat()),
+            })
+
+        logger.info(f"✅ {len(pesquisas)} pesquisas de satisfação retornadas")
+        return jsonify(pesquisas), 200
+
+    except Exception as e:
+        logger.error(f"ERRO em obter_pesquisas: {e}")
+        return jsonify([]), 200
 
 
 @app.route('/health', methods=['GET'])

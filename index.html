@@ -590,6 +590,7 @@
             <button class="tab" onclick="mostrarAba('naem')">📽️ NAEM</button>
             <button class="tab" onclick="mostrarAba('manutencao')">🔧 Manutenção</button>
             <button class="tab" onclick="mostrarAba('graficos')">📊 Gráficos</button>
+            <button class="tab" onclick="mostrarAba('satisfacao')">⭐ Satisfação</button>
         </div>
 
         <!-- FILTROS -->
@@ -693,6 +694,66 @@
                     <canvas id="graficoSetor"></canvas>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- ABA: SATISFAÇÃO -->
+    <div id="satisfacao" class="tab-content">
+        <div class="stats-section">
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-label">Total de Respostas</div>
+                <div class="stat-number" id="satisfTotal">0</div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-icon">😃</div>
+                <div class="stat-label">Ótimo</div>
+                <div class="stat-number" id="satisfOtimo">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🙂</div>
+                <div class="stat-label">Bom</div>
+                <div class="stat-number" id="satisfBom">0</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-icon">😞</div>
+                <div class="stat-label">Ruim</div>
+                <div class="stat-number" id="satisfRuim">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-label">Índice de Satisfação</div>
+                <div class="stat-number" id="satisfIndice">0%</div>
+            </div>
+        </div>
+
+        <div class="graficos-grid">
+            <div class="chart-card">
+                <h3>⭐ Avaliação Geral</h3>
+                <canvas id="graficoAvaliacaoGeral"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>🏢 Satisfação por Setor</h3>
+                <canvas id="graficoSatisfacaoSetor"></canvas>
+            </div>
+        </div>
+
+        <div class="table-wrapper" style="margin-top: 20px;">
+            <h3 style="padding: 15px 20px 0; color: #ffa500;">💬 Comentários Recebidos</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Avaliação</th>
+                        <th>Comentário</th>
+                        <th>Chamado</th>
+                        <th>Setor</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodySatisfacao">
+                    <tr><td colspan="5" class="empty-state">Carregando...</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -887,6 +948,7 @@
     <script>
         let CHAMADOS = [];
         let CHAMADOS_FILTRADOS = [];
+        let PESQUISAS = [];
 
         async function carregarDados() {
             try {
@@ -943,6 +1005,8 @@
                 renderizarNAEM();
             } else if (abaName === 'ti') {
                 renderizarTI();
+            } else if (abaName === 'satisfacao') {
+                setTimeout(() => carregarESatisfacao(), 200);
             }
         }
 
@@ -1222,6 +1286,118 @@
                     }
                 }
             });
+        }
+
+        async function carregarESatisfacao() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/pesquisas`);
+                PESQUISAS = await response.json();
+            } catch (e) {
+                console.error('Erro ao carregar pesquisas:', e);
+                PESQUISAS = [];
+            }
+            renderizarSatisfacao();
+        }
+
+        function limparHTMLSatisf(texto) {
+            const div = document.createElement('div');
+            div.textContent = texto || '';
+            return div.innerHTML;
+        }
+
+        function renderizarSatisfacao() {
+            const total = PESQUISAS.length;
+            const qtdOtimo = PESQUISAS.filter(p => p.avaliacao === 'Ótimo' || p.avaliacao === 'Otimo').length;
+            const qtdBom = PESQUISAS.filter(p => p.avaliacao === 'Bom').length;
+            const qtdRuim = PESQUISAS.filter(p => p.avaliacao === 'Ruim').length;
+
+            document.getElementById('satisfTotal').textContent = total;
+            document.getElementById('satisfOtimo').textContent = qtdOtimo;
+            document.getElementById('satisfBom').textContent = qtdBom;
+            document.getElementById('satisfRuim').textContent = qtdRuim;
+
+            // Índice de satisfação: Ótimo=100%, Bom=60%, Ruim=0% (média ponderada)
+            const indice = total > 0 ? Math.round(((qtdOtimo * 100) + (qtdBom * 60) + (qtdRuim * 0)) / total) : 0;
+            document.getElementById('satisfIndice').textContent = indice + '%';
+
+            // ===== GRÁFICO: Avaliação Geral =====
+            if (window.graficoAvaliacaoChart) window.graficoAvaliacaoChart.destroy();
+            const avalLabels = [], avalData = [], avalCores = [];
+            if (qtdOtimo > 0) { avalLabels.push('Ótimo'); avalData.push(qtdOtimo); avalCores.push('#00c864'); }
+            if (qtdBom > 0) { avalLabels.push('Bom'); avalData.push(qtdBom); avalCores.push('#64c8ff'); }
+            if (qtdRuim > 0) { avalLabels.push('Ruim'); avalData.push(qtdRuim); avalCores.push('#ff6464'); }
+
+            window.graficoAvaliacaoChart = new Chart(document.getElementById('graficoAvaliacaoGeral'), {
+                type: 'doughnut',
+                data: { labels: avalLabels, datasets: [{ data: avalData, backgroundColor: avalCores, borderWidth: 2, borderColor: '#0d1b2e' }] },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#aaa', font: { size: 12 }, padding: 12 } },
+                        tooltip: { callbacks: { label: (ctx) => { const t = avalData.reduce((a,b)=>a+b,0); const pct = t ? ((ctx.raw/t)*100).toFixed(1) : 0; return ` ${ctx.label}: ${ctx.raw} (${pct}%)`; } } }
+                    }
+                }
+            });
+
+            // ===== Cruzamento: Satisfação por Setor (usando NumeroChamado -> CHAMADOS) =====
+            const setorStats = {}; // { setor: {otimo, bom, ruim} }
+            PESQUISAS.forEach(p => {
+                const chamado = CHAMADOS.find(c => String(c.id) === String(p.numeroChamado));
+                const setor = chamado ? (chamado.setorAtendimento || 'Geral') : 'Não identificado';
+                if (!setorStats[setor]) setorStats[setor] = { otimo: 0, bom: 0, ruim: 0 };
+                if (p.avaliacao === 'Ótimo' || p.avaliacao === 'Otimo') setorStats[setor].otimo++;
+                else if (p.avaliacao === 'Bom') setorStats[setor].bom++;
+                else if (p.avaliacao === 'Ruim') setorStats[setor].ruim++;
+            });
+
+            const setoresLabels = Object.keys(setorStats);
+            const setorIndices = setoresLabels.map(s => {
+                const st = setorStats[s];
+                const t = st.otimo + st.bom + st.ruim;
+                return t > 0 ? Math.round(((st.otimo * 100) + (st.bom * 60)) / t) : 0;
+            });
+
+            if (window.graficoSatisfSetorChart) window.graficoSatisfSetorChart.destroy();
+            window.graficoSatisfSetorChart = new Chart(document.getElementById('graficoSatisfacaoSetor'), {
+                type: 'bar',
+                data: {
+                    labels: setoresLabels,
+                    datasets: [{ label: 'Índice de Satisfação (%)', data: setorIndices, backgroundColor: setorIndices.map(v => v >= 70 ? '#00c864' : v >= 40 ? '#ffa500' : '#ff6464'), borderRadius: 6 }]
+                },
+                options: {
+                    responsive: true,
+                    indexAxis: 'y',
+                    scales: {
+                        x: { ticks: { color: '#aaa' }, beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { ticks: { color: '#aaa' }, grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // ===== Tabela de comentários =====
+            const tbody = document.getElementById('tbodySatisfacao');
+            const comComentario = PESQUISAS.filter(p => p.comentario && p.comentario.trim() !== '');
+
+            if (comComentario.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-state">📭 Nenhum comentário recebido ainda</td></tr>`;
+                return;
+            }
+
+            const badgeAval = (a) => a === 'Ótimo' || a === 'Otimo' ? 'resolvido' : a === 'Bom' ? 'aberto' : 'alta';
+
+            tbody.innerHTML = comComentario.slice().reverse().map(p => {
+                const chamado = CHAMADOS.find(c => String(c.id) === String(p.numeroChamado));
+                const setor = chamado ? (chamado.setorAtendimento || 'Geral') : '—';
+                return `
+                <tr>
+                    <td><span class="badge badge-${badgeAval(p.avaliacao)}">${p.avaliacao || '—'}</span></td>
+                    <td>${limparHTMLSatisf(p.comentario)}</td>
+                    <td>#${p.numeroChamado || '—'}</td>
+                    <td>${setor}</td>
+                    <td>${formatarData(p.dataResposta)}</td>
+                </tr>`;
+            }).join('');
         }
 
         function getBadgePrio(p) { return p === 'Alta' ? 'alta' : p === 'Baixa' ? 'baixa' : 'media'; }
