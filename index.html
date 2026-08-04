@@ -600,7 +600,7 @@
                     <option value="">-- Todos os Status --</option>
                     <option value="Aberto">Aberto</option>
                     <option value="Em andamento">Em andamento</option>
-                    <option value="Resolvido">Resolvido</option>
+                    <option value="Concluído">Concluído</option>
                 </select>
             </div>
             <div class="filter-item">
@@ -673,7 +673,7 @@
                 </div>
                 <div class="stat-card success">
                     <div class="stat-icon">✅</div>
-                    <div class="stat-label">Resolvidos</div>
+                    <div class="stat-label">Concluídos</div>
                     <div class="stat-number" id="statResolvidos">0</div>
                 </div>
             </div>
@@ -871,7 +871,7 @@
                     <select id="status" style="width: 100%; padding: 12px 14px; background: #1a2f4d; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
                         <option value="Aberto" style="background: #1a2f4d; color: #fff;">Aberto</option>
                         <option value="Em andamento" style="background: #1a2f4d; color: #fff;">Em andamento</option>
-                        <option value="Resolvido" style="background: #1a2f4d; color: #fff;">Resolvido</option>
+                        <option value="Concluído" style="background: #1a2f4d; color: #fff;">Concluído</option>
                     </select>
                 </div>
                 <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 2px solid rgba(255, 165, 0, 0.2);">
@@ -1101,70 +1101,125 @@
             document.getElementById('slaModal').classList.remove('active');
         }
 
+        function normalizarStatus(status) {
+            if (status === 'Resolvido' || status === 'Concluido' || status === 'Concluído') return 'Concluído';
+            if (status === 'Em andamento' || status === 'Em Andamento') return 'Em Andamento';
+            if (status === 'Aberto') return 'Aberto';
+            return status || 'Aberto';
+        }
+
+        function gerarCoresDinamicas(qtd) {
+            // Gera uma paleta de cores distintas (HSL) suficiente para qualquer número de setores
+            const cores = [];
+            for (let i = 0; i < qtd; i++) {
+                const hue = Math.round((360 / qtd) * i);
+                cores.push(`hsl(${hue}, 65%, 58%)`);
+            }
+            return cores;
+        }
+
         function desenharGraficos() {
             const statusCounts = {}, prioridadeCounts = {}, setorCounts = {};
 
             CHAMADOS.forEach(c => {
-                statusCounts[c.status] = (statusCounts[c.status] || 0) + 1;
+                const statusNorm = normalizarStatus(c.status);
+                statusCounts[statusNorm] = (statusCounts[statusNorm] || 0) + 1;
                 prioridadeCounts[c.prioridade] = (prioridadeCounts[c.prioridade] || 0) + 1;
-                setorCounts[c.setorAtendimento] = (setorCounts[c.setorAtendimento] || 0) + 1;
+                const setorNome = c.setorAtendimento || 'Geral';
+                setorCounts[setorNome] = (setorCounts[setorNome] || 0) + 1;
             });
 
-            // Atualizar estatísticas
+            // Atualizar estatísticas (usando status normalizado, evita duplicidade)
             document.getElementById('statTotal').textContent = CHAMADOS.length;
             document.getElementById('statSLA').textContent = CHAMADOS.filter(c => c.slaVencido).length;
-            document.getElementById('statAbertos').textContent = CHAMADOS.filter(c => c.status === 'Aberto').length;
-            document.getElementById('statAndamento').textContent = CHAMADOS.filter(c => c.status === 'Em andamento').length;
-            document.getElementById('statResolvidos').textContent = CHAMADOS.filter(c => c.status === 'Resolvido' || c.status === 'Concluído' || c.status === 'Concluido').length;
-
-            const cores = ['#ffa500', '#64c8ff', '#00c864', '#ff6464'];
+            document.getElementById('statAbertos').textContent = CHAMADOS.filter(c => normalizarStatus(c.status) === 'Aberto').length;
+            document.getElementById('statAndamento').textContent = CHAMADOS.filter(c => normalizarStatus(c.status) === 'Em Andamento').length;
+            document.getElementById('statResolvidos').textContent = CHAMADOS.filter(c => normalizarStatus(c.status) === 'Concluído').length;
 
             // Limpar gráficos anteriores
             if (window.graficoStatusChart) window.graficoStatusChart.destroy();
             if (window.graficoPrioridadeChart) window.graficoPrioridadeChart.destroy();
             if (window.graficoSetorChart) window.graficoSetorChart.destroy();
 
+            // ===== GRÁFICO 1: POR STATUS (cores fixas e consistentes com os badges) =====
+            const statusOrdem = ['Aberto', 'Em Andamento', 'Concluído'];
+            const statusCoresMap = { 'Aberto': '#64c8ff', 'Em Andamento': '#ffa500', 'Concluído': '#00c864' };
+            const statusLabelsFinal = statusOrdem.filter(s => statusCounts[s] > 0);
+            const statusDataFinal = statusLabelsFinal.map(s => statusCounts[s]);
+            const statusCoresFinal = statusLabelsFinal.map(s => statusCoresMap[s]);
+
             window.graficoStatusChart = new Chart(document.getElementById('graficoStatus'), {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(statusCounts),
-                    datasets: [{ data: Object.values(statusCounts), backgroundColor: cores }]
+                    labels: statusLabelsFinal,
+                    datasets: [{ data: statusDataFinal, backgroundColor: statusCoresFinal, borderWidth: 2, borderColor: '#0d1b2e' }]
                 },
-                options: { 
-                    responsive: true, 
-                    plugins: { 
-                        legend: { labels: { color: '#aaa', font: { size: 12 } } } 
-                    } 
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#aaa', font: { size: 12 }, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    const total = statusDataFinal.reduce((a, b) => a + b, 0);
+                                    const pct = total ? ((ctx.raw / total) * 100).toFixed(1) : 0;
+                                    return ` ${ctx.label}: ${ctx.raw} (${pct}%)`;
+                                }
+                            }
+                        }
+                    }
                 }
             });
+
+            // ===== GRÁFICO 2: POR PRIORIDADE (cores fixas: Alta=vermelho, Média=laranja, Baixa=azul) =====
+            const prioridadeOrdem = ['Alta', 'Média', 'Baixa'];
+            const prioridadeCoresMap = { 'Alta': '#ff6464', 'Média': '#ffa500', 'Baixa': '#64c8ff' };
+            const prioridadeLabelsFinal = prioridadeOrdem.filter(p => prioridadeCounts[p] > 0);
+            const prioridadeDataFinal = prioridadeLabelsFinal.map(p => prioridadeCounts[p]);
+            const prioridadeCoresFinal = prioridadeLabelsFinal.map(p => prioridadeCoresMap[p]);
 
             window.graficoPrioridadeChart = new Chart(document.getElementById('graficoPrioridade'), {
                 type: 'bar',
                 data: {
-                    labels: Object.keys(prioridadeCounts),
-                    datasets: [{ label: 'Quantidade', data: Object.values(prioridadeCounts), backgroundColor: '#ffa500' }]
+                    labels: prioridadeLabelsFinal,
+                    datasets: [{ label: 'Quantidade', data: prioridadeDataFinal, backgroundColor: prioridadeCoresFinal, borderRadius: 6 }]
                 },
-                options: { 
-                    responsive: true, 
-                    scales: { 
-                        y: { ticks: { color: '#aaa' }, beginAtZero: true } , 
-                        x: { ticks: { color: '#aaa' } } 
-                    }, 
-                    plugins: { legend: { labels: { color: '#aaa' } } } 
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { ticks: { color: '#aaa', stepSize: 1 }, beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { ticks: { color: '#aaa' }, grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
                 }
             });
+
+            // ===== GRÁFICO 3: POR SETOR (paleta dinâmica + ordenado do maior pro menor) =====
+            const setoresOrdenados = Object.entries(setorCounts).sort((a, b) => b[1] - a[1]);
+            const setorLabelsFinal = setoresOrdenados.map(s => s[0]);
+            const setorDataFinal = setoresOrdenados.map(s => s[1]);
+            const setorCoresFinal = gerarCoresDinamicas(setorLabelsFinal.length);
 
             window.graficoSetorChart = new Chart(document.getElementById('graficoSetor'), {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(setorCounts),
-                    datasets: [{ data: Object.values(setorCounts), backgroundColor: cores }]
+                    labels: setorLabelsFinal,
+                    datasets: [{ data: setorDataFinal, backgroundColor: setorCoresFinal, borderWidth: 2, borderColor: '#0d1b2e' }]
                 },
-                options: { 
-                    responsive: true, 
-                    plugins: { 
-                        legend: { labels: { color: '#aaa', font: { size: 12 } } } 
-                    } 
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#aaa', font: { size: 11 }, padding: 10, boxWidth: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    const total = setorDataFinal.reduce((a, b) => a + b, 0);
+                                    const pct = total ? ((ctx.raw / total) * 100).toFixed(1) : 0;
+                                    return ` ${ctx.label}: ${ctx.raw} (${pct}%)`;
+                                }
+                            }
+                        }
+                    }
                 }
             });
         }
