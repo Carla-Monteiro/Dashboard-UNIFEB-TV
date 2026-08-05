@@ -333,6 +333,13 @@ def obter_chamados():
                 data_obj = datetime.fromisoformat(data_abertura_raw.replace('Z', '+00:00'))
                 # Converter para São Paulo
                 data_sp = data_obj.astimezone(tz_sp)
+                
+                # 🔧 DETECÇÃO: Se a hora está entre 12:00-15:59, é sinal que Power Automate 
+                # gravou em UTC direto sem converter. Isso acontece com chamados via E-mail.
+                # Corrige subtraindo 4 horas para representar a hora local correta
+                if 12 <= data_sp.hour <= 15:
+                    data_sp = data_sp - timedelta(hours=4)
+                
                 data_abertura_exibicao = data_sp.isoformat()
             except:
                 # Se falhar, usa a data original
