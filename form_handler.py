@@ -319,10 +319,25 @@ def obter_chamados():
         setores_preenchidos = preencher_setores_faltantes(items, headers, site_id, list_id)
         
         chamados = []
+        tz_sp = ZoneInfo('America/Sao_Paulo')
+        
         for item in items:
             fields = item.get('fields', {})
             item_id = item.get('id')
             setor = fields.get('SetordeAtendimento', '') or setores_preenchidos.get(item_id, '')
+            
+            # CONVERTER data de UTC para São Paulo para EXIBIÇÃO
+            data_abertura_raw = fields.get('DataAbertura', datetime.now(timezone.utc).isoformat())
+            try:
+                # Parse a data (pode vir com Z no final ou com +00:00)
+                data_obj = datetime.fromisoformat(data_abertura_raw.replace('Z', '+00:00'))
+                # Converter para São Paulo
+                data_sp = data_obj.astimezone(tz_sp)
+                data_abertura_exibicao = data_sp.isoformat()
+            except:
+                # Se falhar, usa a data original
+                data_abertura_exibicao = data_abertura_raw
+            
             chamado = {
                 'id': item_id,
                 'titulo': fields.get('Title', ''),
@@ -330,7 +345,7 @@ def obter_chamados():
                 'email': fields.get('Email', ''),
                 'status': fields.get('Status', 'Aberto'),
                 'prioridade': fields.get('Prioridade', 'Normal'),
-                'dataAbertura': fields.get('DataAbertura', datetime.now().isoformat()),
+                'dataAbertura': data_abertura_exibicao,  # ← CONVERTIDA para São Paulo
                 'descricao': fields.get('Descricao', ''),
                 'bloco': fields.get('Bloco', ''),
                 'sala': fields.get('Sala', ''),
@@ -338,7 +353,7 @@ def obter_chamados():
                 'setor': setor,
                 'setorAtendimento': setor,
                 'numeroChamado': fields.get('NumeroChamado', ''),
-                'data': fields.get('DataAbertura', datetime.now().isoformat()),
+                'data': data_abertura_exibicao,  # ← CONVERTIDA para São Paulo
             }
             chamados.append(chamado)
         
