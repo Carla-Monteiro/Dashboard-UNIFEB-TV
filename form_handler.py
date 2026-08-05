@@ -6,7 +6,8 @@ from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import os
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone, date
+from zoneinfo import ZoneInfo
 import json
 import logging
 
@@ -177,8 +178,12 @@ def criar_manutencao():
         
         create_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items"
         
-        agora = datetime.now()
-        data_abertura_iso = agora.strftime('%Y-%m-%dT%H:%M:%SZ')
+        # Usar fuso horário de São Paulo (UTC-3/-2)
+        tz_sp = ZoneInfo('America/Sao_Paulo')
+        agora = datetime.now(tz=tz_sp)
+        # Converter para UTC para enviar ao SharePoint
+        agora_utc = agora.astimezone(timezone.utc)
+        data_abertura_iso = agora_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
         
         payload = {
             "fields": {
@@ -550,7 +555,12 @@ def criar_chamado_dashboard():
 
         create_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items"
 
-        data_abertura_iso = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+        # Usar fuso horário de São Paulo (UTC-3/-2)
+        tz_sp = ZoneInfo('America/Sao_Paulo')
+        agora = datetime.now(tz=tz_sp)
+        # Converter para UTC para enviar ao SharePoint
+        agora_utc = agora.astimezone(timezone.utc)
+        data_abertura_iso = agora_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
 
         payload = {
             "fields": {
