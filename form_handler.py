@@ -319,32 +319,10 @@ def obter_chamados():
         setores_preenchidos = preencher_setores_faltantes(items, headers, site_id, list_id)
         
         chamados = []
-        tz_sp = ZoneInfo('America/Sao_Paulo')
-        
         for item in items:
             fields = item.get('fields', {})
             item_id = item.get('id')
             setor = fields.get('SetordeAtendimento', '') or setores_preenchidos.get(item_id, '')
-            
-            # CONVERTER data de UTC para São Paulo para EXIBIÇÃO
-            data_abertura_raw = fields.get('DataAbertura', datetime.now(timezone.utc).isoformat())
-            try:
-                # Parse a data (pode vir com Z no final ou com +00:00)
-                data_obj = datetime.fromisoformat(data_abertura_raw.replace('Z', '+00:00'))
-                # Converter para São Paulo
-                data_sp = data_obj.astimezone(tz_sp)
-                
-                # 🔧 DETECÇÃO: Se a hora está entre 12:00-15:59, é sinal que Power Automate 
-                # gravou em UTC direto sem converter. Isso acontece com chamados via E-mail.
-                # Corrige subtraindo 4 horas para representar a hora local correta
-                if 12 <= data_sp.hour <= 15:
-                    data_sp = data_sp - timedelta(hours=4)
-                
-                data_abertura_exibicao = data_sp.isoformat()
-            except:
-                # Se falhar, usa a data original
-                data_abertura_exibicao = data_abertura_raw
-            
             chamado = {
                 'id': item_id,
                 'titulo': fields.get('Title', ''),
@@ -352,7 +330,7 @@ def obter_chamados():
                 'email': fields.get('Email', ''),
                 'status': fields.get('Status', 'Aberto'),
                 'prioridade': fields.get('Prioridade', 'Normal'),
-                'dataAbertura': data_abertura_exibicao,  # ← CONVERTIDA para São Paulo
+                'dataAbertura': fields.get('DataAbertura', datetime.now().isoformat()),
                 'descricao': fields.get('Descricao', ''),
                 'bloco': fields.get('Bloco', ''),
                 'sala': fields.get('Sala', ''),
@@ -360,7 +338,7 @@ def obter_chamados():
                 'setor': setor,
                 'setorAtendimento': setor,
                 'numeroChamado': fields.get('NumeroChamado', ''),
-                'data': data_abertura_exibicao,  # ← CONVERTIDA para São Paulo
+                'data': fields.get('DataAbertura', datetime.now().isoformat()),
             }
             chamados.append(chamado)
         
