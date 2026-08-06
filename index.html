@@ -1404,21 +1404,17 @@
         function getBadgeStatus(s) { return s === 'Aberto' ? 'aberto' : (s === 'Resolvido' || s === 'Concluído' || s === 'Concluido') ? 'resolvido' : 'andamento'; }
         function formatarData(d) { 
             try { 
+                // Se a entrada é vazia, retorna vazio
+                if (!d) return '-';
+                
+                // Criar um objeto Date a partir da string
                 let dt = new Date(d);
                 
-                // Se a data é UTC (termina com Z ou tem +00:00), converte para São Paulo
-                if (typeof d === 'string' && (d.endsWith('Z') || d.includes('+00:00'))) {
-                    // Criar nova data em São Paulo
-                    dt = new Date(d);
-                    // Offset de São Paulo (-3 ou -2 horas, dependendo do horário de verão)
-                    const utcTime = dt.getTime();
-                    const spOffset = new Date().toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo'});
-                    const spDate = new Date(spOffset);
-                    const diff = spDate.getTime() - new Date().getTime();
-                    dt = new Date(utcTime + diff);
-                }
+                // Verificar se é uma data válida
+                if (isNaN(dt.getTime())) return d;
                 
-                // Formatar com timezone de São Paulo
+                // Simplesmente formatar com timezone de São Paulo
+                // Intl.DateTimeFormat faz toda a conversão automaticamente
                 const formatter = new Intl.DateTimeFormat('pt-BR', {
                     year: 'numeric',
                     month: '2-digit',
@@ -1427,8 +1423,10 @@
                     minute: '2-digit',
                     timeZone: 'America/Sao_Paulo'
                 });
+                
                 return formatter.format(dt);
-            } catch { 
+            } catch (e) { 
+                console.warn('Erro ao formatar data:', d, e);
                 return d; 
             } 
         }
