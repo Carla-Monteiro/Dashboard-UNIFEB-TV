@@ -1402,7 +1402,20 @@
 
         function getBadgePrio(p) { return p === 'Alta' ? 'alta' : p === 'Baixa' ? 'baixa' : 'media'; }
         function getBadgeStatus(s) { return s === 'Aberto' ? 'aberto' : (s === 'Resolvido' || s === 'Concluído' || s === 'Concluido') ? 'resolvido' : 'andamento'; }
-        function formatarData(d) { try { const dt = new Date(d); return dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'}); } catch { return d; } }
+        function formatarData(d) { 
+            try { 
+                const dt = new Date(d); 
+                const formatter = new Intl.DateTimeFormat('pt-BR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZone: 'America/Sao_Paulo'
+                });
+                return formatter.format(dt);
+            } catch { return d; } 
+        }
         function limparHTML(t) { return (t || '').replace(/<[^>]*>/g, ''); }
         function sincronizar() { alert('Execute no terminal: python sync_sharepoint_tv.py'); }
         function limparCache() { localStorage.clear(); location.reload(); }

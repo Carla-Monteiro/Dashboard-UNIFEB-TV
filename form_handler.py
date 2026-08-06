@@ -181,9 +181,8 @@ def criar_manutencao():
         # Usar fuso horário de São Paulo (UTC-3/-2)
         tz_sp = ZoneInfo('America/Sao_Paulo')
         agora = datetime.now(tz=tz_sp)
-        # Converter para UTC para enviar ao SharePoint
-        agora_utc = agora.astimezone(timezone.utc)
-        data_abertura_iso = agora_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+        # Manter o timezone de São Paulo no ISO format (não converter para UTC)
+        data_abertura_iso = agora.isoformat()
         
         payload = {
             "fields": {
@@ -558,9 +557,8 @@ def criar_chamado_dashboard():
         # Usar fuso horário de São Paulo (UTC-3/-2)
         tz_sp = ZoneInfo('America/Sao_Paulo')
         agora = datetime.now(tz=tz_sp)
-        # Converter para UTC para enviar ao SharePoint
-        agora_utc = agora.astimezone(timezone.utc)
-        data_abertura_iso = agora_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+        # Manter o timezone de São Paulo no ISO format (não converter para UTC)
+        data_abertura_iso = agora.isoformat()
 
         payload = {
             "fields": {
