@@ -323,10 +323,6 @@ def obter_chamados():
             fields = item.get('fields', {})
             item_id = item.get('id')
             setor = fields.get('SetordeAtendimento', '') or setores_preenchidos.get(item_id, '')
-            data_abertura_raw = fields.get('DataAbertura', datetime.now().isoformat())
-            # Converter se estiver em UTC
-            data_abertura = converter_data_se_necessario(data_abertura_raw)
-            
             chamado = {
                 'id': item_id,
                 'titulo': fields.get('Title', ''),
@@ -334,7 +330,7 @@ def obter_chamados():
                 'email': fields.get('Email', ''),
                 'status': fields.get('Status', 'Aberto'),
                 'prioridade': fields.get('Prioridade', 'Normal'),
-                'dataAbertura': data_abertura,
+                'dataAbertura': fields.get('DataAbertura', datetime.now().isoformat()),
                 'descricao': fields.get('Descricao', ''),
                 'bloco': fields.get('Bloco', ''),
                 'sala': fields.get('Sala', ''),
@@ -342,7 +338,7 @@ def obter_chamados():
                 'setor': setor,
                 'setorAtendimento': setor,
                 'numeroChamado': fields.get('NumeroChamado', ''),
-                'data': data_abertura,
+                'data': fields.get('DataAbertura', datetime.now().isoformat()),
             }
             chamados.append(chamado)
         
@@ -352,60 +348,6 @@ def obter_chamados():
     except Exception as e:
         logger.error(f"ERRO em obter_chamados: {e}")
         return jsonify([]), 200
-
-def converter_data_se_necessario(data_str):
-    """
-    Converte datas UTC para São Paulo.
-    
-    Exemplos:
-    - Input: "2026-08-05T23:43:45Z" (UTC)
-    - Output: "2026-08-05T20:43:45-03:00" (São Paulo em ISO)
-    
-    Ou se retornar formatado:
-    - Output: "05/08/2026 20:43:45" (Formato Brasileiro)
-    """
-    try:
-        if not data_str:
-            return data_str
-        
-        data_str = str(data_str).strip()
-        tz_sp = ZoneInfo('America/Sao_Paulo')
-        
-        # Se for UTC em formato ISO (termina com Z)
-        if data_str.endswith('Z'):
-            # Parse como UTC
-            dt_utc = datetime.fromisoformat(data_str[:-1] + '+00:00')
-            # Converter para São Paulo
-            dt_sp = dt_utc.astimezone(tz_sp)
-            # Retornar em ISO format com timezone (melhor para API)
-            resultado_iso = dt_sp.isoformat()
-            # Também log em formato brasileiro para debug
-            resultado_br = dt_sp.strftime('%d/%m/%Y %H:%M:%S')
-            logger.info(f"✅ UTC→SP: {data_str} = {resultado_br} (ISO: {resultado_iso})")
-            # Retorna ISO (o frontend vai formatar)
-            return resultado_iso
-        
-        # Se já tem +00:00 (também é UTC)
-        elif '+00:00' in data_str:
-            dt_utc = datetime.fromisoformat(data_str)
-            dt_sp = dt_utc.astimezone(tz_sp)
-            resultado_iso = dt_sp.isoformat()
-            resultado_br = dt_sp.strftime('%d/%m/%Y %H:%M:%S')
-            logger.info(f"✅ UTC→SP: {data_str} = {resultado_br}")
-            return resultado_iso
-        
-        # Se já tem -03:00 ou -02:00 (já é São Paulo)
-        elif '-03:00' in data_str or '-02:00' in data_str:
-            logger.info(f"ℹ️ Já em São Paulo: {data_str}")
-            return data_str
-        
-        # Senão, retorna como está
-        logger.info(f"ℹ️ Mantido como está: {data_str}")
-        return data_str
-        
-    except Exception as e:
-        logger.warning(f"⚠️ Erro ao converter {data_str}: {e}")
-        return data_str
 
 def pagina_confirmacao(sucesso, mensagem, item_id=None):
     """Gera uma página HTML simples e bonita de confirmação/erro,
