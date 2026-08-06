@@ -181,8 +181,9 @@ def criar_manutencao():
         # Usar fuso horário de São Paulo (UTC-3/-2)
         tz_sp = ZoneInfo('America/Sao_Paulo')
         agora = datetime.now(tz=tz_sp)
-        # Manter o timezone de São Paulo no ISO format (não converter para UTC)
-        data_abertura_iso = agora.isoformat()
+        # Converter para UTC para enviar ao SharePoint
+        agora_utc = agora.astimezone(timezone.utc)
+        data_abertura_iso = agora_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
         
         payload = {
             "fields": {
@@ -322,6 +323,10 @@ def obter_chamados():
             fields = item.get('fields', {})
             item_id = item.get('id')
             setor = fields.get('SetordeAtendimento', '') or setores_preenchidos.get(item_id, '')
+            data_abertura_raw = fields.get('DataAbertura', datetime.now().isoformat())
+            # Converter se estiver em UTC
+            data_abertura = converter_data_se_necessario(data_abertura_raw)
+            
             chamado = {
                 'id': item_id,
                 'titulo': fields.get('Title', ''),
@@ -329,7 +334,7 @@ def obter_chamados():
                 'email': fields.get('Email', ''),
                 'status': fields.get('Status', 'Aberto'),
                 'prioridade': fields.get('Prioridade', 'Normal'),
-                'dataAbertura': fields.get('DataAbertura', datetime.now().isoformat()),
+                'dataAbertura': data_abertura,
                 'descricao': fields.get('Descricao', ''),
                 'bloco': fields.get('Bloco', ''),
                 'sala': fields.get('Sala', ''),
@@ -337,7 +342,7 @@ def obter_chamados():
                 'setor': setor,
                 'setorAtendimento': setor,
                 'numeroChamado': fields.get('NumeroChamado', ''),
-                'data': fields.get('DataAbertura', datetime.now().isoformat()),
+                'data': data_abertura,
             }
             chamados.append(chamado)
         
@@ -347,6 +352,28 @@ def obter_chamados():
     except Exception as e:
         logger.error(f"ERRO em obter_chamados: {e}")
         return jsonify([]), 200
+
+def converter_data_se_necessario(data_str):
+    """
+    Se a data estiver em UTC (termina com Z), converte para São Paulo.
+    Se já estiver em São Paulo, retorna como está.
+    """
+    try:
+        if not data_str:
+            return data_str
+        
+        # Se termina com Z ou tem +00:00, é UTC - precisa converter
+        if data_str.endswith('Z') or '+00:00' in data_str:
+            dt_utc = datetime.fromisoformat(data_str.replace('Z', '+00:00'))
+            tz_sp = ZoneInfo('America/Sao_Paulo')
+            dt_sp = dt_utc.astimezone(tz_sp)
+            return dt_sp.isoformat()
+        
+        # Senão, retorna como está (já está em São Paulo)
+        return data_str
+    except Exception as e:
+        logger.warning(f"Erro ao converter data {data_str}: {e}")
+        return data_str
 
 def pagina_confirmacao(sucesso, mensagem, item_id=None):
     """Gera uma página HTML simples e bonita de confirmação/erro,
@@ -557,8 +584,9 @@ def criar_chamado_dashboard():
         # Usar fuso horário de São Paulo (UTC-3/-2)
         tz_sp = ZoneInfo('America/Sao_Paulo')
         agora = datetime.now(tz=tz_sp)
-        # Manter o timezone de São Paulo no ISO format (não converter para UTC)
-        data_abertura_iso = agora.isoformat()
+        # Converter para UTC para enviar ao SharePoint
+        agora_utc = agora.astimezone(timezone.utc)
+        data_abertura_iso = agora_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
 
         payload = {
             "fields": {
