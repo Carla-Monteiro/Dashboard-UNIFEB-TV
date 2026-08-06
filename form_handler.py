@@ -357,22 +357,43 @@ def converter_data_se_necessario(data_str):
     """
     Se a data estiver em UTC (termina com Z), converte para São Paulo.
     Se já estiver em São Paulo, retorna como está.
+    
+    Exemplo:
+    2026-08-05T23:43:45Z (UTC) → 2026-08-05T20:43:45-03:00 (São Paulo)
     """
     try:
         if not data_str:
             return data_str
         
-        # Se termina com Z ou tem +00:00, é UTC - precisa converter
-        if data_str.endswith('Z') or '+00:00' in data_str:
-            dt_utc = datetime.fromisoformat(data_str.replace('Z', '+00:00'))
+        data_str = str(data_str).strip()
+        
+        # Se termina com Z, é UTC puro - precisa converter
+        if data_str.endswith('Z'):
+            # Parse como UTC
+            dt_utc = datetime.fromisoformat(data_str[:-1] + '+00:00')
+            # Converter para São Paulo
             tz_sp = ZoneInfo('America/Sao_Paulo')
             dt_sp = dt_utc.astimezone(tz_sp)
-            return dt_sp.isoformat()
+            # Retornar em ISO format com timezone
+            resultado = dt_sp.isoformat()
+            logger.info(f"✅ Convertido UTC → SP: {data_str} → {resultado}")
+            return resultado
         
-        # Senão, retorna como está (já está em São Paulo)
+        # Se já tem +00:00, também é UTC
+        elif '+00:00' in data_str:
+            dt_utc = datetime.fromisoformat(data_str)
+            tz_sp = ZoneInfo('America/Sao_Paulo')
+            dt_sp = dt_utc.astimezone(tz_sp)
+            resultado = dt_sp.isoformat()
+            logger.info(f"✅ Convertido UTC → SP: {data_str} → {resultado}")
+            return resultado
+        
+        # Senão, retorna como está (já está em São Paulo ou outro formato)
+        logger.info(f"ℹ️ Data mantida como está: {data_str}")
         return data_str
+        
     except Exception as e:
-        logger.warning(f"Erro ao converter data {data_str}: {e}")
+        logger.warning(f"⚠️ Erro ao converter {data_str}: {e}")
         return data_str
 
 def pagina_confirmacao(sucesso, mensagem, item_id=None):
