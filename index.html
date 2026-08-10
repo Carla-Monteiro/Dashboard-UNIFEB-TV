@@ -947,6 +947,87 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         let CHAMADOS = [];
+        
+        // 🔧 FUNÇÃO PARA CALCULAR SLA CORRETAMENTE
+        // Definir prazos SLA por prioridade (em horas)
+        const PRAZOS_SLA = {
+            'Baixa': 24,      // 24 horas
+            'Média': 8,       // 8 horas
+            'Alta': 2         // 2 horas
+        };
+
+        function calcularSLA(dataAbertura, prioridade, status) {
+            try {
+                // Se chamado já está concluído, não calcular SLA
+                if (status === 'Concluído' || status === 'Fechado') {
+                    return {
+                        slaVencido: false,
+                        slaAberto: '✅ CONCLUÍDO',
+                        slaAtraso: 'Concluído',
+                        porcentagem: 100
+                    };
+                }
+
+                // Converter dataAbertura para objeto Date
+                const dataAberturaObj = new Date(dataAbertura);
+                const agora = new Date();
+                
+                // Calcular tempo decorrido em milissegundos
+                const tempoDecorrido = agora - dataAberturaObj;
+                
+                // Converter para horas
+                const horasDecorridas = tempoDecorrido / (1000 * 60 * 60);
+                
+                // Obter prazo SLA para a prioridade
+                const prazoSLA = PRAZOS_SLA[prioridade] || PRAZOS_SLA['Média'];
+                
+                // Verificar se venceu
+                const vencido = horasDecorridas > prazoSLA;
+                
+                // Calcular porcentagem de utilização do SLA
+                const porcentagem = Math.min(100, Math.round((horasDecorridas / prazoSLA) * 100));
+                
+                // Formatar tempo aberto
+                let slaAberto = '';
+                if (horasDecorridas < 1) {
+                    const minutos = Math.round(horasDecorridas * 60);
+                    slaAberto = `${minutos}m`;
+                } else if (horasDecorridas < 24) {
+                    const horas = Math.floor(horasDecorridas);
+                    slaAberto = `${horas}h`;
+                } else {
+                    const dias = Math.floor(horasDecorridas / 24);
+                    const horas = Math.floor(horasDecorridas % 24);
+                    slaAberto = `${dias}d ${horas}h`;
+                }
+                
+                // Mensagem de atraso
+                let slaAtraso = 'No prazo';
+                if (vencido) {
+                    const horasAtrasos = Math.round(horasDecorridas - prazoSLA);
+                    slaAtraso = `🔴 ATRASADO ${horasAtrasos}h`;
+                }
+                
+                return {
+                    slaVencido: vencido,
+                    slaAberto: slaAberto,
+                    slaAtraso: slaAtraso,
+                    porcentagem: porcentagem,
+                    prazoSLA: prazoSLA,
+                    horasDecorridas: horasDecorridas.toFixed(2)
+                };
+                
+            } catch (erro) {
+                console.error('Erro ao calcular SLA:', erro);
+                return {
+                    slaVencido: false,
+                    slaAberto: 'Erro',
+                    slaAtraso: 'Erro ao calcular',
+                    porcentagem: 0
+                };
+            }
+        }
+
         let CHAMADOS_FILTRADOS = [];
         let PESQUISAS = [];
 
@@ -960,23 +1041,29 @@
                 CHAMADOS = Array.isArray(dados) ? dados : (dados.chamados || []);
                 
                 // Mapear campos do backend para o formato esperado
-                CHAMADOS = CHAMADOS.map(c => ({
-                    id: c.id || '',
-                    titulo: c.titulo || '',
-                    solicitante: c.solicitante || '',
-                    email: c.email || '',
-                    status: c.status || 'Aberto',
-                    prioridade: c.prioridade || 'Média',
-                    data: c.dataAbertura || new Date().toISOString(),
-                    descricao: c.descricao || '',
-                    setorAtendimento: c.setor || '',
-                    bloco: c.bloco || '',
-                    sala: c.sala || '',
-                    categoria: c.categoria || '',
-                    slaVencido: false,
-                    slaAberto: '0h',
-                    slaAtraso: 'No prazo'
-                }));
+                CHAMADOS = CHAMADOS.map(c => {
+                    // Calcular SLA para cada chamado
+                    const slaInfo = calcularSLA(c.dataAbertura, c.prioridade, c.status);
+                    
+                    return {
+                        id: c.id || '',
+                        titulo: c.titulo || '',
+                        solicitante: c.solicitante || '',
+                        email: c.email || '',
+                        status: c.status || 'Aberto',
+                        prioridade: c.prioridade || 'Média',
+                        data: c.dataAbertura || new Date().toISOString(),
+                        descricao: c.descricao || '',
+                        setorAtendimento: c.setor || '',
+                        bloco: c.bloco || '',
+                        sala: c.sala || '',
+                        categoria: c.categoria || '',
+                        slaVencido: slaInfo.slaVencido,
+                        slaAberto: slaInfo.slaAberto,
+                        slaAtraso: slaInfo.slaAtraso,
+                        porcentagem: slaInfo.porcentagem
+                    };
+                });
                 
                 console.log(`✅ ${CHAMADOS.length} chamados carregados do Backend em tempo real`);
                 
