@@ -288,8 +288,8 @@
         function carregarChamado() {
             const urlParams = new URLSearchParams(window.location.search);
 
-            const numero = urlParams.get('numero');
-            const titulo = urlParams.get('titulo');
+            const numero = urlParams.get('numero') || '';
+            const titulo = urlParams.get('titulo') || 'Sem título';
             const status = urlParams.get('status') || 'Aberto';
             const setor = urlParams.get('setor') || 'Não especificado';
             const prioridade = urlParams.get('prioridade') || 'Média';
@@ -297,11 +297,7 @@
             const dataAbertura = urlParams.get('dataAbertura') || new Date().toLocaleDateString('pt-BR');
 
             if (!numero) {
-                document.getElementById('conteudo').innerHTML = `
-                    <div class="error">
-                        ❌ Erro: Número do chamado não encontrado na URL.
-                    </div>
-                `;
+                document.getElementById('conteudo').innerHTML = '<div class="error">❌ Erro: Número do chamado não encontrado na URL.</div>';
                 return;
             }
 
@@ -314,71 +310,68 @@
             };
 
             const prioridadeNormalizada = prioridade.toLowerCase().replace('á', 'a');
-            const statusClass = `status-${statusMap[status] || 'aberto'}`;
-
-            const html = `
-                <div class="info-box">
-                    <strong>ℹ️ Informações de Rastreamento</strong>
-                    Acompanhe o status do seu chamado aqui. Nosso time de suporte está trabalhando para resolver sua solicitação.
-                </div>
-
-                <div class="card-chamado">
-                    <h2>
-                        <span>#${numero}</span>
-                        ${status ? `<span class="status-badge ${statusClass}">${status}</span>` : ''}
-                    </h2>
-
-                    <div class="campo">
-                        <span class="campo-label">Título:</span>
-                        <span class="campo-valor">${decodeURIComponent(titulo || 'Sem título')}</span>
-                    </div>
-
-                    <div class="campo">
-                        <span class="campo-label">Número:</span>
-                        <span class="campo-valor"><strong>${numero}</strong></span>
-                    </div>
-
-                    <div class="campo">
-                        <span class="campo-label">Status:</span>
-                        <span class="campo-valor">
-                            <span class="status-badge ${statusClass}">${status}</span>
-                        </span>
-                    </div>
-
-                    <div class="campo">
-                        <span class="campo-label">Setor:</span>
-                        <span class="campo-valor">${decodeURIComponent(setor || 'Não especificado')}</span>
-                    </div>
-
-                    <div class="campo">
-                        <span class="campo-label">Prioridade:</span>
-                        <span class="campo-valor">
-                            <span class="prioridade-badge prioridade-${prioridadeNormalizada}">${prioridade}</span>
-                        </span>
-                    </div>
-
-                    <div class="campo">
-                        <span class="campo-label">Data de Abertura:</span>
-                        <span class="campo-valor">${dataAbertura}</span>
-                    </div>
-
-                    ${descricao ? `
-                    <div>
-                        <div class="campo-label" style="border: none; padding-bottom: 10px;">Descrição:</div>
-                        <div class="descricao-completa">${decodeURIComponent(descricao)}</div>
-                    </div>
-                    ` : ''}
-                </div>
-
-                <div class="botoes">
-                    <button class="btn btn-atualizar" onclick="location.reload()">🔄 Atualizar</button>
-                    <button class="btn btn-voltar" onclick="window.close(); if(!window.closed) window.history.back();">← Voltar</button>
-                </div>
-
-                <div class="timestamp">
-                    Página atualizada em: <strong>${new Date().toLocaleString('pt-BR')}</strong>
-                </div>
-            `;
+            const statusClass = 'status-' + (statusMap[status] || 'aberto');
+            
+            // Montar HTML com concatenação simples
+            let html = '<div class="info-box">';
+            html += '<strong>ℹ️ Informações de Rastreamento</strong>';
+            html += 'Acompanhe o status do seu chamado aqui. Nosso time de suporte está trabalhando para resolver sua solicitação.';
+            html += '</div>';
+            
+            html += '<div class="card-chamado">';
+            html += '<h2><span>#' + numero + '</span>';
+            if (status) {
+                html += '<span class="status-badge ' + statusClass + '">' + status + '</span>';
+            }
+            html += '</h2>';
+            
+            html += '<div class="campo">';
+            html += '<span class="campo-label">Título:</span>';
+            html += '<span class="campo-valor">' + decodeURIComponent(titulo) + '</span>';
+            html += '</div>';
+            
+            html += '<div class="campo">';
+            html += '<span class="campo-label">Número:</span>';
+            html += '<span class="campo-valor"><strong>' + numero + '</strong></span>';
+            html += '</div>';
+            
+            html += '<div class="campo">';
+            html += '<span class="campo-label">Status:</span>';
+            html += '<span class="campo-valor"><span class="status-badge ' + statusClass + '">' + status + '</span></span>';
+            html += '</div>';
+            
+            html += '<div class="campo">';
+            html += '<span class="campo-label">Setor:</span>';
+            html += '<span class="campo-valor">' + decodeURIComponent(setor) + '</span>';
+            html += '</div>';
+            
+            html += '<div class="campo">';
+            html += '<span class="campo-label">Prioridade:</span>';
+            html += '<span class="campo-valor"><span class="prioridade-badge prioridade-' + prioridadeNormalizada + '">' + prioridade + '</span></span>';
+            html += '</div>';
+            
+            html += '<div class="campo">';
+            html += '<span class="campo-label">Data de Abertura:</span>';
+            html += '<span class="campo-valor">' + dataAbertura + '</span>';
+            html += '</div>';
+            
+            if (descricao) {
+                html += '<div>';
+                html += '<div class="campo-label" style="border: none; padding-bottom: 10px;">Descrição:</div>';
+                html += '<div class="descricao-completa">' + decodeURIComponent(descricao) + '</div>';
+                html += '</div>';
+            }
+            
+            html += '</div>';
+            
+            html += '<div class="botoes">';
+            html += '<button class="btn btn-atualizar" onclick="location.reload()">🔄 Atualizar</button>';
+            html += '<button class="btn btn-voltar" onclick="window.close(); if(!window.closed) window.history.back();">← Voltar</button>';
+            html += '</div>';
+            
+            html += '<div class="timestamp">';
+            html += 'Página atualizada em: <strong>' + new Date().toLocaleString('pt-BR') + '</strong>';
+            html += '</div>';
 
             document.getElementById('conteudo').innerHTML = html;
         }
