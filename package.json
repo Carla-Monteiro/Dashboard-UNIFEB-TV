@@ -1,0 +1,17 @@
+{
+  "name": "unifeb-sharepoint-proxy",
+  "version": "1.0.0",
+  "description": "Proxy para acessar SharePoint com CORS habilitado",
+  "main": "sharepoint-proxy.js",
+  "scripts": {
+    "start": "node sharepoint-proxy.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "axios": "^1.4.0"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}

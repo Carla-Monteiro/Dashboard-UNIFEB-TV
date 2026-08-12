@@ -301,60 +301,35 @@
             }
 
             try {
-                // Buscar do SharePoint usando REST API
-                const siteUrl = "https://unifeb.sharepoint.com/sites/SuporteDTI";
-                const apiUrl = `${siteUrl}/_api/web/lists/getbytitle('Chamados')/items?$filter=startswith(ID_Numero, '${numero}')&$top=1`;
+                // Determinar URL do backend proxy
+                let proxyUrl = 'https://unifeb-backend.onrender.com'; // URL do Render (ajuste conforme necessário)
 
-                const response = await fetch(apiUrl, {
-                    headers: {
-                        "Accept": "application/json"
-                    }
-                });
+                // Se estiver em localhost, usar localhost
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    proxyUrl = 'http://localhost:3000';
+                }
+
+                const apiUrl = `${proxyUrl}/api/chamados?numero=${encodeURIComponent(numero)}`;
+
+                console.log(`🔍 Buscando chamado via proxy: ${apiUrl}`);
+
+                const response = await fetch(apiUrl);
 
                 if (!response.ok) {
-                    // Tentar por campo alternativo
-                    const apiUrl2 = `${siteUrl}/_api/web/lists/getbytitle('Chamados')/items?$filter=Title eq '${numero}'&$top=1`;
-                    const response2 = await fetch(apiUrl2, {
-                        headers: {
-                            "Accept": "application/json"
-                        }
-                    });
-
-                    if (!response2.ok) {
-                        throw new Error('Falha ao carregar dados do SharePoint');
-                    }
-
-                    const data = await response2.json();
-                    if (data.value.length === 0) {
-                        throw new Error('Chamado não encontrado');
-                    }
-                    exibirChamado(data.value[0], numero);
-                } else {
-                    const data = await response.json();
-                    if (data.value.length === 0) {
-                        // Tentar campo alternativo
-                        const apiUrl2 = `${siteUrl}/_api/web/lists/getbytitle('Chamados')/items?$filter=Title eq '${numero}'&$top=1`;
-                        const response2 = await fetch(apiUrl2, {
-                            headers: {
-                                "Accept": "application/json"
-                            }
-                        });
-                        const data2 = await response2.json();
-                        if (data2.value.length === 0) {
-                            throw new Error('Chamado não encontrado');
-                        }
-                        exibirChamado(data2.value[0], numero);
-                    } else {
-                        exibirChamado(data.value[0], numero);
-                    }
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Erro ${response.status}: Falha ao carregar dados`);
                 }
+
+                const dados = await response.json();
+                exibirChamado(dados, numero);
 
             } catch (erro) {
                 console.error('Erro:', erro);
                 document.getElementById('conteudo').innerHTML = `
                     <div class="error">
-                        ❌ Erro ao carregar chamado: ${erro.message}<br>
-                        <small>Verifique se o número está correto ou tente novamente mais tarde.</small>
+                        ❌ Erro ao carregar chamado<br>
+                        <small>${erro.message}</small><br>
+                        <small style="margin-top: 10px; display: block;">Verifique se o número está correto ou tente novamente mais tarde.</small>
                     </div>
                 `;
             }
