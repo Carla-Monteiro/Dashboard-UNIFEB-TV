@@ -37,9 +37,11 @@
             text-align: center;
         }
 
-        .header img {
-            height: 50px;
+        .header-logo {
+            font-size: 40px;
+            font-weight: 900;
             margin-bottom: 15px;
+            letter-spacing: 2px;
         }
 
         .header h1 {
@@ -113,7 +115,7 @@
 
         .status-badge {
             display: inline-block;
-            padding: 6px 12px;
+            padding: 8px 16px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
@@ -146,7 +148,6 @@
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
-            text-transform: capitalize;
         }
 
         .prioridade-alta {
@@ -274,7 +275,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAACE4AAAhOAFmwvqeAAAF3UlEQVR4nO2cW2wUVRjG/zO7293t0guUtCDXiqIVlHsRb4hGEb0QeZEHjRrvxgT1QeNFRU0gHowHjPoiHtQH8cEL8YJG8YK31bvWqAg0d7u72+1Md/zPt5TSpnS7O3PmmXm+JPhJd3fPmXl+Zt6d86lx8+ZNaG1tRVVVFWw2G2RZRnd3N/r7+/Hy5Uv09PTgxo0b+OmnnxAIBHDy5Em88847yMvLw4EDB/DkyRMEg0HcunULly9fxgsXLkAURSiKglgsJmRZHsnLy5t5+vQpAODZs2coLS2dWbFiRc3du3erBEHApUuX8Omnn8JsNiMnJwfFxcVYt24dCgoKIEmSJtO0vLwcdrsdu3btgrW1VYhlWQZVVRGNRmEymWAymZBKpZBIJIR79+7hwYMHeP/99xGPx7F48WLcvn0bly9fRiAQQFtbG2pra2EwGNCCRDPHD+Q5OTmPxsfHx6xWK7Zu3aqxm0+fPkV9fT1+/fVXrFixQmtrNzeDg4MoLS1FW1sbVFWFJEmIRCJsQJZl7N+/X+MlmZmZ1Yqi4MCBAzh16hTm5+djcnLy1Z/1ejDI88XFRR1UVdXYyaZNm9Do6OhcxqMjKooy4y85Pj6OuXPnos3SpUuhKEpNQ0MD+vr6MH/+fCiKUnMtpZ8a9PkzfnISxwAUCqKsKJrS2+Pj4wrg/j4cBzGFLMuhaDRKReFy/vx5/pSr5mEkEpkZGRnBzJkzMTo6qsm7ZWVlGBoagqqqmJqaQiKRUEVRqrLlxRdFNgKA4k/CpHfz8vIgSZJGjqVlUVVVdHZ2Fq2traV37tyB1WqF2+1Ga2srHj58iMbGRoTDYUxOTsJqtWJsbAzRaFTjLRaLBSMjI+jq6kJHRwf6+/vx/PlzzM3NQUdHB5qbmxGLxVBQUIDBwUHU1NTo+q3O6fVHWVZVVRgbG3tVUFdYWFjU2dmJUCiEgYGB4sSJ49qVK1cAAFeuXKm6du1a1erVqzU/9T179kyDKxqNakRXKBSC2+3G7du38fz5c2zcuBGDg4NRy7JQkZLMaLb7NYr7fr8fLpcrA9qZM2fQ0dGRMT05OamxrWVmZmJiYkJjB9FoFO7eJkS7dn5+Phob6nJ/cKcKxeEDATxfN1R1L5wlmkVpZ2cnFEVBKpXC+Ph4Bm7lxo0bGB8fx4sXLzLKa2yqz+fDmDGNKAosJj+sZXPBikcAnG8F+F5kcKpQREwVDqVTOdnT00MgOzUx8dLhKhd2ot3BXPBCqS11h8PpS19gkgHZUn8omWqyB12cJSrAhBnqOvBXfQe32tiqBrT08Ww4i5BFsTNarO8Uw9Gl2+L0Fp+IQP8P8qT+cqA0cw6rIy8qx6WqqV51z+BrDpG6B+jmCM8YqlaqmGqZmlJ+Pj5y1RJT+R9TvqGLYfUSzrqxLgkJAKvZ3QfPBxHBLlDMbv9JALvBUHcAn65wgswV3V8hXQqYPDe8JZcCvVbpnqzNV9+5W2u4xFBxjxYFwhQ3dyqOCJq3XRXSN27xf0pWqBuJ2qL7WbEj5WslXxFWpk+L2x6vG06gAZWEm1ufYTVjcryomqVeXGqfXN4/ufEaJRzvBZXCmm1l4llXJ8CjFy7TGD8G1iJ7w0rkJ4l05AK7ViCvRfvvbpZQDQYLRKV4Ydo2wLYaJrmSHqOJdKxR/LzG3gEXLkEXLkEXLkEXLkEXLkEXLkEXLkEXL6PW+D1O+VPzI7FrpyYTanXxUXJqGCN0P4iSvbddDO4+z1xVEkx9G4fPNM3kAe0zewKBvGvJk8pGvgyGrq9hKGK56Qd6aQXwVJdOr7YRqG0sH46wIJNKRJSmjfJjXQkZzamLMr5eLIJJdmzY5SMDV0iAcDhBHWv0jdqgS2YDIxDuG2CrLU1zqVxVl+Kho8HG7KKW/DXqONQvuJOzpnnZVPgMG8w0RlmGm+DH3Zu7PmsFXJ7VHC0c9yQppFf1CmrHblqGYNMuReFLjBfVz6/fPuLNTAj2QjzLbvjL1uo9Y89pU3Ow5M3hZB5b/eXplN/wAi+cVvqUJJMZa21Rf3sXZQ0Y4pchVCNrWCmQ+V2x5h+G8Zd2Zi/o+0LXyXfIVVVVSUkEgnExMTEv5IJRCK5XC7h7t27ws2bN4U7d+4Ijx49Eu7duyfeunVLuHHjhnDt2jXh5s2bwtWrVzUqZjabf/vz51/C3LlzhYcPHwrPnz8XxsfHhZGREeHZs2fC8+fPhZcvXwrj4+PC0tKS8OHHHwsXLlyYcblcwhPvE+H3339fOHTo0MzZs2eFfv/+X/7/9/dPq92HhFvkFmMZb0OxNCTqSwvmrWq1+gZWNbx79+7/S58j4A5Y2+tAL9QkAM5cuhbVfbN+D9p3NX5Lnj+J4AuFVcB2FqBYm/IQqj+fJ5IfBj2OoDVQmgG3s+fP/8zn+xPvBLKLOxWO/JnD/8DvJvMU8OqMUYAAAAASUVORK5CYII=" alt="UNIFEB">
+            <div class="header-logo">UNIFEB</div>
             <h1>Acompanhamento de Chamado</h1>
             <p>Controle de Chamados - UNIFEB</p>
         </div>
@@ -313,6 +314,7 @@
                 'Fechado': 'fechado'
             };
 
+            const prioridadeNormalizada = prioridade.toLowerCase().replace('á', 'a');
             const statusClass = `status-${statusMap[status] || 'aberto'}`;
 
             const html = `
@@ -324,7 +326,7 @@
                 <div class="card-chamado">
                     <h2>
                         <span>#${numero}</span>
-                        <span class="status-badge ${statusClass}">${status}</span>
+                        ${status ? `<span class="status-badge ${statusClass}">${status}</span>` : ''}
                     </h2>
 
                     <div class="campo">
@@ -340,7 +342,7 @@
                     <div class="campo">
                         <span class="campo-label">Status:</span>
                         <span class="campo-valor">
-                            <span class="status-badge ${statusClass}" style="padding: 8px 16px; display: inline-block;">${status}</span>
+                            <span class="status-badge ${statusClass}">${status}</span>
                         </span>
                     </div>
 
@@ -352,7 +354,7 @@
                     <div class="campo">
                         <span class="campo-label">Prioridade:</span>
                         <span class="campo-valor">
-                            <span class="prioridade-badge prioridade-${prioridade.toLowerCase().replace('á', 'a')}">${prioridade}</span>
+                            <span class="prioridade-badge prioridade-${prioridadeNormalizada}">${prioridade}</span>
                         </span>
                     </div>
 
