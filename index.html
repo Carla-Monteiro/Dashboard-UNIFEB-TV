@@ -239,9 +239,9 @@
         }
 
         .badge-andamento {
-            background: rgba(255, 165, 0, 0.2);
-            color: #ffa500;
-            border-color: #ffa500;
+            background: rgba(179, 136, 255, 0.2);
+            color: #b388ff;
+            border-color: #b388ff;
         }
 
         .badge-resolvido {
@@ -257,9 +257,9 @@
         }
 
         .badge-media {
-            background: rgba(255, 165, 0, 0.25);
-            color: #ffa500;
-            border-color: #ffa500;
+            background: rgba(255, 213, 79, 0.25);
+            color: #ffd54f;
+            border-color: #ffd54f;
         }
 
         .badge-baixa {
@@ -1277,7 +1277,7 @@
 
             // ===== GRÁFICO 1: POR STATUS (VERDE para Em Andamento) =====
             const statusOrdem = ['Aberto', 'Em Andamento', 'Concluído'];
-            const statusCoresMap = { 'Aberto': '#64c8ff', 'Em Andamento': '#ffa500', 'Concluído': '#00c864' };
+            const statusCoresMap = { 'Aberto': '#64c8ff', 'Em Andamento': '#b388ff', 'Concluído': '#00c864' };
             const statusLabelsFinal = statusOrdem.filter(s => statusCounts[s] > 0);
             const statusDataFinal = statusLabelsFinal.map(s => statusCounts[s]);
             const statusCoresFinal = statusLabelsFinal.map(s => statusCoresMap[s]);

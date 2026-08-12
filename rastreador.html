@@ -122,23 +122,23 @@
         }
 
         .status-aberto {
-            background: rgba(31, 71, 136, 0.2);
-            color: #1F4788;
+            background: #1F4788;
+            color: #ffffff;
         }
 
         .status-andamento {
-            background: rgba(255, 149, 0, 0.2);
-            color: #FF9500;
+            background: #FF9500;
+            color: #ffffff;
         }
 
         .status-concluido {
-            background: rgba(76, 175, 80, 0.2);
-            color: #388e3c;
+            background: #43A047;
+            color: #ffffff;
         }
 
         .status-fechado {
-            background: rgba(158, 158, 158, 0.2);
-            color: #616161;
+            background: #757575;
+            color: #ffffff;
         }
 
         .prioridade-badge {
@@ -362,11 +362,6 @@
             html += '<div class="campo">';
             html += '<span class="campo-label">Status:</span>';
             html += '<span class="campo-valor"><span class="status-badge ' + statusClass + '">' + statusFinal + '</span></span>';
-            html += '</div>';
-            
-            html += '<div class="campo">';
-            html += '<span class="campo-label">Setor:</span>';
-            html += '<span class="campo-valor">' + setorFinal + '</span>';
             html += '</div>';
             
             html += '<div class="campo">';
