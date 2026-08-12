@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acompanhamento de Chamado - UNIFEB</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header img {
+            height: 40px;
+            margin-bottom: 15px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .card-chamado {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-chamado h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .campo {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .campo:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .campo-label {
+            font-weight: 600;
+            color: #555;
+            min-width: 150px;
+        }
+
+        .campo-valor {
+            color: #333;
+            text-align: right;
+            flex: 1;
+            padding-left: 15px;
+            word-break: break-word;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-aberto {
+            background: rgba(33, 150, 243, 0.2);
+            color: #1976d2;
+        }
+
+        .status-andamento {
+            background: rgba(76, 175, 80, 0.2);
+            color: #388e3c;
+        }
+
+        .status-concluido {
+            background: rgba(76, 175, 80, 0.2);
+            color: #388e3c;
+        }
+
+        .status-fechado {
+            background: rgba(158, 158, 158, 0.2);
+            color: #616161;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #1565c0;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .botoes {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-voltar {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-voltar:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-atualizar {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-atualizar:hover {
+            background: #5568d3;
+        }
+
+        .descricao-completa {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+            margin-top: 15px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #555;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        @media (max-width: 600px) {
+            .header {
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+
+            .campo {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .campo-valor {
+                text-align: left;
+                padding-left: 0;
+                margin-top: 5px;
+            }
+
+            .botoes {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="data:image/png;base64,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" alt="UNIFEB">
+            <h1>Acompanhamento de Chamado</h1>
+            <p>Controle de Chamados - UNIFEB</p>
+        </div>
+
+        <div class="content" id="conteudo">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>Carregando informações do chamado...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function carregarChamado() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const numero = urlParams.get('numero');
+
+            if (!numero) {
+                document.getElementById('conteudo').innerHTML = `
+                    <div class="error">
+                        ❌ Erro: Número do chamado não encontrado na URL.
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                // Buscar dados do SharePoint
+                const response = await fetch(`/api/chamados?numero=${encodeURIComponent(numero)}`);
+
+                if (!response.ok) {
+                    throw new Error('Falha ao carregar dados');
+                }
+
+                const chamado = await response.json();
+
+                if (!chamado || chamado.length === 0) {
+                    document.getElementById('conteudo').innerHTML = `
+                        <div class="error">
+                            ❌ Chamado <strong>${numero}</strong> não encontrado.
+                        </div>
+                    `;
+                    return;
+                }
+
+                const dados = chamado[0];
+                const statusClass = `status-${dados.Status.toLowerCase().replace(' ', '-').replace('á', 'a')}`;
+                const dataAbertura = new Date(dados.Created).toLocaleDateString('pt-BR');
+                const dataAtualizacao = new Date(dados.Modified).toLocaleDateString('pt-BR');
+
+                document.getElementById('conteudo').innerHTML = `
+                    <div class="info-box">
+                        <strong>ℹ️ Informações de Rastreamento</strong>
+                        Acompanhe o status do seu chamado aqui. Nosso time de suporte está trabalhando para resolver sua solicitação.
+                    </div>
+
+                    <div class="card-chamado">
+                        <h2>
+                            <span>#${dados.ID}</span>
+                            <span class="status-badge ${statusClass}">${dados.Status}</span>
+                        </h2>
+
+                        <div class="campo">
+                            <span class="campo-label">Título:</span>
+                            <span class="campo-valor">${dados.Title}</span>
+                        </div>
+
+                        <div class="campo">
+                            <span class="campo-label">Número:</span>
+                            <span class="campo-valor"><strong>${numero}</strong></span>
+                        </div>
+
+                        <div class="campo">
+                            <span class="campo-label">Status:</span>
+                            <span class="campo-valor">
+                                <span class="status-badge ${statusClass}">${dados.Status}</span>
+                            </span>
+                        </div>
+
+                        <div class="campo">
+                            <span class="campo-label">Setor:</span>
+                            <span class="campo-valor">${dados.Setor_x0020_de_x0020_Atendimento || 'Não especificado'}</span>
+                        </div>
+
+                        <div class="campo">
+                            <span class="campo-label">Prioridade:</span>
+                            <span class="campo-valor">${dados.Prioridade || 'Normal'}</span>
+                        </div>
+
+                        <div class="campo">
+                            <span class="campo-label">Data de Abertura:</span>
+                            <span class="campo-valor">${dataAbertura}</span>
+                        </div>
+
+                        <div class="campo">
+                            <span class="campo-label">Última Atualização:</span>
+                            <span class="campo-valor">${dataAtualizacao}</span>
+                        </div>
+
+                        ${dados.Description ? `
+                        <div>
+                            <div class="campo-label" style="border: none; padding-bottom: 10px;">Descrição:</div>
+                            <div class="descricao-completa">${dados.Description}</div>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="botoes">
+                        <button class="btn btn-atualizar" onclick="location.reload()">🔄 Atualizar</button>
+                        <button class="btn btn-voltar" onclick="window.close(); if(!window.closed) window.history.back();">← Voltar</button>
+                    </div>
+
+                    <div class="timestamp">
+                        Página atualizada em: <strong>${new Date().toLocaleString('pt-BR')}</strong>
+                    </div>
+                `;
+
+            } catch (erro) {
+                console.error('Erro:', erro);
+                document.getElementById('conteudo').innerHTML = `
+                    <div class="error">
+                        ❌ Erro ao carregar chamado: ${erro.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Carregar ao abrir a página
+        window.addEventListener('load', carregarChamado);
+
+        // Atualizar a cada 30 segundos
+        setInterval(carregarChamado, 30000);
+    </script>
+</body>
+</html>
