@@ -287,16 +287,39 @@
     <script>
         function carregarChamado() {
             const urlParams = new URLSearchParams(window.location.search);
+            
+            // Debug - Log todos os parâmetros
+            console.log('URL Completa:', window.location.href);
+            console.log('Query String:', window.location.search);
+            
+            const numero = urlParams.get('numero');
+            const titulo = urlParams.get('titulo');
+            const status = urlParams.get('status');
+            const setor = urlParams.get('setor');
+            const prioridade = urlParams.get('prioridade');
+            const descricao = urlParams.get('descricao');
+            const dataAbertura = urlParams.get('dataAbertura');
+            
+            console.log('Parâmetros recebidos:', {
+                numero: numero,
+                titulo: titulo,
+                status: status,
+                setor: setor,
+                prioridade: prioridade,
+                descricao: descricao,
+                dataAbertura: dataAbertura
+            });
+            
+            // Usar valores com fallback
+            const numeroFinal = numero || '';
+            const tituloFinal = titulo ? decodeURIComponent(titulo) : 'Sem título';
+            const statusFinal = status ? decodeURIComponent(status) : 'Aberto';
+            const setorFinal = setor ? decodeURIComponent(setor) : 'Não especificado';
+            const prioridadeFinal = prioridade ? decodeURIComponent(prioridade) : 'Média';
+            const descricaoFinal = descricao ? decodeURIComponent(descricao) : '';
+            const dataAberturaFinal = dataAbertura || new Date().toLocaleDateString('pt-BR');
 
-            const numero = urlParams.get('numero') || '';
-            const titulo = urlParams.get('titulo') || 'Sem título';
-            const status = urlParams.get('status') || 'Aberto';
-            const setor = urlParams.get('setor') || 'Não especificado';
-            const prioridade = urlParams.get('prioridade') || 'Média';
-            const descricao = urlParams.get('descricao') || '';
-            const dataAbertura = urlParams.get('dataAbertura') || new Date().toLocaleDateString('pt-BR');
-
-            if (!numero) {
+            if (!numeroFinal) {
                 document.getElementById('conteudo').innerHTML = '<div class="error">❌ Erro: Número do chamado não encontrado na URL.</div>';
                 return;
             }
@@ -309,8 +332,11 @@
                 'Fechado': 'fechado'
             };
 
-            const prioridadeNormalizada = prioridade.toLowerCase().replace('á', 'a');
-            const statusClass = 'status-' + (statusMap[status] || 'aberto');
+            const prioridadeNormalizada = prioridadeFinal.toLowerCase().replace('á', 'a');
+            const statusClass = 'status-' + (statusMap[statusFinal] || 'aberto');
+            
+            console.log('Status final:', statusFinal);
+            console.log('Status class:', statusClass);
             
             // Montar HTML com concatenação simples
             let html = '<div class="info-box">';
@@ -319,46 +345,44 @@
             html += '</div>';
             
             html += '<div class="card-chamado">';
-            html += '<h2><span>#' + numero + '</span>';
-            if (status) {
-                html += '<span class="status-badge ' + statusClass + '">' + status + '</span>';
-            }
+            html += '<h2><span>#' + numeroFinal + '</span>';
+            html += '<span class="status-badge ' + statusClass + '">' + statusFinal + '</span>';
             html += '</h2>';
             
             html += '<div class="campo">';
             html += '<span class="campo-label">Título:</span>';
-            html += '<span class="campo-valor">' + decodeURIComponent(titulo) + '</span>';
+            html += '<span class="campo-valor">' + tituloFinal + '</span>';
             html += '</div>';
             
             html += '<div class="campo">';
             html += '<span class="campo-label">Número:</span>';
-            html += '<span class="campo-valor"><strong>' + numero + '</strong></span>';
+            html += '<span class="campo-valor"><strong>' + numeroFinal + '</strong></span>';
             html += '</div>';
             
             html += '<div class="campo">';
             html += '<span class="campo-label">Status:</span>';
-            html += '<span class="campo-valor"><span class="status-badge ' + statusClass + '">' + status + '</span></span>';
+            html += '<span class="campo-valor"><span class="status-badge ' + statusClass + '">' + statusFinal + '</span></span>';
             html += '</div>';
             
             html += '<div class="campo">';
             html += '<span class="campo-label">Setor:</span>';
-            html += '<span class="campo-valor">' + decodeURIComponent(setor) + '</span>';
+            html += '<span class="campo-valor">' + setorFinal + '</span>';
             html += '</div>';
             
             html += '<div class="campo">';
             html += '<span class="campo-label">Prioridade:</span>';
-            html += '<span class="campo-valor"><span class="prioridade-badge prioridade-' + prioridadeNormalizada + '">' + prioridade + '</span></span>';
+            html += '<span class="campo-valor"><span class="prioridade-badge prioridade-' + prioridadeNormalizada + '">' + prioridadeFinal + '</span></span>';
             html += '</div>';
             
             html += '<div class="campo">';
             html += '<span class="campo-label">Data de Abertura:</span>';
-            html += '<span class="campo-valor">' + dataAbertura + '</span>';
+            html += '<span class="campo-valor">' + dataAberturaFinal + '</span>';
             html += '</div>';
             
-            if (descricao) {
+            if (descricaoFinal) {
                 html += '<div>';
                 html += '<div class="campo-label" style="border: none; padding-bottom: 10px;">Descrição:</div>';
-                html += '<div class="descricao-completa">' + decodeURIComponent(descricao) + '</div>';
+                html += '<div class="descricao-completa">' + descricaoFinal + '</div>';
                 html += '</div>';
             }
             
