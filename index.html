@@ -239,9 +239,9 @@
         }
 
         .badge-andamento {
-            background: rgba(255, 165, 0, 0.2);
-            color: #ffa500;
-            border-color: #ffa500;
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            border-color: #4CAF50;
         }
 
         .badge-resolvido {
@@ -947,9 +947,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         let CHAMADOS = [];
-        
+
         // 🔧 FUNÇÃO PARA CALCULAR SLA CORRETAMENTE
-        // Definir prazos SLA por prioridade (em horas)
         const PRAZOS_SLA = {
             'Baixa': 24,      // 24 horas
             'Média': 8,       // 8 horas
@@ -958,7 +957,6 @@
 
         function calcularSLA(dataAbertura, prioridade, status) {
             try {
-                // Se chamado já está concluído, não calcular SLA
                 if (status === 'Concluído' || status === 'Fechado') {
                     return {
                         slaVencido: false,
@@ -968,26 +966,14 @@
                     };
                 }
 
-                // Converter dataAbertura para objeto Date
                 const dataAberturaObj = new Date(dataAbertura);
                 const agora = new Date();
-                
-                // Calcular tempo decorrido em milissegundos
                 const tempoDecorrido = agora - dataAberturaObj;
-                
-                // Converter para horas
                 const horasDecorridas = tempoDecorrido / (1000 * 60 * 60);
-                
-                // Obter prazo SLA para a prioridade
                 const prazoSLA = PRAZOS_SLA[prioridade] || PRAZOS_SLA['Média'];
-                
-                // Verificar se venceu
                 const vencido = horasDecorridas > prazoSLA;
-                
-                // Calcular porcentagem de utilização do SLA
                 const porcentagem = Math.min(100, Math.round((horasDecorridas / prazoSLA) * 100));
-                
-                // Formatar tempo aberto
+
                 let slaAberto = '';
                 if (horasDecorridas < 1) {
                     const minutos = Math.round(horasDecorridas * 60);
@@ -1000,14 +986,13 @@
                     const horas = Math.floor(horasDecorridas % 24);
                     slaAberto = `${dias}d ${horas}h`;
                 }
-                
-                // Mensagem de atraso
+
                 let slaAtraso = 'No prazo';
                 if (vencido) {
                     const horasAtrasos = Math.round(horasDecorridas - prazoSLA);
                     slaAtraso = `🔴 ATRASADO ${horasAtrasos}h`;
                 }
-                
+
                 return {
                     slaVencido: vencido,
                     slaAberto: slaAberto,
@@ -1016,7 +1001,7 @@
                     prazoSLA: prazoSLA,
                     horasDecorridas: horasDecorridas.toFixed(2)
                 };
-                
+
             } catch (erro) {
                 console.error('Erro ao calcular SLA:', erro);
                 return {
@@ -1033,18 +1018,14 @@
 
         async function carregarDados() {
             try {
-                // ✅ Buscar do endpoint /api/chamados do Backend (Render) - dados sempre sincronizados!
                 const response = await fetch('https://unifeb-backend.onrender.com/api/chamados');
                 const dados = await response.json();
-                
-                // ✅ CORRIGIDO: O backend retorna um ARRAY direto, não um objeto
+
                 CHAMADOS = Array.isArray(dados) ? dados : (dados.chamados || []);
-                
-                // Mapear campos do backend para o formato esperado
+
                 CHAMADOS = CHAMADOS.map(c => {
-                    // Calcular SLA para cada chamado
                     const slaInfo = calcularSLA(c.dataAbertura, c.prioridade, c.status);
-                    
+
                     return {
                         id: c.id || '',
                         titulo: c.titulo || '',
@@ -1064,12 +1045,23 @@
                         porcentagem: slaInfo.porcentagem
                     };
                 });
-                
+
                 console.log(`✅ ${CHAMADOS.length} chamados carregados do Backend em tempo real`);
-                
+
                 document.getElementById('syncStatus').textContent = '🟢 Sincronizado';
-                filtrar();
-                
+
+                // ✅ NOVA FUNCIONALIDADE: Ler parâmetro "numero" da URL e filtrar automaticamente
+                const urlParams = new URLSearchParams(window.location.search);
+                const chamadoNumero = urlParams.get('numero');
+
+                if (chamadoNumero) {
+                    console.log(`🔍 Filtrando para chamado: ${chamadoNumero}`);
+                    document.getElementById('filterBusca').value = chamadoNumero;
+                    filtrar();
+                } else {
+                    filtrar();
+                }
+
             } catch (erro) {
                 console.error('❌ Erro:', erro);
                 document.getElementById('syncStatus').textContent = '🔴 Erro';
@@ -1080,10 +1072,10 @@
         function mostrarAba(abaName) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            
+
             document.getElementById(abaName).classList.add('active');
             event.target.classList.add('active');
-            
+
             if (abaName === 'graficos') {
                 setTimeout(() => desenharGraficos(), 200);
             } else if (abaName === 'manutencao') {
@@ -1100,7 +1092,7 @@
         function renderizarManutencao() {
             const tbody = document.getElementById('manutencaoBody');
             const chamadosManutencao = CHAMADOS.filter(c => c.setorAtendimento === 'Manutenção Predial');
-            
+
             if (chamadosManutencao.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" class="empty-state">📭 Nenhum chamado de manutenção</td></tr>`;
                 return;
@@ -1122,7 +1114,7 @@
         function renderizarNAEM() {
             const tbody = document.getElementById('naemBody');
             const chamadosNAEM = CHAMADOS.filter(c => c.setorAtendimento === 'Multimídia (NAEM)');
-            
+
             if (chamadosNAEM.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" class="empty-state">📭 Nenhum chamado de NAEM</td></tr>`;
                 return;
@@ -1144,7 +1136,7 @@
         function renderizarTI() {
             const tbody = document.getElementById('tiBody');
             const chamadosTI = CHAMADOS.filter(c => c.setorAtendimento === 'TI / Internet');
-            
+
             if (chamadosTI.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" class="empty-state">📭 Nenhum chamado de TI</td></tr>`;
                 return;
@@ -1207,16 +1199,13 @@
 
         function abrirSLA(chamadoId) {
             const chamado = CHAMADOS.find(c => c.id === chamadoId);
-            
+
             if (!chamado) {
                 alert('Chamado não encontrado');
                 return;
             }
-            
-            // Status
+
             const status = chamado.slaVencido ? '🔴 VENCIDO' : '✅ OK';
-            
-            // Calcular percentual de SLA
             const slaHoras = chamado.slaHoras || 8;
             let percentualStr = '0%';
             if (chamado.slaAtraso && chamado.slaAtraso !== 'No prazo') {
@@ -1229,22 +1218,19 @@
                     percentualStr = percent + '%';
                 }
             }
-            
-            // Atualizar modal
+
             document.getElementById('modalStatus').textContent = status;
             document.getElementById('modalPercent').textContent = percentualStr;
             document.getElementById('modalAtraso').textContent = chamado.slaAtraso || 'No prazo';
             document.getElementById('modalAberto').textContent = chamado.slaAberto || '0h';
-            
-            // Atualizar cor da barra
+
             const progressBar = document.querySelector('.sla-progress-bar');
             if (chamado.slaVencido) {
                 progressBar.style.width = '100%';
             } else {
                 progressBar.style.width = percentualStr;
             }
-            
-            // Mostrar modal
+
             document.getElementById('slaModal').classList.add('active');
         }
 
@@ -1260,7 +1246,6 @@
         }
 
         function gerarCoresDinamicas(qtd) {
-            // Gera uma paleta de cores distintas (HSL) suficiente para qualquer número de setores
             const cores = [];
             for (let i = 0; i < qtd; i++) {
                 const hue = Math.round((360 / qtd) * i);
@@ -1280,21 +1265,19 @@
                 setorCounts[setorNome] = (setorCounts[setorNome] || 0) + 1;
             });
 
-            // Atualizar estatísticas (usando status normalizado, evita duplicidade)
             document.getElementById('statTotal').textContent = CHAMADOS.length;
             document.getElementById('statSLA').textContent = CHAMADOS.filter(c => c.slaVencido).length;
             document.getElementById('statAbertos').textContent = CHAMADOS.filter(c => normalizarStatus(c.status) === 'Aberto').length;
             document.getElementById('statAndamento').textContent = CHAMADOS.filter(c => normalizarStatus(c.status) === 'Em Andamento').length;
             document.getElementById('statResolvidos').textContent = CHAMADOS.filter(c => normalizarStatus(c.status) === 'Concluído').length;
 
-            // Limpar gráficos anteriores
             if (window.graficoStatusChart) window.graficoStatusChart.destroy();
             if (window.graficoPrioridadeChart) window.graficoPrioridadeChart.destroy();
             if (window.graficoSetorChart) window.graficoSetorChart.destroy();
 
-            // ===== GRÁFICO 1: POR STATUS (cores fixas e consistentes com os badges) =====
+            // ===== GRÁFICO 1: POR STATUS (VERDE para Em Andamento) =====
             const statusOrdem = ['Aberto', 'Em Andamento', 'Concluído'];
-            const statusCoresMap = { 'Aberto': '#64c8ff', 'Em Andamento': '#ffa500', 'Concluído': '#00c864' };
+            const statusCoresMap = { 'Aberto': '#64c8ff', 'Em Andamento': '#4CAF50', 'Concluído': '#00c864' };
             const statusLabelsFinal = statusOrdem.filter(s => statusCounts[s] > 0);
             const statusDataFinal = statusLabelsFinal.map(s => statusCounts[s]);
             const statusCoresFinal = statusLabelsFinal.map(s => statusCoresMap[s]);
@@ -1322,7 +1305,6 @@
                 }
             });
 
-            // ===== GRÁFICO 2: POR PRIORIDADE (cores fixas: Alta=vermelho, Média=laranja, Baixa=azul) =====
             const prioridadeOrdem = ['Alta', 'Média', 'Baixa'];
             const prioridadeCoresMap = { 'Alta': '#ff6464', 'Média': '#ffa500', 'Baixa': '#64c8ff' };
             const prioridadeLabelsFinal = prioridadeOrdem.filter(p => prioridadeCounts[p] > 0);
@@ -1345,7 +1327,6 @@
                 }
             });
 
-            // ===== GRÁFICO 3: POR SETOR (paleta dinâmica + ordenado do maior pro menor) =====
             const setoresOrdenados = Object.entries(setorCounts).sort((a, b) => b[1] - a[1]);
             const setorLabelsFinal = setoresOrdenados.map(s => s[0]);
             const setorDataFinal = setoresOrdenados.map(s => s[1]);
@@ -1403,11 +1384,9 @@
             document.getElementById('satisfBom').textContent = qtdBom;
             document.getElementById('satisfRuim').textContent = qtdRuim;
 
-            // Índice de satisfação: Ótimo=100%, Bom=60%, Ruim=0% (média ponderada)
             const indice = total > 0 ? Math.round(((qtdOtimo * 100) + (qtdBom * 60) + (qtdRuim * 0)) / total) : 0;
             document.getElementById('satisfIndice').textContent = indice + '%';
 
-            // ===== GRÁFICO: Avaliação Geral =====
             if (window.graficoAvaliacaoChart) window.graficoAvaliacaoChart.destroy();
             const avalLabels = [], avalData = [], avalCores = [];
             if (qtdOtimo > 0) { avalLabels.push('Ótimo'); avalData.push(qtdOtimo); avalCores.push('#00c864'); }
@@ -1426,8 +1405,7 @@
                 }
             });
 
-            // ===== Cruzamento: Satisfação por Setor (usando NumeroChamado -> CHAMADOS) =====
-            const setorStats = {}; // { setor: {otimo, bom, ruim} }
+            const setorStats = {};
             PESQUISAS.forEach(p => {
                 const chamado = CHAMADOS.find(c => String(c.id) === String(p.numeroChamado));
                 const setor = chamado ? (chamado.setorAtendimento || 'Geral') : 'Não identificado';
@@ -1462,7 +1440,6 @@
                 }
             });
 
-            // ===== Tabela de comentários =====
             const tbody = document.getElementById('tbodySatisfacao');
             const comComentario = PESQUISAS.filter(p => p.comentario && p.comentario.trim() !== '');
 
@@ -1489,19 +1466,11 @@
 
         function getBadgePrio(p) { return p === 'Alta' ? 'alta' : p === 'Baixa' ? 'baixa' : 'media'; }
         function getBadgeStatus(s) { return s === 'Aberto' ? 'aberto' : (s === 'Resolvido' || s === 'Concluído' || s === 'Concluido') ? 'resolvido' : 'andamento'; }
-        function formatarData(d) { 
-            try { 
-                // Se a entrada é vazia, retorna vazio
+        function formatarData(d) {
+            try {
                 if (!d) return '-';
-                
-                // Criar um objeto Date a partir da string
                 let dt = new Date(d);
-                
-                // Verificar se é uma data válida
                 if (isNaN(dt.getTime())) return d;
-                
-                // Simplesmente formatar com timezone de São Paulo
-                // Intl.DateTimeFormat faz toda a conversão automaticamente
                 const formatter = new Intl.DateTimeFormat('pt-BR', {
                     year: 'numeric',
                     month: '2-digit',
@@ -1510,12 +1479,11 @@
                     minute: '2-digit',
                     timeZone: 'America/Sao_Paulo'
                 });
-                
                 return formatter.format(dt);
-            } catch (e) { 
+            } catch (e) {
                 console.warn('Erro ao formatar data:', d, e);
-                return d; 
-            } 
+                return d;
+            }
         }
         function limparHTML(t) { return (t || '').replace(/<[^>]*>/g, ''); }
         function sincronizar() { alert('Execute no terminal: python sync_sharepoint_tv.py'); }
@@ -1540,7 +1508,7 @@
         function abrirFormularioEditar(chamadoId) {
             const chamado = CHAMADOS.find(c => c.id === chamadoId);
             if (!chamado) return;
-            
+
             EDICAO_ID = chamadoId;
             document.getElementById('modalTitulo').textContent = '✏️ Editar Chamado';
             document.getElementById('titulo').value = chamado.titulo;
@@ -1571,24 +1539,21 @@
                 prioridade: document.getElementById('prioridade').value,
                 data: document.getElementById('data') ? document.getElementById('data').value : new Date().toISOString()
             };
-            
+
             if (EDICAO_ID) dados.status = document.getElementById('status').value;
-            
+
             try {
                 const url = EDICAO_ID ? `${BACKEND_URL}/api/editar-chamado/${EDICAO_ID}` : `${BACKEND_URL}/api/criar-chamado`;
                 const method = EDICAO_ID ? 'PATCH' : 'POST';
                 const response = await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(dados) });
-                
+
                 if (response.ok) {
                     alert(EDICAO_ID ? '✅ Chamado atualizado!' : '✅ Chamado criado!');
                     fecharFormulario();
-                    
-                    // ✅ Recarregar dados após salvar (para sincronizar com backend/SharePoint)
+
                     if (EDICAO_ID) {
-                        // Se for edição, aguarda 500ms e recarrega
                         setTimeout(carregarDados, 500);
                     } else {
-                        // Se for novo, aguarda 2 segundos
                         setTimeout(carregarDados, 2000);
                     }
                 } else alert('❌ Erro ao salvar');
@@ -1624,7 +1589,6 @@
             if (e.key === 'Escape') fecharSLA();
         });
 
-        // CSS para modal aparecer
         const style = document.createElement('style');
         style.innerHTML = `
             #modalFormulario.active {
