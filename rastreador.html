@@ -40,7 +40,6 @@
         .header img {
             height: 50px;
             margin-bottom: 15px;
-            filter: brightness(0) invert(1);
         }
 
         .header h1 {
@@ -139,6 +138,30 @@
         .status-fechado {
             background: rgba(158, 158, 158, 0.2);
             color: #616161;
+        }
+
+        .prioridade-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .prioridade-alta {
+            background: rgba(229, 57, 53, 0.2);
+            color: #c62828;
+        }
+
+        .prioridade-media {
+            background: rgba(251, 140, 0, 0.2);
+            color: #e65100;
+        }
+
+        .prioridade-baixa {
+            background: rgba(76, 175, 80, 0.2);
+            color: #2e7d32;
         }
 
         .info-box {
@@ -269,7 +292,7 @@
             const titulo = urlParams.get('titulo');
             const status = urlParams.get('status') || 'Aberto';
             const setor = urlParams.get('setor') || 'Não especificado';
-            const prioridade = urlParams.get('prioridade') || 'Normal';
+            const prioridade = urlParams.get('prioridade') || 'Média';
             const descricao = urlParams.get('descricao') || '';
             const dataAbertura = urlParams.get('dataAbertura') || new Date().toLocaleDateString('pt-BR');
 
@@ -317,7 +340,7 @@
                     <div class="campo">
                         <span class="campo-label">Status:</span>
                         <span class="campo-valor">
-                            <span class="status-badge ${statusClass}">${status}</span>
+                            <span class="status-badge ${statusClass}" style="padding: 8px 16px; display: inline-block;">${status}</span>
                         </span>
                     </div>
 
@@ -328,7 +351,9 @@
 
                     <div class="campo">
                         <span class="campo-label">Prioridade:</span>
-                        <span class="campo-valor">${decodeURIComponent(prioridade || 'Normal')}</span>
+                        <span class="campo-valor">
+                            <span class="prioridade-badge prioridade-${prioridade.toLowerCase().replace('á', 'a')}">${prioridade}</span>
+                        </span>
                     </div>
 
                     <div class="campo">
