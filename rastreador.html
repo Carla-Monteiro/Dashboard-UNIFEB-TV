@@ -453,39 +453,21 @@
     </div>
 
     <script>
-        function carregarChamado() {
-            const urlParams = new URLSearchParams(window.location.search);
-            
-            // Debug - Log todos os parâmetros
-            console.log('URL Completa:', window.location.href);
-            console.log('Query String:', window.location.search);
-            
-            const numero = urlParams.get('numero');
-            const titulo = urlParams.get('titulo');
-            const status = urlParams.get('status');
-            const setor = urlParams.get('setor');
-            const prioridade = urlParams.get('prioridade');
-            const descricao = urlParams.get('descricao');
-            const dataAbertura = urlParams.get('dataAbertura');
-            
-            console.log('Parâmetros recebidos:', {
-                numero: numero,
-                titulo: titulo,
-                status: status,
-                setor: setor,
-                prioridade: prioridade,
-                descricao: descricao,
-                dataAbertura: dataAbertura
-            });
-            
-            // Usar valores com fallback
-            const numeroFinal = numero || '';
-            const tituloFinal = titulo ? decodeURIComponent(titulo) : 'Sem título';
-            const statusFinal = status ? decodeURIComponent(status) : 'Aberto';
-            const setorFinal = setor ? decodeURIComponent(setor) : 'Não especificado';
-            const prioridadeFinal = prioridade ? decodeURIComponent(prioridade) : 'Média';
-            const descricaoFinal = descricao ? decodeURIComponent(descricao) : '';
-            const dataAberturaFinal = dataAbertura || new Date().toLocaleDateString('pt-BR');
+        const BACKEND_URL = 'https://unifeb-backend.onrender.com';
+
+        // Extrai só a parte numérica do número do chamado (ex: "CH-1113" -> "1113", removendo zeros à esquerda)
+        function extrairIdNumerico(numero) {
+            if (!numero) return '';
+            return String(numero).replace(/^CH-/i, '').replace(/^0+(?=\d)/, '');
+        }
+
+        function renderizarCard(dados, meta) {
+            const numeroFinal = dados.numero || '';
+            const tituloFinal = dados.titulo || 'Sem título';
+            const statusFinal = dados.status || 'Aberto';
+            const prioridadeFinal = dados.prioridade || 'Média';
+            const descricaoFinal = dados.descricao || '';
+            const dataAberturaFinal = dados.dataAbertura || new Date().toLocaleDateString('pt-BR');
 
             if (!numeroFinal) {
                 document.getElementById('conteudo').innerHTML = '<div class="error">❌ Erro: Número do chamado não encontrado na URL.</div>';
@@ -502,10 +484,7 @@
 
             const prioridadeNormalizada = prioridadeFinal.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
             const statusClass = 'status-' + (statusMap[statusFinal] || 'aberto');
-            
-            console.log('Status final:', statusFinal);
-            console.log('Status class:', statusClass);
-            
+
             // Timeline de status
             const statusKey = statusClass.replace('status-', '');
             const stepIndexMap = { aberto: 0, andamento: 1, concluido: 2, fechado: 2 };
@@ -541,51 +520,134 @@
             html += '<h2><span>#' + numeroFinal + '</span>';
             html += '<span class="status-badge ' + statusClass + '">' + statusFinal + '</span>';
             html += '</h2>';
-            
+
             html += '<div class="campo">';
             html += '<span class="campo-label">Título:</span>';
             html += '<span class="campo-valor">' + tituloFinal + '</span>';
             html += '</div>';
-            
+
             html += '<div class="campo">';
             html += '<span class="campo-label">Número:</span>';
             html += '<span class="campo-valor"><strong>' + numeroFinal + '</strong></span>';
             html += '</div>';
-            
+
             html += '<div class="campo">';
             html += '<span class="campo-label">Status:</span>';
             html += '<span class="campo-valor"><span class="status-badge ' + statusClass + '">' + statusFinal + '</span></span>';
             html += '</div>';
-            
+
             html += '<div class="campo">';
             html += '<span class="campo-label">Prioridade:</span>';
             html += '<span class="campo-valor"><span class="prioridade-badge prioridade-' + prioridadeNormalizada + '">' + prioridadeFinal + '</span></span>';
             html += '</div>';
-            
+
             html += '<div class="campo">';
             html += '<span class="campo-label">Data de Abertura:</span>';
             html += '<span class="campo-valor">' + dataAberturaFinal + '</span>';
             html += '</div>';
-            
+
             if (descricaoFinal) {
                 html += '<div>';
                 html += '<div class="campo-label" style="border: none; padding-bottom: 10px;">Descrição:</div>';
                 html += '<div class="descricao-completa">' + descricaoFinal + '</div>';
                 html += '</div>';
             }
-            
+
             html += '</div>';
-            
+
             html += '<div class="botoes">';
-            html += '<button class="btn btn-atualizar" onclick="location.reload()">🔄 Atualizar</button>';
+            html += '<button class="btn btn-atualizar" onclick="carregarChamado()">🔄 Atualizar</button>';
             html += '<button class="btn btn-voltar" onclick="window.close(); if(!window.closed) window.history.back();">← Voltar</button>';
             html += '</div>';
-            
+
+            // Nota sobre a origem dos dados (e-mail x sistema em tempo real)
+            let notaFonte = '';
+            if (meta && meta.fonte === 'buscando') {
+                notaFonte = '🔄 Sincronizando com o sistema...';
+            } else if (meta && meta.fonte === 'live') {
+                notaFonte = '🟢 Dados em tempo real (SharePoint)';
+            } else if (meta && meta.fonte === 'erro') {
+                notaFonte = '⚠️ Não foi possível confirmar dados atualizados — exibindo dados do e-mail de abertura';
+            } else if (meta && meta.fonte === 'naoEncontrado') {
+                notaFonte = '⚠️ Chamado não encontrado no sistema — exibindo dados do e-mail de abertura';
+            }
+
             html += '<div class="timestamp">';
+            if (notaFonte) {
+                html += notaFonte + '<br>';
+            }
             html += 'Página atualizada em: <strong>' + new Date().toLocaleString('pt-BR') + '</strong>';
             html += '</div>';
 
             document.getElementById('conteudo').innerHTML = html;
+        }
+
+        function carregarChamado() {
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // Debug - Log todos os parâmetros
+            console.log('URL Completa:', window.location.href);
+            console.log('Query String:', window.location.search);
+
+            const numero = urlParams.get('numero');
+            const titulo = urlParams.get('titulo');
+            const status = urlParams.get('status');
+            const prioridade = urlParams.get('prioridade');
+            const descricao = urlParams.get('descricao');
+            const dataAbertura = urlParams.get('dataAbertura');
+
+            const dadosEmail = {
+                numero: numero || '',
+                titulo: titulo ? decodeURIComponent(titulo) : 'Sem título',
+                status: status ? decodeURIComponent(status) : 'Aberto',
+                prioridade: prioridade ? decodeURIComponent(prioridade) : 'Média',
+                descricao: descricao ? decodeURIComponent(descricao) : '',
+                dataAbertura: dataAbertura || new Date().toLocaleDateString('pt-BR')
+            };
+
+            console.log('Dados do e-mail (URL):', dadosEmail);
+
+            if (!dadosEmail.numero) {
+                document.getElementById('conteudo').innerHTML = '<div class="error">❌ Erro: Número do chamado não encontrado na URL.</div>';
+                return;
+            }
+
+            // 1) Mostra imediatamente os dados que vieram no link do e-mail
+            renderizarCard(dadosEmail, { fonte: 'buscando' });
+
+            // 2) Busca os dados atuais no backend (que lê do SharePoint) e atualiza a tela
+            const idBuscado = extrairIdNumerico(dadosEmail.numero);
+
+            fetch(BACKEND_URL + '/api/chamados')
+                .then(function(resp) { return resp.json(); })
+                .then(function(dadosResp) {
+                    const lista = Array.isArray(dadosResp) ? dadosResp : (dadosResp.chamados || []);
+                    const encontrado = lista.find(function(c) {
+                        return extrairIdNumerico(c.id) === idBuscado;
+                    });
+
+                    if (!encontrado) {
+                        console.warn('Chamado não encontrado no backend para o número:', dadosEmail.numero);
+                        renderizarCard(dadosEmail, { fonte: 'naoEncontrado' });
+                        return;
+                    }
+
+                    const dadosLive = {
+                        numero: dadosEmail.numero,
+                        titulo: encontrado.titulo || dadosEmail.titulo,
+                        status: encontrado.status || dadosEmail.status,
+                        prioridade: encontrado.prioridade || dadosEmail.prioridade,
+                        descricao: encontrado.descricao || dadosEmail.descricao,
+                        dataAbertura: dadosEmail.dataAbertura
+                    };
+
+                    console.log('Dados ao vivo (backend/SharePoint):', dadosLive);
+                    renderizarCard(dadosLive, { fonte: 'live' });
+                })
+                .catch(function(erro) {
+                    console.error('Erro ao buscar dados atualizados do backend:', erro);
+                    renderizarCard(dadosEmail, { fonte: 'erro' });
+                });
         }
 
         // Carregar ao abrir a página
