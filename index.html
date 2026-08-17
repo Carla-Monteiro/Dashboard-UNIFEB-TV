@@ -1371,8 +1371,10 @@
                 }
                 PESQUISAS = await response.json();
                 console.log(`✅ ${PESQUISAS.length} pesquisas carregadas`);
+                console.log('📊 Dados completos:', PESQUISAS);
             } catch (e) {
                 console.error('❌ Erro ao carregar pesquisas:', e);
+                console.error('URL tentada:', `${BACKEND_URL}/api/pesquisas`);
                 PESQUISAS = [];
             }
             renderizarSatisfacao();
@@ -1451,24 +1453,26 @@
                 }
             });
 
-            // 💬 RENDERIZAR COMENTÁRIOS
+            // 💬 RENDERIZAR TODAS AS RESPOSTAS (com ou sem comentário)
             const tbody = document.getElementById('tbodySatisfacao');
-            const comComentario = PESQUISAS.filter(p => p.comentario && p.comentario.trim() !== '');
 
-            if (comComentario.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-state">📭 Nenhum comentário recebido ainda</td></tr>`;
+            // ✅ MOSTRA TODAS AS RESPOSTAS, NÃO APENAS AS COM COMENTÁRIO
+            if (PESQUISAS.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-state">📭 Nenhuma resposta recebida ainda</td></tr>`;
+                console.log('❌ Nenhuma resposta em PESQUISAS. Verifique a API.');
                 return;
             }
 
             const badgeAval = (a) => a === 'Ótimo' || a === 'Otimo' ? 'resolvido' : a === 'Bom' ? 'aberto' : 'alta';
 
-            tbody.innerHTML = comComentario.slice().reverse().map(p => {
+            tbody.innerHTML = PESQUISAS.slice().reverse().map(p => {
                 const chamado = CHAMADOS.find(c => String(c.id) === String(p.numeroChamado));
-                const setor = chamado ? (chamado.setorAtendimento || 'Geral') : '—';
+                const setor = chamado ? (chamado.setorAtendimento || 'Geral') : 'Geral';
+                const comentario = p.comentario && p.comentario.trim() !== '' ? limparHTMLSatisf(p.comentario) : '<em style="color: #888;">Sem comentário</em>';
                 return `
                 <tr>
                     <td><span class="badge badge-${badgeAval(p.avaliacao)}">${p.avaliacao || '—'}</span></td>
-                    <td>${limparHTMLSatisf(p.comentario)}</td>
+                    <td>${comentario}</td>
                     <td>#${p.numeroChamado || '—'}</td>
                     <td>${setor}</td>
                     <td>${formatarData(p.dataResposta)}</td>
