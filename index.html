@@ -444,10 +444,10 @@
             color: #00c864;
         }
 
-        /* ===== GRÁFICOS ===== */
+        /* ===== GRÁFICOS (REDUZIDO) ===== */
         .graficos-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 25px;
         }
 
@@ -455,7 +455,7 @@
             background: rgba(255, 255, 255, 0.05);
             border: 2px solid rgba(255, 165, 0, 0.2);
             border-radius: 12px;
-            padding: 30px;
+            padding: 20px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             transition: all 0.3s;
         }
@@ -466,18 +466,19 @@
         }
 
         .chart-card h3 {
-            margin-bottom: 25px;
+            margin-bottom: 15px;
             color: #ffa500;
-            font-size: 15px;
+            font-size: 14px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             font-weight: 700;
         }
 
         .chart-card canvas {
             max-width: 100%;
             height: auto;
+            max-height: 250px;
         }
 
         .tab-content {
@@ -490,7 +491,7 @@
 
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 40px 20px;
             color: #aaa;
         }
 
@@ -695,258 +696,266 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- ABA: SATISFAÇÃO -->
-    <div id="satisfacao" class="tab-content">
-        <div class="stats-section">
-            <div class="stat-card">
-                <div class="stat-icon">⭐</div>
-                <div class="stat-label">Total de Respostas</div>
-                <div class="stat-number" id="satisfTotal">0</div>
+        <!-- ABA: SATISFAÇÃO -->
+        <div id="satisfacao" class="tab-content">
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-label">Total de Respostas</div>
+                    <div class="stat-number" id="satisfTotal">0</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-icon">😃</div>
+                    <div class="stat-label">Ótimo</div>
+                    <div class="stat-number" id="satisfOtimo">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🙂</div>
+                    <div class="stat-label">Bom</div>
+                    <div class="stat-number" id="satisfBom">0</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-icon">😞</div>
+                    <div class="stat-label">Ruim</div>
+                    <div class="stat-number" id="satisfRuim">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-label">Índice de Satisfação</div>
+                    <div class="stat-number" id="satisfIndice">0%</div>
+                </div>
             </div>
-            <div class="stat-card success">
-                <div class="stat-icon">😃</div>
-                <div class="stat-label">Ótimo</div>
-                <div class="stat-number" id="satisfOtimo">0</div>
+
+            <!-- GRÁFICOS REDUZIDOS -->
+            <div class="graficos-grid">
+                <div class="chart-card">
+                    <h3>⭐ Avaliação Geral</h3>
+                    <canvas id="graficoAvaliacaoGeral"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>🏢 Satisfação por Setor</h3>
+                    <canvas id="graficoSatisfacaoSetor"></canvas>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">🙂</div>
-                <div class="stat-label">Bom</div>
-                <div class="stat-number" id="satisfBom">0</div>
-            </div>
-            <div class="stat-card warning">
-                <div class="stat-icon">😞</div>
-                <div class="stat-label">Ruim</div>
-                <div class="stat-number" id="satisfRuim">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">📈</div>
-                <div class="stat-label">Índice de Satisfação</div>
-                <div class="stat-number" id="satisfIndice">0%</div>
+
+            <!-- COMENTÁRIOS RECEBIDOS -->
+            <div class="table-wrapper" style="margin-top: 30px;">
+                <h3 style="padding: 15px 20px 0; color: #ffa500;">💬 Comentários Recebidos</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Avaliação</th>
+                            <th>Comentário</th>
+                            <th>Chamado</th>
+                            <th>Setor</th>
+                            <th>Data</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodySatisfacao">
+                        <tr><td colspan="5" class="empty-state">⏳ Carregando comentários...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <div class="graficos-grid">
-            <div class="chart-card">
-                <h3>⭐ Avaliação Geral</h3>
-                <canvas id="graficoAvaliacaoGeral"></canvas>
+        <!-- ABA: MANUTENÇÃO -->
+        <div id="manutencao" class="tab-content">
+            <div class="table-wrapper">
+                <table id="tabelaManutencao">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Status</th>
+                            <th>Prioridade</th>
+                            <th>Título</th>
+                            <th>Solicitante</th>
+                            <th>Data</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="manutencaoBody">
+                    </tbody>
+                </table>
             </div>
-            <div class="chart-card">
-                <h3>🏢 Satisfação por Setor</h3>
-                <canvas id="graficoSatisfacaoSetor"></canvas>
+        </div>
+
+        <!-- ABA: NAEM -->
+        <div id="naem" class="tab-content">
+            <div class="table-wrapper">
+                <table id="tabelaNAEM">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Status</th>
+                            <th>Prioridade</th>
+                            <th>Título</th>
+                            <th>Solicitante</th>
+                            <th>Data</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="naemBody">
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <div class="table-wrapper" style="margin-top: 20px;">
-            <h3 style="padding: 15px 20px 0; color: #ffa500;">💬 Comentários Recebidos</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Avaliação</th>
-                        <th>Comentário</th>
-                        <th>Chamado</th>
-                        <th>Setor</th>
-                        <th>Data</th>
-                    </tr>
-                </thead>
-                <tbody id="tbodySatisfacao">
-                    <tr><td colspan="5" class="empty-state">Carregando...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- ABA: MANUTENÇÃO -->
-    <div id="manutencao" class="tab-content">
-        <div class="table-wrapper">
-            <table id="tabelaManutencao">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Status</th>
-                        <th>Prioridade</th>
-                        <th>Título</th>
-                        <th>Solicitante</th>
-                        <th>Data</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="manutencaoBody">
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- ABA: NAEM -->
-    <div id="naem" class="tab-content">
-        <div class="table-wrapper">
-            <table id="tabelaNAEM">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Status</th>
-                        <th>Prioridade</th>
-                        <th>Título</th>
-                        <th>Solicitante</th>
-                        <th>Data</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="naemBody">
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- ABA: TI -->
-    <div id="ti" class="tab-content">
-        <div class="table-wrapper">
-            <table id="tabelaTI">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Status</th>
-                        <th>Prioridade</th>
-                        <th>Título</th>
-                        <th>Solicitante</th>
-                        <th>Data</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="tiBody">
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- SLA MODAL -->
-    <div id="slaModal" class="sla-modal" onclick="if(event.target === this) fecharSLA()">
-        <div class="sla-card-modal">
-            <button class="sla-close" onclick="fecharSLA()">✕</button>
-            <div class="sla-status-line">
-                <span class="sla-status-text" id="modalStatus">🔴 VENCIDO</span>
-                <span class="sla-percent" id="modalPercent">100%</span>
+        <!-- ABA: TI -->
+        <div id="ti" class="tab-content">
+            <div class="table-wrapper">
+                <table id="tabelaTI">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Status</th>
+                            <th>Prioridade</th>
+                            <th>Título</th>
+                            <th>Solicitante</th>
+                            <th>Data</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tiBody">
+                    </tbody>
+                </table>
             </div>
-            <div class="sla-progress">
-                <div class="sla-progress-bar"></div>
-            </div>
-            <div class="sla-details">
-                <div class="sla-detail-item">
-                    <div class="sla-detail-icon">⏱️</div>
-                    <div class="sla-detail-content">
-                        <div class="sla-detail-label">Atrasado</div>
-                        <div class="sla-detail-value" id="modalAtraso">142h 59min</div>
+        </div>
+
+        <!-- SLA MODAL -->
+        <div id="slaModal" class="sla-modal" onclick="if(event.target === this) fecharSLA()">
+            <div class="sla-card-modal">
+                <button class="sla-close" onclick="fecharSLA()">✕</button>
+                <div class="sla-status-line">
+                    <span class="sla-status-text" id="modalStatus">🔴 VENCIDO</span>
+                    <span class="sla-percent" id="modalPercent">100%</span>
+                </div>
+                <div class="sla-progress">
+                    <div class="sla-progress-bar"></div>
+                </div>
+                <div class="sla-details">
+                    <div class="sla-detail-item">
+                        <div class="sla-detail-icon">⏱️</div>
+                        <div class="sla-detail-content">
+                            <div class="sla-detail-label">Atrasado</div>
+                            <div class="sla-detail-value" id="modalAtraso">142h 59min</div>
+                        </div>
+                    </div>
+                    <div class="sla-detail-item">
+                        <div class="sla-detail-icon">📅</div>
+                        <div class="sla-detail-content">
+                            <div class="sla-detail-label">Aberto há</div>
+                            <div class="sla-detail-value" id="modalAberto">166h 59min</div>
+                        </div>
                     </div>
                 </div>
-                <div class="sla-detail-item">
-                    <div class="sla-detail-icon">📅</div>
-                    <div class="sla-detail-content">
-                        <div class="sla-detail-label">Aberto há</div>
-                        <div class="sla-detail-value" id="modalAberto">166h 59min</div>
-                    </div>
-                </div>
             </div>
         </div>
-    </div>
 
-    <!-- MODAL: FORMULÁRIO -->
-    <div id="modalFormulario" class="modal-formulario" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 100; padding: 20px; display: none; flex-direction: column; justify-content: center; align-items: center;">
-        <div style="background: linear-gradient(135deg, #0a1628 0%, #1a2f4d 100%); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 16px; padding: 30px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px solid rgba(255, 165, 0, 0.2);">
-                <h2 id="modalTitulo" style="font-size: 24px; margin: 0;">➕ Novo Chamado</h2>
-                <button class="modal-close" onclick="fecharFormulario()" style="background: none; border: none; color: #aaa; font-size: 28px; cursor: pointer;">✕</button>
-            </div>
-            <form id="formChamado" onsubmit="salvarChamado(event)" style="display: flex; flex-direction: column; gap: 20px;">
-                <div>
-                    <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Título *</label>
-                    <input type="text" id="titulo" required placeholder="Ex: Troca de impressora" style="width: 100%; padding: 12px 14px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
+        <!-- MODAL: FORMULÁRIO -->
+        <div id="modalFormulario" class="modal-formulario" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 100; padding: 20px; display: none; flex-direction: column; justify-content: center; align-items: center;">
+            <div style="background: linear-gradient(135deg, #0a1628 0%, #1a2f4d 100%); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 16px; padding: 30px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px solid rgba(255, 165, 0, 0.2);">
+                    <h2 id="modalTitulo" style="font-size: 24px; margin: 0;">➕ Novo Chamado</h2>
+                    <button class="modal-close" onclick="fecharFormulario()" style="background: none; border: none; color: #aaa; font-size: 28px; cursor: pointer;">✕</button>
                 </div>
-                <div>
-                    <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Descrição *</label>
-                    <textarea id="descricao" required placeholder="Descreva o problema em detalhes" style="width: 100%; padding: 12px 14px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit; resize: vertical; min-height: 100px;"></textarea>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <form id="formChamado" onsubmit="salvarChamado(event)" style="display: flex; flex-direction: column; gap: 20px;">
                     <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Solicitante *</label>
-                        <input type="text" id="solicitante" required placeholder="Seu nome" style="width: 100%; padding: 12px 14px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Título *</label>
+                        <input type="text" id="titulo" required placeholder="Ex: Troca de impressora" style="width: 100%; padding: 12px 14px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
                     </div>
                     <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Email *</label>
-                        <input type="email" id="email" required placeholder="seu@email.unifeb.br" style="width: 100%; padding: 12px 14px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Descrição *</label>
+                        <textarea id="descricao" required placeholder="Descreva o problema em detalhes" style="width: 100%; padding: 12px 14px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit; resize: vertical; min-height: 100px;"></textarea>
                     </div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Setor *</label>
-                        <select id="setor" required style="width: 100%; padding: 12px 14px; background: #1a2f4d; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
-                            <option value="" style="background: #1a2f4d; color: #fff;">Selecione um setor</option>
-                            <option value="Almoxarifado" style="background: #1a2f4d; color: #fff;">Almoxarifado</option>
-                            <option value="Biblioteca" style="background: #1a2f4d; color: #fff;">Biblioteca</option>
-                            <option value="Coordenação de Professores" style="background: #1a2f4d; color: #fff;">Coordenação de Professores</option>
-                            <option value="Clínica Odontológica" style="background: #1a2f4d; color: #fff;">Clínica Odontológica</option>
-                            <option value="Colégio FEB" style="background: #1a2f4d; color: #fff;">Colégio FEB</option>
-                            <option value="Departamento de Tecnologia" style="background: #1a2f4d; color: #fff;">Departamento de Tecnologia</option>
-                            <option value="Matrícula" style="background: #1a2f4d; color: #fff;">Matrícula</option>
-                            <option value="Coordenação Laboratórios" style="background: #1a2f4d; color: #fff;">Coordenação Laboratórios</option>
-                            <option value="Manutenção" style="background: #1a2f4d; color: #fff;">Manutenção</option>
-                            <option value="Salas de Aula" style="background: #1a2f4d; color: #fff;">Salas de Aula</option>
-                            <option value="Comissão Própria de Avaliação (CPA)" style="background: #1a2f4d; color: #fff;">Comissão Própria de Avaliação (CPA)</option>
-                            <option value="NEU" style="background: #1a2f4d; color: #fff;">NEU</option>
-                            <option value="Marketing" style="background: #1a2f4d; color: #fff;">Marketing</option>
-                            <option value="NAPE" style="background: #1a2f4d; color: #fff;">NAPE</option>
-                            <option value="Núcleo Práticas Jurídicas" style="background: #1a2f4d; color: #fff;">Núcleo Práticas Jurídicas</option>
-                            <option value="Atendimento Financeiro" style="background: #1a2f4d; color: #fff;">Atendimento Financeiro</option>
-                            <option value="PRADM" style="background: #1a2f4d; color: #fff;">PRADM</option>
-                            <option value="Departamento Jurídico - DEJUR" style="background: #1a2f4d; color: #fff;">Departamento Jurídico - DEJUR</option>
-                            <option value="Pró Aluno" style="background: #1a2f4d; color: #fff;">Pró Aluno</option>
-                            <option value="Reitoria" style="background: #1a2f4d; color: #fff;">Reitoria</option>
-                            <option value="RH" style="background: #1a2f4d; color: #fff;">RH</option>
-                            <option value="Secretaria" style="background: #1a2f4d; color: #fff;">Secretaria</option>
-                            <option value="Conselho Curador" style="background: #1a2f4d; color: #fff;">Conselho Curador</option>
-                            <option value="Clínica Medicina Veterinária" style="background: #1a2f4d; color: #fff;">Clínica Medicina Veterinária</option>
-                            <option value="Sala Atendimento Professor ao Aluno" style="background: #1a2f4d; color: #fff;">Sala Atendimento Professor ao Aluno</option>
-                            <option value="Cartório - Núcleo Práticas Jurídicas" style="background: #1a2f4d; color: #fff;">Cartório - Núcleo Práticas Jurídicas</option>
-                            <option value="Sala dos Professores" style="background: #1a2f4d; color: #fff;">Sala dos Professores</option>
-                            <option value="Ouvidoria" style="background: #1a2f4d; color: #fff;">Ouvidoria</option>
-                            <option value="Núcleo de Sustentabilidade" style="background: #1a2f4d; color: #fff;">Núcleo de Sustentabilidade</option>
-                            <option value="Laboratórios de Informática" style="background: #1a2f4d; color: #fff;">Laboratórios de Informática</option>
-                            <option value="Clínica de Fisioterapia" style="background: #1a2f4d; color: #fff;">Clínica de Fisioterapia</option>
-                            <option value="NAC" style="background: #1a2f4d; color: #fff;">NAC</option>
-                            <option value="Sala Professores de Contrato" style="background: #1a2f4d; color: #fff;">Sala Professores de Contrato</option>
-                            <option value="Geral" style="background: #1a2f4d; color: #fff;">Geral</option>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Solicitante *</label>
+                            <input type="text" id="solicitante" required placeholder="Seu nome" style="width: 100%; padding: 12px 14px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Email *</label>
+                            <input type="email" id="email" required placeholder="seu@email.unifeb.br" style="width: 100%; padding: 12px 14px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Setor *</label>
+                            <select id="setor" required style="width: 100%; padding: 12px 14px; background: #1a2f4d; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
+                                <option value="" style="background: #1a2f4d; color: #fff;">Selecione um setor</option>
+                                <option value="Almoxarifado" style="background: #1a2f4d; color: #fff;">Almoxarifado</option>
+                                <option value="Biblioteca" style="background: #1a2f4d; color: #fff;">Biblioteca</option>
+                                <option value="Coordenação de Professores" style="background: #1a2f4d; color: #fff;">Coordenação de Professores</option>
+                                <option value="Clínica Odontológica" style="background: #1a2f4d; color: #fff;">Clínica Odontológica</option>
+                                <option value="Colégio FEB" style="background: #1a2f4d; color: #fff;">Colégio FEB</option>
+                                <option value="Departamento de Tecnologia" style="background: #1a2f4d; color: #fff;">Departamento de Tecnologia</option>
+                                <option value="Matrícula" style="background: #1a2f4d; color: #fff;">Matrícula</option>
+                                <option value="Coordenação Laboratórios" style="background: #1a2f4d; color: #fff;">Coordenação Laboratórios</option>
+                                <option value="Manutenção" style="background: #1a2f4d; color: #fff;">Manutenção</option>
+                                <option value="Salas de Aula" style="background: #1a2f4d; color: #fff;">Salas de Aula</option>
+                                <option value="Comissão Própria de Avaliação (CPA)" style="background: #1a2f4d; color: #fff;">Comissão Própria de Avaliação (CPA)</option>
+                                <option value="NEU" style="background: #1a2f4d; color: #fff;">NEU</option>
+                                <option value="Marketing" style="background: #1a2f4d; color: #fff;">Marketing</option>
+                                <option value="NAPE" style="background: #1a2f4d; color: #fff;">NAPE</option>
+                                <option value="Núcleo Práticas Jurídicas" style="background: #1a2f4d; color: #fff;">Núcleo Práticas Jurídicas</option>
+                                <option value="Atendimento Financeiro" style="background: #1a2f4d; color: #fff;">Atendimento Financeiro</option>
+                                <option value="PRADM" style="background: #1a2f4d; color: #fff;">PRADM</option>
+                                <option value="Departamento Jurídico - DEJUR" style="background: #1a2f4d; color: #fff;">Departamento Jurídico - DEJUR</option>
+                                <option value="Pró Aluno" style="background: #1a2f4d; color: #fff;">Pró Aluno</option>
+                                <option value="Reitoria" style="background: #1a2f4d; color: #fff;">Reitoria</option>
+                                <option value="RH" style="background: #1a2f4d; color: #fff;">RH</option>
+                                <option value="Secretaria" style="background: #1a2f4d; color: #fff;">Secretaria</option>
+                                <option value="Conselho Curador" style="background: #1a2f4d; color: #fff;">Conselho Curador</option>
+                                <option value="Clínica Medicina Veterinária" style="background: #1a2f4d; color: #fff;">Clínica Medicina Veterinária</option>
+                                <option value="Sala Atendimento Professor ao Aluno" style="background: #1a2f4d; color: #fff;">Sala Atendimento Professor ao Aluno</option>
+                                <option value="Cartório - Núcleo Práticas Jurídicas" style="background: #1a2f4d; color: #fff;">Cartório - Núcleo Práticas Jurídicas</option>
+                                <option value="Sala dos Professores" style="background: #1a2f4d; color: #fff;">Sala dos Professores</option>
+                                <option value="Ouvidoria" style="background: #1a2f4d; color: #fff;">Ouvidoria</option>
+                                <option value="Núcleo de Sustentabilidade" style="background: #1a2f4d; color: #fff;">Núcleo de Sustentabilidade</option>
+                                <option value="Laboratórios de Informática" style="background: #1a2f4d; color: #fff;">Laboratórios de Informática</option>
+                                <option value="Clínica de Fisioterapia" style="background: #1a2f4d; color: #fff;">Clínica de Fisioterapia</option>
+                                <option value="NAC" style="background: #1a2f4d; color: #fff;">NAC</option>
+                                <option value="Sala Professores de Contrato" style="background: #1a2f4d; color: #fff;">Sala Professores de Contrato</option>
+                                <option value="Geral" style="background: #1a2f4d; color: #fff;">Geral</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Prioridade *</label>
+                            <select id="prioridade" required style="width: 100%; padding: 12px 14px; background: #1a2f4d; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
+                                <option value="" style="background: #1a2f4d; color: #fff;">Selecione</option>
+                                <option value="Alta" style="background: #1a2f4d; color: #fff;">Alta</option>
+                                <option value="Média" style="background: #1a2f4d; color: #fff;">Média</option>
+                                <option value="Baixa" style="background: #1a2f4d; color: #fff;">Baixa</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="statusEditar" style="display: none;">
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Status</label>
+                        <select id="status" style="width: 100%; padding: 12px 14px; background: #1a2f4d; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
+                            <option value="Aberto" style="background: #1a2f4d; color: #fff;">Aberto</option>
+                            <option value="Em andamento" style="background: #1a2f4d; color: #fff;">Em andamento</option>
+                            <option value="Concluído" style="background: #1a2f4d; color: #fff;">Concluído</option>
                         </select>
                     </div>
-                    <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Prioridade *</label>
-                        <select id="prioridade" required style="width: 100%; padding: 12px 14px; background: #1a2f4d; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
-                            <option value="" style="background: #1a2f4d; color: #fff;">Selecione</option>
-                            <option value="Alta" style="background: #1a2f4d; color: #fff;">Alta</option>
-                            <option value="Média" style="background: #1a2f4d; color: #fff;">Média</option>
-                            <option value="Baixa" style="background: #1a2f4d; color: #fff;">Baixa</option>
-                        </select>
+                    <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 2px solid rgba(255, 165, 0, 0.2);">
+                        <button type="submit" id="btnSubmit" style="flex: 2; padding: 11px 20px; background: linear-gradient(135deg, #ff6b35, #ffa500); border: none; border-radius: 8px; color: #fff; font-weight: 600; cursor: pointer; font-size: 12px;">Criar Chamado</button>
+                        <button type="button" onclick="fecharFormulario()" style="flex: 1; padding: 11px 20px; background: rgba(255, 165, 0, 0.15); border: 2px solid rgba(255, 165, 0, 0.5); border-radius: 8px; color: #ffa500; font-weight: 600; cursor: pointer; font-size: 12px;">Cancelar</button>
+                        <button type="button" id="btnDeletar" style="display: none; flex: 1; padding: 11px 20px; background: rgba(255, 165, 0, 0.15); border: 2px solid rgba(255, 165, 0, 0.5); border-radius: 8px; color: #ff6464; font-weight: 600; cursor: pointer; font-size: 12px;" onclick="deletarChamadoAtual()">🗑️ Deletar</button>
                     </div>
-                </div>
-                <div id="statusEditar" style="display: none;">
-                    <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Status</label>
-                    <select id="status" style="width: 100%; padding: 12px 14px; background: #1a2f4d; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
-                        <option value="Aberto" style="background: #1a2f4d; color: #fff;">Aberto</option>
-                        <option value="Em andamento" style="background: #1a2f4d; color: #fff;">Em andamento</option>
-                        <option value="Concluído" style="background: #1a2f4d; color: #fff;">Concluído</option>
-                    </select>
-                </div>
-                <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 2px solid rgba(255, 165, 0, 0.2);">
-                    <button type="submit" id="btnSubmit" style="flex: 2; padding: 11px 20px; background: linear-gradient(135deg, #ff6b35, #ffa500); border: none; border-radius: 8px; color: #fff; font-weight: 600; cursor: pointer; font-size: 12px;">Criar Chamado</button>
-                    <button type="button" onclick="fecharFormulario()" style="flex: 1; padding: 11px 20px; background: rgba(255, 165, 0, 0.15); border: 2px solid rgba(255, 165, 0, 0.5); border-radius: 8px; color: #ffa500; font-weight: 600; cursor: pointer; font-size: 12px;">Cancelar</button>
-                    <button type="button" id="btnDeletar" style="display: none; flex: 1; padding: 11px 20px; background: rgba(255, 165, 0, 0.15); border: 2px solid rgba(255, 165, 0, 0.5); border-radius: 8px; color: #ff6464; font-weight: 600; cursor: pointer; font-size: 12px;" onclick="deletarChamadoAtual()">🗑️ Deletar</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // 🔧 BACKEND URL - DEFINIR NO TOPO (ANTES DE USAR)
+        const BACKEND_URL = 'https://unifeb-backend.onrender.com';
+
         let CHAMADOS = [];
+        let PESQUISAS = [];
+        let CHAMADOS_FILTRADOS = [];
+        let EDICAO_ID = null;
 
         // 🔧 FUNÇÃO PARA CALCULAR SLA CORRETAMENTE
         const PRAZOS_SLA = {
@@ -1013,12 +1022,9 @@
             }
         }
 
-        let CHAMADOS_FILTRADOS = [];
-        let PESQUISAS = [];
-
         async function carregarDados() {
             try {
-                const response = await fetch('https://unifeb-backend.onrender.com/api/chamados');
+                const response = await fetch(`${BACKEND_URL}/api/chamados`);
                 const dados = await response.json();
 
                 CHAMADOS = Array.isArray(dados) ? dados : (dados.chamados || []);
@@ -1358,10 +1364,15 @@
 
         async function carregarESatisfacao() {
             try {
+                console.log('🔄 Carregando pesquisas de satisfação...');
                 const response = await fetch(`${BACKEND_URL}/api/pesquisas`);
+                if (!response.ok) {
+                    console.warn(`⚠️ API retornou status ${response.status}`);
+                }
                 PESQUISAS = await response.json();
+                console.log(`✅ ${PESQUISAS.length} pesquisas carregadas`);
             } catch (e) {
-                console.error('Erro ao carregar pesquisas:', e);
+                console.error('❌ Erro ao carregar pesquisas:', e);
                 PESQUISAS = [];
             }
             renderizarSatisfacao();
@@ -1440,6 +1451,7 @@
                 }
             });
 
+            // 💬 RENDERIZAR COMENTÁRIOS
             const tbody = document.getElementById('tbodySatisfacao');
             const comComentario = PESQUISAS.filter(p => p.comentario && p.comentario.trim() !== '');
 
@@ -1491,9 +1503,6 @@
         function exportar() { alert('Função em desenvolvimento'); }
         function imprimir() { window.print(); }
         function novoChamado() { abrirFormularioCriar(); }
-
-        let EDICAO_ID = null;
-        const BACKEND_URL = 'https://unifeb-backend.onrender.com';
 
         function abrirFormularioCriar() {
             EDICAO_ID = null;
