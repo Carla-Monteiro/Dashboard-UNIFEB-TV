@@ -719,8 +719,8 @@ def obter_pesquisas():
             fields = item.get('fields', {})
             pesquisas.append({
                 'id': item.get('id'),
-                'avaliacao': fields.get('Avaliacao', ''),
-                'comentario': fields.get('Comentário', ''),  # Com ACENTO/TIL
+                'avaliacao': fields.get('Como você avalia o atendimento prestado?', ''),
+                'comentario': fields.get('Deixe sua sugestão, crítica ou elogio', ''),
                 'numeroChamado': fields.get('NumeroChamado', ''),
                 'dataResposta': fields.get('Created', datetime.now().isoformat()),
             })
