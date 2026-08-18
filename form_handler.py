@@ -720,7 +720,7 @@ def obter_pesquisas():
             pesquisas.append({
                 'id': item.get('id'),
                 'avaliacao': fields.get('Avaliacao', ''),
-                'comentario': fields.get('Comentários', ''),
+                'comentario': fields.get('Comentário', ''),  # CORRETO (sem S, com acento)
                 'numeroChamado': fields.get('NumeroChamado', ''),
                 'dataResposta': fields.get('Created', datetime.now().isoformat()),
             })
