@@ -715,12 +715,19 @@ def obter_pesquisas():
         items = items_response.json().get('value', [])
 
         pesquisas = []
-        for item in items:
+        for idx, item in enumerate(items):
             fields = item.get('fields', {})
+
+            # DEBUG: Imprimir campos da primeira resposta
+            if idx == 0:
+                logger.info(f"🔍 DEBUG - Campos brutos da primeira pesquisa:")
+                for chave, valor in fields.items():
+                    valor_resumido = str(valor)[:100] if valor else "(vazio)"
+                    logger.info(f"   '{chave}' = {valor_resumido}")
             pesquisas.append({
                 'id': item.get('id'),
                 'avaliacao': fields.get('Avaliacao', ''),
-                'comentario': fields.get('comentario', ''),
+                'comentario': fields.get('Comentários', ''),
                 'numeroChamado': fields.get('NumeroChamado', ''),
                 'dataResposta': fields.get('Created', datetime.now().isoformat()),
             })
@@ -731,60 +738,6 @@ def obter_pesquisas():
     except Exception as e:
         logger.error(f"ERRO em obter_pesquisas: {e}")
         return jsonify([]), 200
-
-
-@app.route('/api/debug/campos-pesquisas', methods=['GET'])
-def debug_campos_pesquisas():
-    """DEBUG: Retorna todos os campos brutos da primeira pesquisa do SharePoint"""
-    try:
-        token = get_access_token()
-        if not token:
-            return jsonify({"erro": "Token não obtido"}), 200
-
-        headers = {'Authorization': f'Bearer {token}'}
-        site_id, list_id = obter_site_e_lista(headers, LISTA_PESQUISAS)
-        if not site_id or not list_id:
-            return jsonify({"erro": "Site ou List ID não encontrado"}), 200
-
-        items_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$expand=fields"
-        items_response = requests.get(items_url, headers=headers, timeout=10)
-
-        if items_response.status_code != 200:
-            return jsonify({"erro": f"Erro {items_response.status_code}"}), 200
-
-        items = items_response.json().get('value', [])
-
-        if not items:
-            return jsonify({"mensagem": "Nenhuma pesquisa encontrada"}), 200
-
-        # Retornar TODOS os campos da primeira pesquisa
-        primeiro_item = items[0]
-        campos = primeiro_item.get('fields', {})
-
-        debug_response = {
-            "mensagem": "🔍 CAMPOS BRUTOS DA PRIMEIRA PESQUISA NO SHAREPOINT",
-            "total_campos": len(campos),
-            "campos": {}
-        }
-
-        for chave, valor in sorted(campos.items()):
-            valor_str = str(valor)[:150] if valor else "(vazio)"
-            debug_response["campos"][chave] = valor_str
-
-        # Adicionar sugestões de campos
-        debug_response["info_importantes"] = {
-            "Avaliacao": debug_response["campos"].get("Avaliacao", "NÃO ENCONTRADO"),
-            "Campos_que_podem_ser_comentarios": [
-                k for k in campos.keys()
-                if any(palavra in k.lower() for palavra in ['sugest', 'coment', 'feedback', 'opinion', 'q2', 'question2', 'deixe'])
-            ]
-        }
-
-        return jsonify(debug_response), 200
-
-    except Exception as e:
-        logger.error(f"ERRO em debug_campos_pesquisas: {e}")
-        return jsonify({"erro": str(e)}), 500
 
 
 @app.route('/health', methods=['GET'])
