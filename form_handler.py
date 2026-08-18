@@ -715,8 +715,15 @@ def obter_pesquisas():
         items = items_response.json().get('value', [])
 
         pesquisas = []
-        for item in items:
+        for idx, item in enumerate(items):
             fields = item.get('fields', {})
+
+            # DEBUG: Imprimir campos da primeira resposta
+            if idx == 0:
+                logger.info(f"🔍 DEBUG - Campos brutos da primeira pesquisa:")
+                for chave, valor in fields.items():
+                    valor_resumido = str(valor)[:100] if valor else "(vazio)"
+                    logger.info(f"   '{chave}' = {valor_resumido}")
             pesquisas.append({
                 'id': item.get('id'),
                 'avaliacao': fields.get('Avaliacao', ''),
