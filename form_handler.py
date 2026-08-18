@@ -771,6 +771,15 @@ def debug_campos_pesquisas():
             valor_str = str(valor)[:150] if valor else "(vazio)"
             debug_response["campos"][chave] = valor_str
 
+        # Adicionar sugestões de campos
+        debug_response["info_importantes"] = {
+            "Avaliacao": debug_response["campos"].get("Avaliacao", "NÃO ENCONTRADO"),
+            "Campos_que_podem_ser_comentarios": [
+                k for k in campos.keys()
+                if any(palavra in k.lower() for palavra in ['sugest', 'coment', 'feedback', 'opinion', 'q2', 'question2', 'deixe'])
+            ]
+        }
+
         return jsonify(debug_response), 200
 
     except Exception as e:
