@@ -647,24 +647,50 @@
             <button class="btn" onclick="sairDashboard()">🚪 Sair</button>
         </div>
 
-        <!-- ABAS: um único menu para escolher a visualização -->
-        <div class="filter-item" style="max-width: 340px; margin-bottom: 25px;">
-            <label>Visualização</label>
-            <select id="abaSelect" onchange="mostrarAba(this.value)">
-                <option value="chamados">📋 Chamados Detalhados</option>
-                <option value="ti">💻 TI</option>
-                <option value="naem">📽️ NAEM</option>
-                <option value="manutencao">🔧 Manutenção</option>
-                <option value="graficos">📊 Gráficos</option>
-                <option value="satisfacao">⭐ Satisfação</option>
-            </select>
+        <!-- ABAS -->
+        <div class="tabs-section">
+            <button class="tab active" onclick="mostrarAba('chamados', event)">📋 Chamados Detalhados</button>
+            <button class="tab" onclick="mostrarAba('ti', event)">💻 TI</button>
+            <button class="tab" onclick="mostrarAba('naem', event)">📽️ NAEM</button>
+            <button class="tab" onclick="mostrarAba('manutencao', event)">🔧 Manutenção</button>
+            <button class="tab" onclick="mostrarAba('graficos', event)">📊 Gráficos</button>
+            <button class="tab" onclick="mostrarAba('satisfacao', event)">⭐ Satisfação</button>
         </div>
 
         <!-- FILTROS -->
+        <!-- AVISO: chamados perto de vencer o SLA -->
+        <div id="avisoSlaBanner" style="display:none; align-items:center; gap:10px; margin-bottom:20px; padding:14px 20px; background:rgba(255,213,79,0.15); border:2px solid rgba(255,213,79,0.5); border-radius:10px; color:#ffd54f; font-size:13px; font-weight:600;">
+            ⚠️ <span id="avisoSlaTexto"></span>
+        </div>
+
+        <!-- CARDS DE RESUMO CLICÁVEIS (atalho pra filtrar por status/SLA) -->
+        <div class="stats-section" style="margin-bottom: 25px;">
+            <div class="stat-card" id="cardAbertos" onclick="filtrarRapido('Aberto')" style="cursor:pointer;">
+                <div class="stat-icon">📂</div>
+                <div class="stat-label">Abertos</div>
+                <div class="stat-number" id="quickAbertos">0</div>
+            </div>
+            <div class="stat-card" id="cardAndamento" onclick="filtrarRapido('Em andamento')" style="cursor:pointer;">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-label">Em Andamento</div>
+                <div class="stat-number" id="quickAndamento">0</div>
+            </div>
+            <div class="stat-card success" id="cardConcluidos" onclick="filtrarRapido('Concluído')" style="cursor:pointer;">
+                <div class="stat-icon">✅</div>
+                <div class="stat-label">Concluídos</div>
+                <div class="stat-number" id="quickConcluidos">0</div>
+            </div>
+            <div class="stat-card warning" id="cardVencidos" onclick="filtrarRapido('__vencidos__')" style="cursor:pointer;">
+                <div class="stat-icon">⏰</div>
+                <div class="stat-label">Vencidos (SLA)</div>
+                <div class="stat-number" id="quickVencidos">0</div>
+            </div>
+        </div>
+
         <div class="filters-section">
             <div class="filter-item">
                 <label>Status</label>
-                <select id="filterStatus" onchange="filtrar()">
+                <select id="filterStatus" onchange="FILTRO_RAPIDO = null; filtrar()">
                     <option value="">-- Todos os Status --</option>
                     <option value="Aberto">Aberto</option>
                     <option value="Em andamento">Em andamento</option>
@@ -688,21 +714,28 @@
 
         <!-- ABA: CHAMADOS DETALHADOS -->
         <div id="chamados" class="tab-content active">
-            <!-- AVISO: chamados perto de vencer o SLA -->
-            <div id="avisoSlaBanner" style="display:none; align-items:center; gap:10px; margin-bottom:20px; padding:14px 20px; background:rgba(255,213,79,0.15); border:2px solid rgba(255,213,79,0.5); border-radius:10px; color:#ffd54f; font-size:13px; font-weight:600;">
-                ⚠️ <span id="avisoSlaTexto"></span>
+            <!-- BARRA DE AÇÕES EM LOTE (aparece quando há chamados selecionados) -->
+            <div id="bulkBar" style="display:none; align-items:center; gap:12px; margin-bottom:15px; padding:14px 18px; background:rgba(255,165,0,0.12); border:2px solid rgba(255,165,0,0.4); border-radius:10px; flex-wrap:wrap;">
+                <strong id="bulkContagem" style="color:#ffa500;"></strong>
+                <span style="color:#aaa; font-size:12px;">Alterar status para:</span>
+                <button class="btn" onclick="aplicarStatusLote('Aberto')" style="padding:8px 14px;">Aberto</button>
+                <button class="btn" onclick="aplicarStatusLote('Em andamento')" style="padding:8px 14px;">Em andamento</button>
+                <button class="btn" onclick="aplicarStatusLote('Concluído')" style="padding:8px 14px;">Concluído</button>
+                <button class="btn" onclick="limparSelecao()" style="padding:8px 14px; margin-left:auto;">Limpar seleção</button>
             </div>
 
             <div class="table-wrapper">
                 <table id="tabela">
                     <thead>
                         <tr>
+                            <th style="width:36px; cursor:default;"><input type="checkbox" id="checkTodos" onclick="alternarTodosVisiveis()"></th>
                             <th data-coluna="id" data-label="ID" onclick="ordenarPor('id')" style="cursor:pointer;">ID</th>
                             <th data-coluna="titulo" data-label="Título" onclick="ordenarPor('titulo')" style="cursor:pointer;">Título</th>
                             <th data-coluna="solicitante" data-label="Solicitante" onclick="ordenarPor('solicitante')" style="cursor:pointer;">Solicitante</th>
                             <th data-coluna="prioridade" data-label="Prioridade" onclick="ordenarPor('prioridade')" style="cursor:pointer;">Prioridade</th>
                             <th data-coluna="status" data-label="Status" onclick="ordenarPor('status')" style="cursor:pointer;">Status</th>
-                            <th data-coluna="setor" data-label="Setor de Atendimento" onclick="ordenarPor('setor')" style="cursor:pointer;">Setor de Atendimento</th>
+                            <th data-coluna="responsavel" data-label="Responsável" onclick="ordenarPor('responsavel')" style="cursor:pointer;">Responsável</th>
+                            <th data-coluna="setor" data-label="Setor" onclick="ordenarPor('setor')" style="cursor:pointer;">Setor</th>
                             <th data-coluna="abertura" data-label="Abertura" onclick="ordenarPor('abertura')" style="cursor:pointer;">Abertura</th>
                             <th>Descrição</th>
                             <th data-coluna="sla" data-label="SLA" onclick="ordenarPor('sla')" style="cursor:pointer;">SLA</th>
@@ -710,7 +743,7 @@
                     </thead>
                     <tbody id="tbody">
                         <tr>
-                            <td colspan="9" class="loading-spinner">
+                            <td colspan="11" class="loading-spinner">
                                 <div class="spinner"></div>
                                 Carregando chamados...
                             </td>
@@ -1010,7 +1043,15 @@
                     </div>
                     <div id="responsavelEditar" style="display: none;">
                         <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Responsável</label>
-                        <input type="text" id="responsavel" placeholder="Nome de quem está cuidando do chamado (opcional)" style="width: 100%; padding: 12px 14px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
+                        <select id="responsavel" style="width: 100%; padding: 12px 14px; background: #1a2f4d; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
+                            <option value="" style="background: #1a2f4d; color: #fff;">Não atribuído</option>
+                            <option value="Carla Monteiro (NST)" style="background: #1a2f4d; color: #fff;">Carla Monteiro (NST)</option>
+                            <option value="Felipe Sanches (NST)" style="background: #1a2f4d; color: #fff;">Felipe Sanches (NST)</option>
+                            <option value="Mateus Henrique Neto (NAEM)" style="background: #1a2f4d; color: #fff;">Mateus Henrique Neto (NAEM)</option>
+                            <option value="Jose Mendes Santana (Manutenção)" style="background: #1a2f4d; color: #fff;">Jose Mendes Santana (Manutenção)</option>
+                            <option value="Susimar Cesar Borges (NDT)" style="background: #1a2f4d; color: #fff;">Susimar Cesar Borges (NDT)</option>
+                            <option value="Lucas da Silva Paranhos Jacob (NDT)" style="background: #1a2f4d; color: #fff;">Lucas da Silva Paranhos Jacob (NDT)</option>
+                        </select>
                     </div>
                     <div id="historicoSection" style="display: none;">
                         <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Histórico</label>
@@ -1097,6 +1138,21 @@
         function iniciarDashboard() {
             carregarDados();
             setInterval(carregarDados, 5000);
+            setInterval(atualizarBadgeSync, 1000);
+        }
+
+        let ULTIMA_ATUALIZACAO = null;
+        let ULTIMA_SINCRONIZACAO_OK = true;
+
+        function atualizarBadgeSync() {
+            const badge = document.getElementById('syncStatus');
+            if (!badge || !ULTIMA_ATUALIZACAO) return;
+            // Enquanto a última tentativa de buscar os chamados tiver falhado,
+            // não deixa o "tick" de segundo a segundo apagar o aviso de erro.
+            if (!ULTIMA_SINCRONIZACAO_OK) return;
+            const segundos = Math.floor((Date.now() - ULTIMA_ATUALIZACAO) / 1000);
+            const texto = segundos < 60 ? `${segundos}s` : `${Math.floor(segundos / 60)}min`;
+            badge.textContent = `🟢 Atualizado há ${texto}`;
         }
 
         let CHAMADOS = [];
@@ -1105,6 +1161,17 @@
         let EDICAO_ID = null;
         let ORDENAR_COLUNA = null;
         let ORDENAR_DIRECAO = 'asc';
+        let SELECIONADOS = new Set();
+        let FILTRO_RAPIDO = null; // null | 'Aberto' | 'Em andamento' | 'Concluído' | '__vencidos__'
+
+        const LISTA_RESPONSAVEIS = [
+            'Carla Monteiro (NST)',
+            'Felipe Sanches (NST)',
+            'Mateus Henrique Neto (NAEM)',
+            'Jose Mendes Santana (Manutenção)',
+            'Susimar Cesar Borges (NDT)',
+            'Lucas da Silva Paranhos Jacob (NDT)'
+        ];
 
         // 🔧 FUNÇÃO PARA CALCULAR SLA CORRETAMENTE
         const PRAZOS_SLA = {
@@ -1207,8 +1274,11 @@
 
                 console.log(`✅ ${CHAMADOS.length} chamados carregados do Backend em tempo real`);
 
-                document.getElementById('syncStatus').textContent = '🟢 Sincronizado';
+                ULTIMA_ATUALIZACAO = Date.now();
+                ULTIMA_SINCRONIZACAO_OK = true;
+                atualizarBadgeSync();
                 atualizarAvisoSla();
+                atualizarCardsResumo();
 
                 // ✅ NOVA FUNCIONALIDADE: Ler parâmetro "numero" da URL e filtrar automaticamente
                 const urlParams = new URLSearchParams(window.location.search);
@@ -1224,17 +1294,18 @@
 
             } catch (erro) {
                 console.error('❌ Erro:', erro);
+                ULTIMA_SINCRONIZACAO_OK = false;
                 document.getElementById('syncStatus').textContent = '🔴 Erro';
-                document.getElementById('tbody').innerHTML = `<tr><td colspan="9" class="empty-state">❌ Erro ao carregar dados</td></tr>`;
+                document.getElementById('tbody').innerHTML = `<tr><td colspan="11" class="empty-state">❌ Erro ao carregar dados</td></tr>`;
             }
         }
 
-        function mostrarAba(abaName) {
+        function mostrarAba(abaName, evt) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById(abaName).classList.add('active');
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
 
-            const seletor = document.getElementById('abaSelect');
-            if (seletor && seletor.value !== abaName) seletor.value = abaName;
+            document.getElementById(abaName).classList.add('active');
+            if (evt && evt.target) evt.target.classList.add('active');
 
             if (abaName === 'graficos') {
                 setTimeout(() => desenharGraficos(), 200);
@@ -1315,6 +1386,14 @@
             `).join('');
         }
 
+        // Trata "Em Andamento"/"Concluido" (sem acento) como equivalentes às
+        // grafias canônicas usadas nos filtros/selects, pra evitar que um
+        // chamado "suma" da tabela por causa da variação de grafia do status.
+        function statusEquivalente(a, b) {
+            const canon = s => (s === 'Concluido') ? 'Concluído' : (s === 'Em Andamento') ? 'Em andamento' : s;
+            return canon(a) === canon(b);
+        }
+
         function filtrar() {
             const status = document.getElementById('filterStatus').value;
             const prioridade = document.getElementById('filterPrioridade').value;
@@ -1322,8 +1401,9 @@
 
             CHAMADOS_FILTRADOS = CHAMADOS.filter(c => {
                 let ok = true;
-                if (status && c.status !== status) ok = false;
+                if (status && !statusEquivalente(c.status, status)) ok = false;
                 if (prioridade && c.prioridade !== prioridade) ok = false;
+                if (FILTRO_RAPIDO === '__vencidos__' && !c.slaVencido) ok = false;
                 if (busca) {
                     const texto = `${c.id} ${c.titulo} ${c.solicitante}`.toLowerCase();
                     if (!texto.includes(busca)) ok = false;
@@ -1332,6 +1412,27 @@
             });
 
             renderizar();
+        }
+
+        function filtrarRapido(valor) {
+            FILTRO_RAPIDO = (FILTRO_RAPIDO === valor) ? null : valor;
+            document.getElementById('filterStatus').value = (FILTRO_RAPIDO && FILTRO_RAPIDO !== '__vencidos__') ? FILTRO_RAPIDO : '';
+            filtrar();
+        }
+
+        function atualizarCardsResumo() {
+            document.getElementById('quickAbertos').textContent = CHAMADOS.filter(c => c.status === 'Aberto').length;
+            document.getElementById('quickAndamento').textContent = CHAMADOS.filter(c => c.status === 'Em andamento' || c.status === 'Em Andamento').length;
+            document.getElementById('quickConcluidos').textContent = CHAMADOS.filter(c => c.status === 'Concluído' || c.status === 'Concluido').length;
+            document.getElementById('quickVencidos').textContent = CHAMADOS.filter(c => c.slaVencido).length;
+
+            const mapaCards = { 'Aberto': 'cardAbertos', 'Em andamento': 'cardAndamento', 'Concluído': 'cardConcluidos', '__vencidos__': 'cardVencidos' };
+            ['cardAbertos', 'cardAndamento', 'cardConcluidos', 'cardVencidos'].forEach(id => {
+                document.getElementById(id).style.borderColor = '';
+            });
+            if (FILTRO_RAPIDO && mapaCards[FILTRO_RAPIDO]) {
+                document.getElementById(mapaCards[FILTRO_RAPIDO]).style.borderColor = '#ffa500';
+            }
         }
 
         // ============================================================
@@ -1412,6 +1513,91 @@
             }
         }
 
+        async function mudarResponsavelInline(id, novoResponsavel, event) {
+            if (event) event.stopPropagation();
+            const chamado = CHAMADOS.find(c => c.id === id);
+            if (chamado && (chamado.responsavel || '') === novoResponsavel) return;
+            const historicoAtual = (chamado && Array.isArray(chamado.historico)) ? chamado.historico : [];
+            const novoHistorico = historicoAtual.concat([novaEntradaHistorico(novoResponsavel ? `Responsável definido: ${novoResponsavel}` : 'Responsável removido')]);
+            try {
+                const response = await authFetch(`${BACKEND_URL}/api/editar-chamado/${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ responsavel: novoResponsavel, historico: novoHistorico })
+                });
+                if (response.ok) {
+                    if (chamado) { chamado.responsavel = novoResponsavel; chamado.historico = novoHistorico; }
+                    carregarDados();
+                } else {
+                    alert('❌ Erro ao alterar responsável');
+                }
+            } catch (e) {
+                alert('❌ Erro: ' + e.message);
+            }
+        }
+
+        // ============================================================
+        // ☑️ SELEÇÃO E AÇÕES EM LOTE
+        // ============================================================
+        function alternarSelecao(id) {
+            if (SELECIONADOS.has(id)) SELECIONADOS.delete(id); else SELECIONADOS.add(id);
+            renderizar();
+        }
+
+        function alternarTodosVisiveis() {
+            const idsVisiveis = CHAMADOS_FILTRADOS.map(c => c.id);
+            const todosSelecionados = idsVisiveis.length > 0 && idsVisiveis.every(id => SELECIONADOS.has(id));
+            if (todosSelecionados) {
+                idsVisiveis.forEach(id => SELECIONADOS.delete(id));
+            } else {
+                idsVisiveis.forEach(id => SELECIONADOS.add(id));
+            }
+            renderizar();
+        }
+
+        function limparSelecao() {
+            SELECIONADOS.clear();
+            renderizar();
+        }
+
+        function atualizarBarraLote() {
+            const bar = document.getElementById('bulkBar');
+            const qtd = SELECIONADOS.size;
+            if (qtd > 0) {
+                bar.style.display = 'flex';
+                document.getElementById('bulkContagem').textContent = `${qtd} selecionado${qtd > 1 ? 's' : ''}`;
+            } else {
+                bar.style.display = 'none';
+            }
+        }
+
+        async function aplicarStatusLote(novoStatus) {
+            const ids = Array.from(SELECIONADOS);
+            if (ids.length === 0) return;
+            if (!confirm(`Alterar o status de ${ids.length} chamado(s) para "${novoStatus}"?`)) return;
+
+            let sucesso = 0, erro = 0;
+            for (const id of ids) {
+                const chamado = CHAMADOS.find(c => c.id === id);
+                const historicoAtual = (chamado && Array.isArray(chamado.historico)) ? chamado.historico : [];
+                const novoHistorico = historicoAtual.concat([novaEntradaHistorico(`Status alterado em lote para "${novoStatus}"`)]);
+                try {
+                    const response = await authFetch(`${BACKEND_URL}/api/editar-chamado/${id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: novoStatus, historico: novoHistorico })
+                    });
+                    if (response.ok) sucesso++; else erro++;
+                } catch (e) {
+                    erro++;
+                }
+            }
+
+            limparSelecao();
+            alert(`✅ ${sucesso} chamado(s) atualizado(s)` + (erro > 0 ? ` — ❌ ${erro} com erro` : ''));
+            carregarDados();
+        }
+
         // ============================================================
         // ⚠️ AVISO DE SLA PRESTES A VENCER
         // ============================================================
@@ -1427,12 +1613,22 @@
             }
         }
 
+        function opcoesResponsavel(atual) {
+            const opcoes = ['<option value="">Não atribuído</option>'].concat(
+                LISTA_RESPONSAVEIS.map(nome => `<option value="${nome}" ${atual === nome ? 'selected' : ''}>${nome}</option>`)
+            );
+            return opcoes.join('');
+        }
+
         function renderizar() {
             const tbody = document.getElementById('tbody');
             atualizarSetasCabecalho();
+            atualizarBarraLote();
 
             if (CHAMADOS_FILTRADOS.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="empty-state">📭 Nenhum chamado encontrado</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" class="empty-state">📭 Nenhum chamado encontrado</td></tr>`;
+                const checkTodos = document.getElementById('checkTodos');
+                if (checkTodos) checkTodos.checked = false;
                 return;
             }
 
@@ -1440,6 +1636,7 @@
 
             tbody.innerHTML = lista.map(c => `
                 <tr onclick="abrirFormularioEditar('${c.id}')">
+                    <td onclick="event.stopPropagation()"><input type="checkbox" ${SELECIONADOS.has(c.id) ? 'checked' : ''} onclick="alternarSelecao('${c.id}')"></td>
                     <td><strong>#${c.id}</strong></td>
                     <td>${c.titulo}</td>
                     <td>${c.solicitante}</td>
@@ -1451,12 +1648,21 @@
                             <option value="Concluído" ${(c.status === 'Concluído' || c.status === 'Concluido') ? 'selected' : ''}>Concluído</option>
                         </select>
                     </td>
+                    <td onclick="event.stopPropagation()">
+                        <select class="table-select" onclick="event.stopPropagation()" onchange="mudarResponsavelInline('${c.id}', this.value, event)">
+                            ${opcoesResponsavel(c.responsavel)}
+                        </select>
+                    </td>
                     <td>${c.setorAtendimento || 'Geral'}</td>
                     <td>${formatarData(c.data)}</td>
                     <td><small>${limparHTML(c.descricao).substring(0, 40)}...</small></td>
                     <td><span class="badge ${c.slaVencido ? 'sla-vencido' : 'sla-ok'}" onclick="event.stopPropagation(); abrirSLA('${c.id}')">${c.slaVencido ? '🔴 VENCIDO' : '✅ OK'}</span></td>
                 </tr>
             `).join('');
+
+            const idsVisiveis = CHAMADOS_FILTRADOS.map(c => c.id);
+            const checkTodos = document.getElementById('checkTodos');
+            if (checkTodos) checkTodos.checked = idsVisiveis.length > 0 && idsVisiveis.every(id => SELECIONADOS.has(id));
         }
 
         function abrirSLA(chamadoId) {
