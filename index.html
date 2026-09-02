@@ -111,8 +111,30 @@
             display: flex;
             gap: 0;
             margin-bottom: 25px;
-            border-bottom: 2px solid rgba(255, 165, 0, 0.2);
             padding-bottom: 0;
+        }
+
+        .tab-select {
+            padding: 14px 20px;
+            background: rgba(255, 165, 0, 0.1);
+            border: 2px solid rgba(255, 165, 0, 0.4);
+            border-radius: 10px;
+            color: #ffa500;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 14px;
+            min-width: 260px;
+        }
+
+        .tab-select:focus {
+            outline: none;
+            border-color: #ffa500;
+            background: rgba(255, 165, 0, 0.18);
+        }
+
+        .tab-select option {
+            background: #0a1628;
+            color: #fff;
         }
 
         .tab {
@@ -649,12 +671,14 @@
 
         <!-- ABAS -->
         <div class="tabs-section">
-            <button class="tab active" onclick="mostrarAba('chamados', event)">📋 Chamados Detalhados</button>
-            <button class="tab" onclick="mostrarAba('ti', event)">💻 TI</button>
-            <button class="tab" onclick="mostrarAba('naem', event)">📽️ NAEM</button>
-            <button class="tab" onclick="mostrarAba('manutencao', event)">🔧 Manutenção</button>
-            <button class="tab" onclick="mostrarAba('graficos', event)">📊 Gráficos</button>
-            <button class="tab" onclick="mostrarAba('satisfacao', event)">⭐ Satisfação</button>
+            <select id="abaSelect" class="tab-select" onchange="mostrarAba(this.value)">
+                <option value="chamados">📋 Chamados Detalhados</option>
+                <option value="ti">💻 TI</option>
+                <option value="naem">📽️ NAEM</option>
+                <option value="manutencao">🔧 Manutenção</option>
+                <option value="graficos">📊 Gráficos</option>
+                <option value="satisfacao">⭐ Satisfação</option>
+            </select>
         </div>
 
         <!-- FILTROS -->
@@ -1238,6 +1262,37 @@
             }
         }
 
+        // Formata uma quantidade de horas (float) em texto curto tipo "2d 3h" / "5h" / "20m"
+        function formatarHoras(horas) {
+            horas = Math.abs(horas);
+            if (horas < 1) {
+                return `${Math.round(horas * 60)}m`;
+            } else if (horas < 24) {
+                return `${Math.floor(horas)}h`;
+            } else {
+                const dias = Math.floor(horas / 24);
+                const h = Math.floor(horas % 24);
+                return `${dias}d ${h}h`;
+            }
+        }
+
+        // Texto claro de prazo pra exibir direto na tabela, sem precisar clicar
+        function formatarPrazoSLA(c) {
+            if (c.status === 'Concluído') return '✅ Concluído';
+
+            const prazo = c.prazoSLA;
+            const decorridas = parseFloat(c.horasDecorridas);
+            if (typeof prazo !== 'number' || isNaN(decorridas)) {
+                return c.slaAtraso || '';
+            }
+
+            const restante = prazo - decorridas;
+            if (c.slaVencido) {
+                return `Atrasado há ${formatarHoras(restante)} (prazo era ${prazo}h)`;
+            }
+            return `Faltam ${formatarHoras(restante)} de ${prazo}h`;
+        }
+
         async function carregarDados() {
             try {
                 const response = await authFetch(`${BACKEND_URL}/api/chamados`);
@@ -1268,7 +1323,9 @@
                         slaVencido: slaInfo.slaVencido,
                         slaAberto: slaInfo.slaAberto,
                         slaAtraso: slaInfo.slaAtraso,
-                        porcentagem: slaInfo.porcentagem
+                        porcentagem: slaInfo.porcentagem,
+                        prazoSLA: slaInfo.prazoSLA,
+                        horasDecorridas: slaInfo.horasDecorridas
                     };
                 });
 
@@ -1300,12 +1357,13 @@
             }
         }
 
-        function mostrarAba(abaName, evt) {
+        function mostrarAba(abaName) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
 
             document.getElementById(abaName).classList.add('active');
-            if (evt && evt.target) evt.target.classList.add('active');
+
+            const select = document.getElementById('abaSelect');
+            if (select) select.value = abaName;
 
             if (abaName === 'graficos') {
                 setTimeout(() => desenharGraficos(), 200);
@@ -1603,13 +1661,34 @@
         // ============================================================
         function atualizarAvisoSla() {
             const banner = document.getElementById('avisoSlaBanner');
-            const contagem = CHAMADOS.filter(c => c.status !== 'Concluído' && !c.slaVencido && c.porcentagem >= 70).length;
-            if (contagem > 0) {
-                banner.style.display = 'flex';
-                document.getElementById('avisoSlaTexto').textContent =
-                    `${contagem} chamado${contagem > 1 ? 's estão' : ' está'} perto de vencer o SLA — dê uma olhada antes que virem atraso.`;
-            } else {
+            const abertos = CHAMADOS.filter(c => c.status !== 'Concluído');
+            const vencidos = abertos.filter(c => c.slaVencido).length;
+            const prestesAVencer = abertos.filter(c => !c.slaVencido && c.porcentagem >= 70).length;
+
+            if (vencidos === 0 && prestesAVencer === 0) {
                 banner.style.display = 'none';
+                return;
+            }
+
+            const partes = [];
+            if (vencidos > 0) {
+                partes.push(`🔴 ${vencidos} chamado${vencidos > 1 ? 's' : ''} com SLA vencido`);
+            }
+            if (prestesAVencer > 0) {
+                partes.push(`⏳ ${prestesAVencer} chamado${prestesAVencer > 1 ? 's' : ''} perto de vencer o SLA`);
+            }
+
+            banner.style.display = 'flex';
+            document.getElementById('avisoSlaTexto').textContent = partes.join('   •   ') + ' — dê uma olhada assim que possível.';
+
+            if (vencidos > 0) {
+                banner.style.background = 'rgba(255, 82, 82, 0.15)';
+                banner.style.borderColor = 'rgba(255, 82, 82, 0.5)';
+                banner.style.color = '#ff8080';
+            } else {
+                banner.style.background = 'rgba(255, 213, 79, 0.15)';
+                banner.style.borderColor = 'rgba(255, 213, 79, 0.5)';
+                banner.style.color = '#ffd54f';
             }
         }
 
@@ -1656,7 +1735,10 @@
                     <td>${c.setorAtendimento || 'Geral'}</td>
                     <td>${formatarData(c.data)}</td>
                     <td><small>${limparHTML(c.descricao).substring(0, 40)}...</small></td>
-                    <td><span class="badge ${c.slaVencido ? 'sla-vencido' : 'sla-ok'}" onclick="event.stopPropagation(); abrirSLA('${c.id}')">${c.slaVencido ? '🔴 VENCIDO' : '✅ OK'}</span></td>
+                    <td onclick="event.stopPropagation(); abrirSLA('${c.id}')" style="cursor:pointer;">
+                        <span class="badge ${c.slaVencido ? 'sla-vencido' : 'sla-ok'}">${c.slaVencido ? '🔴 VENCIDO' : '✅ OK'}</span>
+                        <div style="font-size:11px; margin-top:4px; color:${c.slaVencido ? '#ff6b6b' : '#aaa'};">${formatarPrazoSLA(c)}</div>
+                    </td>
                 </tr>
             `).join('');
 
