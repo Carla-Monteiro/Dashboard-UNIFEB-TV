@@ -618,13 +618,11 @@
             // 2) Busca os dados atuais no backend (que lê do SharePoint) e atualiza a tela
             const idBuscado = extrairIdNumerico(dadosEmail.numero);
 
-            fetch(BACKEND_URL + '/api/chamados')
+            // Busca só ESTE chamado (endpoint restrito, sem lista completa)
+            fetch(BACKEND_URL + '/api/chamado/' + encodeURIComponent(idBuscado))
                 .then(function(resp) { return resp.json(); })
                 .then(function(dadosResp) {
-                    const lista = Array.isArray(dadosResp) ? dadosResp : (dadosResp.chamados || []);
-                    const encontrado = lista.find(function(c) {
-                        return extrairIdNumerico(c.id) === idBuscado;
-                    });
+                    const encontrado = dadosResp && dadosResp.status === 'sucesso' ? dadosResp.chamado : null;
 
                     if (!encontrado) {
                         console.warn('Chamado não encontrado no backend para o número:', dadosEmail.numero);

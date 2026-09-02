@@ -5,7 +5,11 @@
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import os
+import re
+import hmac
+import hashlib
 import requests
+from functools import wraps
 from datetime import datetime, timedelta, timezone, date
 from zoneinfo import ZoneInfo
 import json
@@ -29,6 +33,42 @@ LISTA_PESQUISAS = "PesquisasSatisfacao"
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 TENANT_ID = os.getenv('TENANT_ID')
+
+# Senha do Dashboard — configurada como variável de ambiente no Render
+# (Environment Variables), NUNCA no código-fonte / GitHub.
+DASHBOARD_PASSWORD = os.getenv('DASHBOARD_PASSWORD')
+
+
+def _token_esperado():
+    """Deriva o token de sessão a partir da senha configurada no ambiente.
+    Assim, depois do login, o navegador guarda apenas esse token (não a
+    senha em texto puro), e o token muda sozinho se a senha for trocada."""
+    if not DASHBOARD_PASSWORD:
+        return None
+    return hashlib.sha256(DASHBOARD_PASSWORD.encode('utf-8')).hexdigest()
+
+
+def requer_login(f):
+    """Decorator: protege endpoints do Dashboard exigindo o header
+    'Authorization: Bearer <token>' obtido via POST /api/login."""
+    @wraps(f)
+    def decorado(*args, **kwargs):
+        if request.method == 'OPTIONS':
+            return '', 200
+
+        token_valido = _token_esperado()
+        if not token_valido:
+            logger.error("❌ DASHBOARD_PASSWORD não configurada no ambiente (Render)")
+            return jsonify({"status": "erro", "mensagem": "Login não configurado no servidor"}), 500
+
+        auth_header = request.headers.get('Authorization', '')
+        token_enviado = auth_header.replace('Bearer ', '').strip()
+
+        if not token_enviado or not hmac.compare_digest(token_enviado, token_valido):
+            return jsonify({"status": "erro", "mensagem": "Não autorizado. Faça login novamente."}), 401
+
+        return f(*args, **kwargs)
+    return decorado
 
 NOMES_SETORES = {
     'manutencao': 'Manutenção Predial',
@@ -293,7 +333,90 @@ def preencher_setores_faltantes(items, headers, site_id, list_id):
     return setores_preenchidos
 
 
+@app.route('/api/login', methods=['POST', 'OPTIONS'])
+def login_dashboard():
+    """Login do Dashboard. Recebe {"senha": "..."} e devolve um token de
+    sessão (derivado da senha) para ser usado no header Authorization das
+    próximas chamadas. A senha correta fica só na variável de ambiente
+    DASHBOARD_PASSWORD do Render — nunca no código."""
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    try:
+        data = request.json or {}
+        senha_enviada = str(data.get('senha', ''))
+
+        if not DASHBOARD_PASSWORD:
+            logger.error("❌ DASHBOARD_PASSWORD não configurada no ambiente (Render)")
+            return jsonify({"status": "erro", "mensagem": "Login não configurado no servidor"}), 500
+
+        if not senha_enviada or not hmac.compare_digest(senha_enviada, DASHBOARD_PASSWORD):
+            return jsonify({"status": "erro", "mensagem": "Senha incorreta"}), 401
+
+        return jsonify({"status": "sucesso", "token": _token_esperado()}), 200
+
+    except Exception as e:
+        logger.error(f"❌ ERRO em login_dashboard: {e}")
+        return jsonify({"status": "erro", "mensagem": "Erro ao processar login"}), 500
+
+
+def extrair_id_numerico(numero):
+    """Extrai o ID numérico do SharePoint a partir de um número de chamado
+    no formato 'CH-0123' (ou já numérico). Mesma lógica usada no rastreador."""
+    if not numero:
+        return None
+    numero = str(numero).strip()
+    numero = re.sub(r'^CH-', '', numero, flags=re.IGNORECASE)
+    numero = re.sub(r'^0+(?=\d)', '', numero)
+    return numero or None
+
+
+@app.route('/api/chamado/<numero>', methods=['GET'])
+def obter_chamado_unico(numero):
+    """Endpoint PÚBLICO usado pela página de rastreamento (rastreador.html).
+    Devolve os dados de UM ÚNICO chamado (por número) — nunca a lista
+    completa. Não exige login, pois o link já é enviado só para quem abriu
+    aquele chamado, mas por isso mesmo devolve apenas o necessário para a
+    tela de acompanhamento (sem solicitante/e-mail/bloco/sala/categoria)."""
+    try:
+        item_id = extrair_id_numerico(numero)
+        if not item_id:
+            return jsonify({"status": "erro", "mensagem": "Número inválido"}), 400
+
+        token = get_access_token()
+        if not token:
+            return jsonify({"status": "erro", "mensagem": "Falha ao conectar SharePoint"}), 401
+
+        headers = {'Authorization': f'Bearer {token}'}
+        site_id, list_id = obter_site_e_lista(headers)
+        if not site_id or not list_id:
+            return jsonify({"status": "erro", "mensagem": "Erro ao conectar SharePoint"}), 400
+
+        item_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items/{item_id}?$expand=fields"
+        item_response = requests.get(item_url, headers=headers, timeout=10)
+
+        if item_response.status_code != 200:
+            return jsonify({"status": "erro", "mensagem": "Chamado não encontrado"}), 404
+
+        fields = item_response.json().get('fields', {})
+
+        chamado = {
+            'numero': fields.get('NumeroChamado') or f"CH-{int(item_id):04d}",
+            'titulo': fields.get('Title', ''),
+            'status': fields.get('Status', 'Aberto'),
+            'prioridade': fields.get('Prioridade', 'Média'),
+            'descricao': fields.get('Descricao', ''),
+            'dataAbertura': fields.get('DataAbertura', ''),
+        }
+        return jsonify({"status": "sucesso", "chamado": chamado}), 200
+
+    except Exception as e:
+        logger.error(f"❌ ERRO em obter_chamado_unico: {e}")
+        return jsonify({"status": "erro", "mensagem": "Chamado não encontrado"}), 404
+
+
 @app.route('/api/chamados', methods=['GET'])
+@requer_login
 def obter_chamados():
     """Retorna lista de todos os chamados do SharePoint"""
     try:
@@ -527,6 +650,7 @@ def concluir_chamado():
 # ============================================================
 
 @app.route('/api/criar-chamado', methods=['POST', 'OPTIONS'])
+@requer_login
 def criar_chamado_dashboard():
     """Cria um chamado manualmente pelo Dashboard"""
     if request.method == 'OPTIONS':
@@ -605,6 +729,7 @@ def criar_chamado_dashboard():
 
 
 @app.route('/api/editar-chamado/<item_id>', methods=['PATCH', 'OPTIONS'])
+@requer_login
 def editar_chamado(item_id):
     """Edita um chamado existente pelo Dashboard (usa o ID direto do SharePoint)"""
     if request.method == 'OPTIONS':
@@ -661,6 +786,7 @@ def editar_chamado(item_id):
 
 
 @app.route('/api/deletar-chamado/<item_id>', methods=['DELETE', 'OPTIONS'])
+@requer_login
 def deletar_chamado(item_id):
     """Deleta um chamado pelo Dashboard (usa o ID direto do SharePoint)"""
     if request.method == 'OPTIONS':
@@ -694,6 +820,7 @@ def deletar_chamado(item_id):
 
 
 @app.route('/api/pesquisas', methods=['GET'])
+@requer_login
 def obter_pesquisas():
     """Retorna todas as respostas da Pesquisa de Satisfação (lista PesquisasSatisfacao)"""
     try:

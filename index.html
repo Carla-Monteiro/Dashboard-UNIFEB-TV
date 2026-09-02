@@ -596,6 +596,19 @@
     </style>
 </head>
 <body>
+    <!-- TELA DE LOGIN (bloqueia o dashboard até a senha correta) -->
+    <div id="loginOverlay" style="display:none; position:fixed; inset:0; z-index:9999; background:linear-gradient(135deg, #1a2a5e 0%, #2a3a7e 100%); align-items:center; justify-content:center; padding:20px;">
+        <form onsubmit="fazerLogin(event)" style="background:#fff; border-radius:16px; padding:44px 36px; max-width:380px; width:100%; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+            <img src="logo-UNIFEB.png" alt="UNIFEB" style="max-width:160px; margin-bottom:18px;" onerror="this.style.display='none'">
+            <h2 style="margin:0 0 6px; color:#1a2a5e;">Controle de Chamados</h2>
+            <p style="margin:0 0 20px; color:#666; font-size:14px;">Área restrita — informe a senha para continuar</p>
+            <input type="password" id="loginSenha" placeholder="Senha" autocomplete="current-password" required
+                style="width:100%; padding:12px 14px; font-size:15px; border:1px solid #ccc; border-radius:8px; margin-bottom:12px; box-sizing:border-box;">
+            <button type="submit" style="width:100%; padding:12px 14px; font-size:15px; font-weight:bold; color:#fff; background:#1a2a5e; border:none; border-radius:8px; cursor:pointer;">Entrar</button>
+            <div id="loginErro" style="color:#d32f2f; font-size:13px; margin-top:12px; min-height:16px;"></div>
+        </form>
+    </div>
+
     <div class="container">
         <!-- LOGO GRANDE E NÍTIDA -->
         <div class="logo-banner">
@@ -614,6 +627,7 @@
             <button class="btn" onclick="exportar()">📥 Exportar</button>
             <button class="btn" onclick="imprimir()">🖨️ Imprimir</button>
             <button class="btn primary" onclick="novoChamado()">➕ Novo Chamado</button>
+            <button class="btn" onclick="sairDashboard()">🚪 Sair</button>
         </div>
 
         <!-- ABAS -->
@@ -984,6 +998,74 @@
         // 🔧 BACKEND URL - DEFINIR NO TOPO (ANTES DE USAR)
         const BACKEND_URL = 'https://unifeb-backend.onrender.com';
 
+        // ============================================================
+        // 🔐 LOGIN DO DASHBOARD
+        // O token fica só em sessionStorage (some ao fechar a aba/navegador)
+        // e é validado pelo backend a cada chamada às rotas protegidas.
+        // ============================================================
+        let DASHBOARD_TOKEN = sessionStorage.getItem('unifeb_dashboard_token') || null;
+
+        function mostrarLogin(mensagemErro) {
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.getElementById('loginErro').textContent = mensagemErro || '';
+            document.getElementById('loginSenha').value = '';
+            setTimeout(() => document.getElementById('loginSenha').focus(), 50);
+        }
+
+        function esconderLogin() {
+            document.getElementById('loginOverlay').style.display = 'none';
+        }
+
+        async function fazerLogin(event) {
+            event.preventDefault();
+            const senha = document.getElementById('loginSenha').value;
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senha })
+                });
+                const resultado = await response.json();
+
+                if (response.ok && resultado.token) {
+                    DASHBOARD_TOKEN = resultado.token;
+                    sessionStorage.setItem('unifeb_dashboard_token', DASHBOARD_TOKEN);
+                    esconderLogin();
+                    iniciarDashboard();
+                } else {
+                    mostrarLogin(resultado.mensagem || 'Senha incorreta');
+                }
+            } catch (error) {
+                mostrarLogin('Erro ao conectar com o servidor.');
+            }
+        }
+
+        function sairDashboard() {
+            sessionStorage.removeItem('unifeb_dashboard_token');
+            DASHBOARD_TOKEN = null;
+            location.reload();
+        }
+
+        // Wrapper de fetch que sempre envia o token de login e, se o
+        // backend responder 401 (token ausente/errado), volta pra tela de login.
+        async function authFetch(url, options) {
+            const opts = Object.assign({}, options || {});
+            opts.headers = Object.assign({}, opts.headers || {}, { 'Authorization': `Bearer ${DASHBOARD_TOKEN}` });
+            const response = await fetch(url, opts);
+            if (response.status === 401) {
+                sessionStorage.removeItem('unifeb_dashboard_token');
+                DASHBOARD_TOKEN = null;
+                mostrarLogin('Sessão expirada. Faça login novamente.');
+                throw new Error('Não autorizado');
+            }
+            return response;
+        }
+
+        function iniciarDashboard() {
+            carregarDados();
+            setInterval(carregarDados, 5000);
+        }
+
         let CHAMADOS = [];
         let PESQUISAS = [];
         let CHAMADOS_FILTRADOS = [];
@@ -1056,7 +1138,7 @@
 
         async function carregarDados() {
             try {
-                const response = await fetch(`${BACKEND_URL}/api/chamados`);
+                const response = await authFetch(`${BACKEND_URL}/api/chamados`);
                 const dados = await response.json();
 
                 CHAMADOS = Array.isArray(dados) ? dados : (dados.chamados || []);
@@ -1397,7 +1479,7 @@
         async function carregarESatisfacao() {
             try {
                 console.log('🔄 Carregando pesquisas de satisfação...');
-                const response = await fetch(`${BACKEND_URL}/api/pesquisas`);
+                const response = await authFetch(`${BACKEND_URL}/api/pesquisas`);
                 if (!response.ok) {
                     console.warn(`⚠️ API retornou status ${response.status}`);
                 }
@@ -1590,7 +1672,7 @@
             try {
                 const url = EDICAO_ID ? `${BACKEND_URL}/api/editar-chamado/${EDICAO_ID}` : `${BACKEND_URL}/api/criar-chamado`;
                 const method = EDICAO_ID ? 'PATCH' : 'POST';
-                const response = await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(dados) });
+                const response = await authFetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(dados) });
 
                 if (response.ok) {
                     alert(EDICAO_ID ? '✅ Chamado atualizado!' : '✅ Chamado criado!');
@@ -1610,7 +1692,7 @@
         async function deletarChamadoAtual() {
             if (!EDICAO_ID || !confirm('Deletar este chamado?')) return;
             try {
-                const response = await fetch(`${BACKEND_URL}/api/deletar-chamado/${EDICAO_ID}`, { method: 'DELETE' });
+                const response = await authFetch(`${BACKEND_URL}/api/deletar-chamado/${EDICAO_ID}`, { method: 'DELETE' });
                 if (response.ok) {
                     alert('✅ Deletado!');
                     fecharFormulario();
@@ -1622,12 +1704,15 @@
         }
 
         window.addEventListener('load', () => {
-            carregarDados();
-            setInterval(carregarDados, 5000);
+            if (DASHBOARD_TOKEN) {
+                iniciarDashboard();
+            } else {
+                mostrarLogin();
+            }
         });
 
         document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) carregarDados();
+            if (!document.hidden && DASHBOARD_TOKEN) carregarDados();
         });
 
         document.addEventListener('keydown', (e) => {
