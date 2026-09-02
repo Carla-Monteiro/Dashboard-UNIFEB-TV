@@ -252,6 +252,23 @@
             background: rgba(255, 165, 0, 0.1);
         }
 
+        /* ===== SELECT INLINE NA TABELA (status por linha) ===== */
+        .table-select {
+            padding: 5px 8px;
+            background: rgba(255, 165, 0, 0.1);
+            border: 1px solid rgba(255, 165, 0, 0.4);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 11px;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        .table-select option {
+            background: #0a1628;
+            color: #fff;
+        }
+
         /* ===== BADGES ===== */
         .badge {
             display: inline-block;
@@ -630,14 +647,17 @@
             <button class="btn" onclick="sairDashboard()">🚪 Sair</button>
         </div>
 
-        <!-- ABAS -->
-        <div class="tabs-section">
-            <button class="tab active" onclick="mostrarAba('chamados')">📋 Chamados Detalhados</button>
-            <button class="tab" onclick="mostrarAba('ti')">💻 TI</button>
-            <button class="tab" onclick="mostrarAba('naem')">📽️ NAEM</button>
-            <button class="tab" onclick="mostrarAba('manutencao')">🔧 Manutenção</button>
-            <button class="tab" onclick="mostrarAba('graficos')">📊 Gráficos</button>
-            <button class="tab" onclick="mostrarAba('satisfacao')">⭐ Satisfação</button>
+        <!-- ABAS: um único menu para escolher a visualização -->
+        <div class="filter-item" style="max-width: 340px; margin-bottom: 25px;">
+            <label>Visualização</label>
+            <select id="abaSelect" onchange="mostrarAba(this.value)">
+                <option value="chamados">📋 Chamados Detalhados</option>
+                <option value="ti">💻 TI</option>
+                <option value="naem">📽️ NAEM</option>
+                <option value="manutencao">🔧 Manutenção</option>
+                <option value="graficos">📊 Gráficos</option>
+                <option value="satisfacao">⭐ Satisfação</option>
+            </select>
         </div>
 
         <!-- FILTROS -->
@@ -668,19 +688,24 @@
 
         <!-- ABA: CHAMADOS DETALHADOS -->
         <div id="chamados" class="tab-content active">
+            <!-- AVISO: chamados perto de vencer o SLA -->
+            <div id="avisoSlaBanner" style="display:none; align-items:center; gap:10px; margin-bottom:20px; padding:14px 20px; background:rgba(255,213,79,0.15); border:2px solid rgba(255,213,79,0.5); border-radius:10px; color:#ffd54f; font-size:13px; font-weight:600;">
+                ⚠️ <span id="avisoSlaTexto"></span>
+            </div>
+
             <div class="table-wrapper">
                 <table id="tabela">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Título</th>
-                            <th>Solicitante</th>
-                            <th>Prioridade</th>
-                            <th>Status</th>
-                            <th>Setor de Atendimento</th>
-                            <th>Abertura</th>
+                            <th data-coluna="id" data-label="ID" onclick="ordenarPor('id')" style="cursor:pointer;">ID</th>
+                            <th data-coluna="titulo" data-label="Título" onclick="ordenarPor('titulo')" style="cursor:pointer;">Título</th>
+                            <th data-coluna="solicitante" data-label="Solicitante" onclick="ordenarPor('solicitante')" style="cursor:pointer;">Solicitante</th>
+                            <th data-coluna="prioridade" data-label="Prioridade" onclick="ordenarPor('prioridade')" style="cursor:pointer;">Prioridade</th>
+                            <th data-coluna="status" data-label="Status" onclick="ordenarPor('status')" style="cursor:pointer;">Status</th>
+                            <th data-coluna="setor" data-label="Setor de Atendimento" onclick="ordenarPor('setor')" style="cursor:pointer;">Setor de Atendimento</th>
+                            <th data-coluna="abertura" data-label="Abertura" onclick="ordenarPor('abertura')" style="cursor:pointer;">Abertura</th>
                             <th>Descrição</th>
-                            <th>SLA</th>
+                            <th data-coluna="sla" data-label="SLA" onclick="ordenarPor('sla')" style="cursor:pointer;">SLA</th>
                         </tr>
                     </thead>
                     <tbody id="tbody">
@@ -983,6 +1008,14 @@
                             <option value="Concluído" style="background: #1a2f4d; color: #fff;">Concluído</option>
                         </select>
                     </div>
+                    <div id="responsavelEditar" style="display: none;">
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Responsável</label>
+                        <input type="text" id="responsavel" placeholder="Nome de quem está cuidando do chamado (opcional)" style="width: 100%; padding: 12px 14px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
+                    </div>
+                    <div id="historicoSection" style="display: none;">
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Histórico</label>
+                        <div id="historicoLista" style="max-height: 160px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 12px; background: rgba(255, 165, 0, 0.05); border: 1px solid rgba(255, 165, 0, 0.2); border-radius: 8px;"></div>
+                    </div>
                     <div style="display: flex; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 2px solid rgba(255, 165, 0, 0.2);">
                         <button type="submit" id="btnSubmit" style="flex: 2; padding: 11px 20px; background: linear-gradient(135deg, #ff6b35, #ffa500); border: none; border-radius: 8px; color: #fff; font-weight: 600; cursor: pointer; font-size: 12px;">Criar Chamado</button>
                         <button type="button" onclick="fecharFormulario()" style="flex: 1; padding: 11px 20px; background: rgba(255, 165, 0, 0.15); border: 2px solid rgba(255, 165, 0, 0.5); border-radius: 8px; color: #ffa500; font-weight: 600; cursor: pointer; font-size: 12px;">Cancelar</button>
@@ -1070,6 +1103,8 @@
         let PESQUISAS = [];
         let CHAMADOS_FILTRADOS = [];
         let EDICAO_ID = null;
+        let ORDENAR_COLUNA = null;
+        let ORDENAR_DIRECAO = 'asc';
 
         // 🔧 FUNÇÃO PARA CALCULAR SLA CORRETAMENTE
         const PRAZOS_SLA = {
@@ -1159,6 +1194,10 @@
                         bloco: c.bloco || '',
                         sala: c.sala || '',
                         categoria: c.categoria || '',
+                        responsavel: c.responsavel || '',
+                        historico: (Array.isArray(c.historico) && c.historico.length > 0)
+                            ? c.historico
+                            : [{ texto: 'Chamado aberto', data: c.dataAbertura || new Date().toISOString() }],
                         slaVencido: slaInfo.slaVencido,
                         slaAberto: slaInfo.slaAberto,
                         slaAtraso: slaInfo.slaAtraso,
@@ -1169,6 +1208,7 @@
                 console.log(`✅ ${CHAMADOS.length} chamados carregados do Backend em tempo real`);
 
                 document.getElementById('syncStatus').textContent = '🟢 Sincronizado';
+                atualizarAvisoSla();
 
                 // ✅ NOVA FUNCIONALIDADE: Ler parâmetro "numero" da URL e filtrar automaticamente
                 const urlParams = new URLSearchParams(window.location.search);
@@ -1191,10 +1231,10 @@
 
         function mostrarAba(abaName) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-
             document.getElementById(abaName).classList.add('active');
-            event.target.classList.add('active');
+
+            const seletor = document.getElementById('abaSelect');
+            if (seletor && seletor.value !== abaName) seletor.value = abaName;
 
             if (abaName === 'graficos') {
                 setTimeout(() => desenharGraficos(), 200);
@@ -1294,21 +1334,123 @@
             renderizar();
         }
 
+        // ============================================================
+        // 🔀 ORDENAÇÃO DE COLUNAS
+        // ============================================================
+        const RANK_PRIORIDADE = { 'Alta': 3, 'Média': 2, 'Baixa': 1 };
+
+        function ordenarPor(coluna) {
+            if (ORDENAR_COLUNA === coluna) {
+                ORDENAR_DIRECAO = ORDENAR_DIRECAO === 'asc' ? 'desc' : 'asc';
+            } else {
+                ORDENAR_COLUNA = coluna;
+                ORDENAR_DIRECAO = 'asc';
+            }
+            renderizar();
+        }
+
+        function valorOrdenavel(c, coluna) {
+            switch (coluna) {
+                case 'id': return parseInt(c.id, 10) || 0;
+                case 'prioridade': return RANK_PRIORIDADE[c.prioridade] || 0;
+                case 'abertura': return new Date(c.data).getTime() || 0;
+                case 'sla': return c.porcentagem || 0;
+                case 'responsavel': return (c.responsavel || '').toLowerCase();
+                case 'setor': return (c.setorAtendimento || '').toLowerCase();
+                default: return (c[coluna] || '').toString().toLowerCase();
+            }
+        }
+
+        function aplicarOrdenacao(lista) {
+            if (!ORDENAR_COLUNA) return lista;
+            const dir = ORDENAR_DIRECAO === 'desc' ? -1 : 1;
+            return lista.slice().sort((a, b) => {
+                const va = valorOrdenavel(a, ORDENAR_COLUNA);
+                const vb = valorOrdenavel(b, ORDENAR_COLUNA);
+                if (va < vb) return -1 * dir;
+                if (va > vb) return 1 * dir;
+                return 0;
+            });
+        }
+
+        function atualizarSetasCabecalho() {
+            document.querySelectorAll('#tabela thead th[data-coluna]').forEach(th => {
+                const base = th.getAttribute('data-label');
+                const coluna = th.getAttribute('data-coluna');
+                if (ORDENAR_COLUNA === coluna) {
+                    th.textContent = base + (ORDENAR_DIRECAO === 'asc' ? ' ▲' : ' ▼');
+                } else {
+                    th.textContent = base;
+                }
+            });
+        }
+
+        function novaEntradaHistorico(texto) {
+            return { texto, data: new Date().toISOString() };
+        }
+
+        async function mudarStatusInline(id, novoStatus, event) {
+            if (event) event.stopPropagation();
+            const chamado = CHAMADOS.find(c => c.id === id);
+            if (chamado && chamado.status === novoStatus) return;
+            const historicoAtual = (chamado && Array.isArray(chamado.historico)) ? chamado.historico : [];
+            const novoHistorico = historicoAtual.concat([novaEntradaHistorico(`Status alterado para "${novoStatus}"`)]);
+            try {
+                const response = await authFetch(`${BACKEND_URL}/api/editar-chamado/${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: novoStatus, historico: novoHistorico })
+                });
+                if (response.ok) {
+                    if (chamado) { chamado.status = novoStatus; chamado.historico = novoHistorico; }
+                    carregarDados();
+                } else {
+                    alert('❌ Erro ao alterar status');
+                }
+            } catch (e) {
+                alert('❌ Erro: ' + e.message);
+            }
+        }
+
+        // ============================================================
+        // ⚠️ AVISO DE SLA PRESTES A VENCER
+        // ============================================================
+        function atualizarAvisoSla() {
+            const banner = document.getElementById('avisoSlaBanner');
+            const contagem = CHAMADOS.filter(c => c.status !== 'Concluído' && !c.slaVencido && c.porcentagem >= 70).length;
+            if (contagem > 0) {
+                banner.style.display = 'flex';
+                document.getElementById('avisoSlaTexto').textContent =
+                    `${contagem} chamado${contagem > 1 ? 's estão' : ' está'} perto de vencer o SLA — dê uma olhada antes que virem atraso.`;
+            } else {
+                banner.style.display = 'none';
+            }
+        }
+
         function renderizar() {
             const tbody = document.getElementById('tbody');
+            atualizarSetasCabecalho();
 
             if (CHAMADOS_FILTRADOS.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="9" class="empty-state">📭 Nenhum chamado encontrado</td></tr>`;
                 return;
             }
 
-            tbody.innerHTML = CHAMADOS_FILTRADOS.map(c => `
+            const lista = aplicarOrdenacao(CHAMADOS_FILTRADOS);
+
+            tbody.innerHTML = lista.map(c => `
                 <tr onclick="abrirFormularioEditar('${c.id}')">
                     <td><strong>#${c.id}</strong></td>
                     <td>${c.titulo}</td>
                     <td>${c.solicitante}</td>
                     <td><span class="badge badge-${getBadgePrio(c.prioridade)}">${c.prioridade}</span></td>
-                    <td><span class="badge badge-${getBadgeStatus(c.status)}">${c.status}</span></td>
+                    <td onclick="event.stopPropagation()">
+                        <select class="table-select" onclick="event.stopPropagation()" onchange="mudarStatusInline('${c.id}', this.value, event)">
+                            <option value="Aberto" ${c.status === 'Aberto' ? 'selected' : ''}>Aberto</option>
+                            <option value="Em andamento" ${(c.status === 'Em andamento' || c.status === 'Em Andamento') ? 'selected' : ''}>Em andamento</option>
+                            <option value="Concluído" ${(c.status === 'Concluído' || c.status === 'Concluido') ? 'selected' : ''}>Concluído</option>
+                        </select>
+                    </td>
                     <td>${c.setorAtendimento || 'Geral'}</td>
                     <td>${formatarData(c.data)}</td>
                     <td><small>${limparHTML(c.descricao).substring(0, 40)}...</small></td>
@@ -1627,6 +1769,8 @@
             document.getElementById('modalTitulo').textContent = '➕ Novo Chamado';
             document.getElementById('formChamado').reset();
             document.getElementById('statusEditar').style.display = 'none';
+            document.getElementById('responsavelEditar').style.display = 'none';
+            document.getElementById('historicoSection').style.display = 'none';
             document.getElementById('btnDeletar').style.display = 'none';
             document.getElementById('btnSubmit').textContent = 'Criar Chamado';
             document.getElementById('modalFormulario').classList.add('active');
@@ -1644,7 +1788,22 @@
             document.getElementById('setor').value = chamado.setorAtendimento || '';
             document.getElementById('prioridade').value = chamado.prioridade;
             document.getElementById('status').value = chamado.status;
+            document.getElementById('responsavel').value = chamado.responsavel || '';
             document.getElementById('statusEditar').style.display = 'block';
+            document.getElementById('responsavelEditar').style.display = 'block';
+            document.getElementById('historicoSection').style.display = 'block';
+
+            const historicoLista = document.getElementById('historicoLista');
+            const hist = Array.isArray(chamado.historico) ? chamado.historico : [];
+            historicoLista.innerHTML = hist.length
+                ? hist.map(h => `
+                    <div style="font-size:12px; color:#ddd; display:flex; justify-content:space-between; gap:10px;">
+                        <span><span style="color:#ffa500;">●</span> ${limparHTML(h.texto || '')}</span>
+                        <span style="color:#888; white-space:nowrap;">${formatarData(h.data)}</span>
+                    </div>
+                `).join('')
+                : '<div style="color:#888; font-size:12px;">Sem eventos registrados.</div>';
+
             document.getElementById('btnDeletar').style.display = 'block';
             document.getElementById('btnSubmit').textContent = 'Atualizar Chamado';
             document.getElementById('modalFormulario').classList.add('active');
@@ -1667,7 +1826,23 @@
                 data: document.getElementById('data') ? document.getElementById('data').value : new Date().toISOString()
             };
 
-            if (EDICAO_ID) dados.status = document.getElementById('status').value;
+            if (EDICAO_ID) {
+                dados.status = document.getElementById('status').value;
+                dados.responsavel = document.getElementById('responsavel').value.trim();
+
+                const chamadoOriginal = CHAMADOS.find(c => c.id === EDICAO_ID);
+                const historicoAtual = (chamadoOriginal && Array.isArray(chamadoOriginal.historico)) ? chamadoOriginal.historico : [];
+                const eventos = [];
+                if (chamadoOriginal && chamadoOriginal.status !== dados.status) {
+                    eventos.push(novaEntradaHistorico(`Status alterado para "${dados.status}"`));
+                }
+                if (chamadoOriginal && (chamadoOriginal.responsavel || '') !== dados.responsavel) {
+                    eventos.push(novaEntradaHistorico(dados.responsavel ? `Responsável definido: ${dados.responsavel}` : 'Responsável removido'));
+                }
+                if (eventos.length > 0) {
+                    dados.historico = historicoAtual.concat(eventos);
+                }
+            }
 
             try {
                 const url = EDICAO_ID ? `${BACKEND_URL}/api/editar-chamado/${EDICAO_ID}` : `${BACKEND_URL}/api/criar-chamado`;

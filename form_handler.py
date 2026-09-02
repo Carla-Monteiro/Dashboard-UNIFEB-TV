@@ -238,7 +238,8 @@ def criar_manutencao():
                 "Prioridade": "Média",
                 "Status": "Aberto",
                 "Origem": "QR Code",
-                "DataAbertura": data_abertura_iso
+                "DataAbertura": data_abertura_iso,
+                "Historico": json.dumps([montar_entrada_historico("Chamado aberto")], ensure_ascii=False)
             }
         }
         
@@ -360,6 +361,24 @@ def login_dashboard():
         return jsonify({"status": "erro", "mensagem": "Erro ao processar login"}), 500
 
 
+def parse_historico(bruto):
+    """Converte o texto JSON guardado no campo 'Historico' do SharePoint em
+    uma lista de eventos [{texto, data}, ...]. Tolera campo vazio/ausente
+    (lista ainda sem essa coluna) e JSON inválido, devolvendo lista vazia."""
+    if not bruto:
+        return []
+    try:
+        eventos = json.loads(bruto)
+        return eventos if isinstance(eventos, list) else []
+    except Exception:
+        return []
+
+
+def montar_entrada_historico(texto):
+    tz_sp = ZoneInfo('America/Sao_Paulo')
+    return {"texto": texto, "data": datetime.now(tz=tz_sp).isoformat()}
+
+
 def extrair_id_numerico(numero):
     """Extrai o ID numérico do SharePoint a partir de um número de chamado
     no formato 'CH-0123' (ou já numérico). Mesma lógica usada no rastreador."""
@@ -462,6 +481,11 @@ def obter_chamados():
                 'setorAtendimento': setor,
                 'numeroChamado': fields.get('NumeroChamado', ''),
                 'data': fields.get('DataAbertura', datetime.now().isoformat()),
+                # Campos novos (Responsável / Histórico). Se a coluna ainda não
+                # existir na lista do SharePoint, 'fields.get' simplesmente
+                # devolve o padrão — nada quebra até a coluna ser criada.
+                'responsavel': fields.get('Responsavel', ''),
+                'historico': parse_historico(fields.get('Historico')),
             }
             chamados.append(chamado)
         
@@ -614,10 +638,29 @@ def concluir_chamado():
             item_id = item.get('id')
 
         logger.info(f"✅ Atualizando chamado ID={item_id}")
-        
+
+        # Busca o histórico atual para acrescentar o novo evento sem apagar
+        # os anteriores (se a coluna 'Historico' ainda não existir, retorna
+        # vazio e seguimos normalmente).
+        historico_atual = []
+        try:
+            item_atual_response = requests.get(
+                f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items/{item_id}?$expand=fields",
+                headers=headers, timeout=10
+            )
+            if item_atual_response.status_code == 200:
+                historico_atual = parse_historico(item_atual_response.json().get('fields', {}).get('Historico'))
+        except Exception as e:
+            logger.warning(f"⚠️ Não foi possível ler histórico atual do chamado #{item_id}: {e}")
+
+        historico_atual.append(montar_entrada_historico("Chamado concluído"))
+
         update_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items/{item_id}"
-        update_payload = {"fields": {"Status": "Concluído"}}
-        
+        update_payload = {"fields": {
+            "Status": "Concluído",
+            "Historico": json.dumps(historico_atual, ensure_ascii=False)
+        }}
+
         update_response = requests.patch(update_url, headers=headers, json=update_payload, timeout=10)
         
         if update_response.status_code not in [200, 204]:
@@ -696,7 +739,8 @@ def criar_chamado_dashboard():
                 "Prioridade": prioridade,
                 "Status": "Aberto",
                 "Origem": "Dashboard",
-                "DataAbertura": data_abertura_iso
+                "DataAbertura": data_abertura_iso,
+                "Historico": json.dumps([montar_entrada_historico("Chamado aberto")], ensure_ascii=False)
             }
         }
 
@@ -764,6 +808,10 @@ def editar_chamado(item_id):
             campos['Prioridade'] = data['prioridade']
         if 'status' in data:
             campos['Status'] = data['status']
+        if 'responsavel' in data:
+            campos['Responsavel'] = data['responsavel']
+        if 'historico' in data and isinstance(data['historico'], list):
+            campos['Historico'] = json.dumps(data['historico'], ensure_ascii=False)
 
         if not campos:
             return jsonify({"status": "erro", "mensagem": "Nenhum campo para atualizar"}), 400
