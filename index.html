@@ -291,6 +291,28 @@
             color: #fff;
         }
 
+        /* Status inline colorido — mesma paleta dos badges */
+        .table-select.status-aberto {
+            background: rgba(100, 200, 255, 0.18);
+            border-color: #64c8ff;
+            color: #64c8ff;
+            font-weight: 700;
+        }
+
+        .table-select.status-andamento {
+            background: rgba(179, 136, 255, 0.18);
+            border-color: #b388ff;
+            color: #b388ff;
+            font-weight: 700;
+        }
+
+        .table-select.status-resolvido {
+            background: rgba(0, 200, 100, 0.18);
+            border-color: #00c864;
+            color: #00c864;
+            font-weight: 700;
+        }
+
         /* ===== BADGES ===== */
         .badge {
             display: inline-block;
@@ -761,13 +783,12 @@
                             <th data-coluna="responsavel" data-label="Responsável" onclick="ordenarPor('responsavel')" style="cursor:pointer;">Responsável</th>
                             <th data-coluna="setor" data-label="Setor" onclick="ordenarPor('setor')" style="cursor:pointer;">Setor</th>
                             <th data-coluna="abertura" data-label="Abertura" onclick="ordenarPor('abertura')" style="cursor:pointer;">Abertura</th>
-                            <th>Descrição</th>
                             <th data-coluna="sla" data-label="SLA" onclick="ordenarPor('sla')" style="cursor:pointer;">SLA</th>
                         </tr>
                     </thead>
                     <tbody id="tbody">
                         <tr>
-                            <td colspan="11" class="loading-spinner">
+                            <td colspan="10" class="loading-spinner">
                                 <div class="spinner"></div>
                                 Carregando chamados...
                             </td>
@@ -1262,37 +1283,6 @@
             }
         }
 
-        // Formata uma quantidade de horas (float) em texto curto tipo "2d 3h" / "5h" / "20m"
-        function formatarHoras(horas) {
-            horas = Math.abs(horas);
-            if (horas < 1) {
-                return `${Math.round(horas * 60)}m`;
-            } else if (horas < 24) {
-                return `${Math.floor(horas)}h`;
-            } else {
-                const dias = Math.floor(horas / 24);
-                const h = Math.floor(horas % 24);
-                return `${dias}d ${h}h`;
-            }
-        }
-
-        // Texto claro de prazo pra exibir direto na tabela, sem precisar clicar
-        function formatarPrazoSLA(c) {
-            if (c.status === 'Concluído') return '✅ Concluído';
-
-            const prazo = c.prazoSLA;
-            const decorridas = parseFloat(c.horasDecorridas);
-            if (typeof prazo !== 'number' || isNaN(decorridas)) {
-                return c.slaAtraso || '';
-            }
-
-            const restante = prazo - decorridas;
-            if (c.slaVencido) {
-                return `Atrasado há ${formatarHoras(restante)} (prazo era ${prazo}h)`;
-            }
-            return `Faltam ${formatarHoras(restante)} de ${prazo}h`;
-        }
-
         async function carregarDados() {
             try {
                 const response = await authFetch(`${BACKEND_URL}/api/chamados`);
@@ -1353,7 +1343,7 @@
                 console.error('❌ Erro:', erro);
                 ULTIMA_SINCRONIZACAO_OK = false;
                 document.getElementById('syncStatus').textContent = '🔴 Erro';
-                document.getElementById('tbody').innerHTML = `<tr><td colspan="11" class="empty-state">❌ Erro ao carregar dados</td></tr>`;
+                document.getElementById('tbody').innerHTML = `<tr><td colspan="10" class="empty-state">❌ Erro ao carregar dados</td></tr>`;
             }
         }
 
@@ -1705,7 +1695,7 @@
             atualizarBarraLote();
 
             if (CHAMADOS_FILTRADOS.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" class="empty-state">📭 Nenhum chamado encontrado</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="empty-state">📭 Nenhum chamado encontrado</td></tr>`;
                 const checkTodos = document.getElementById('checkTodos');
                 if (checkTodos) checkTodos.checked = false;
                 return;
@@ -1721,7 +1711,7 @@
                     <td>${c.solicitante}</td>
                     <td><span class="badge badge-${getBadgePrio(c.prioridade)}">${c.prioridade}</span></td>
                     <td onclick="event.stopPropagation()">
-                        <select class="table-select" onclick="event.stopPropagation()" onchange="mudarStatusInline('${c.id}', this.value, event)">
+                        <select class="table-select status-${getBadgeStatus(c.status)}" onclick="event.stopPropagation()" onchange="mudarStatusInline('${c.id}', this.value, event)">
                             <option value="Aberto" ${c.status === 'Aberto' ? 'selected' : ''}>Aberto</option>
                             <option value="Em andamento" ${(c.status === 'Em andamento' || c.status === 'Em Andamento') ? 'selected' : ''}>Em andamento</option>
                             <option value="Concluído" ${(c.status === 'Concluído' || c.status === 'Concluido') ? 'selected' : ''}>Concluído</option>
@@ -1733,11 +1723,9 @@
                         </select>
                     </td>
                     <td>${c.setorAtendimento || 'Geral'}</td>
-                    <td>${formatarData(c.data)}</td>
-                    <td><small>${limparHTML(c.descricao).substring(0, 40)}...</small></td>
+                    <td>${formatarDataCurta(c.data)}</td>
                     <td onclick="event.stopPropagation(); abrirSLA('${c.id}')" style="cursor:pointer;">
                         <span class="badge ${c.slaVencido ? 'sla-vencido' : 'sla-ok'}">${c.slaVencido ? '🔴 VENCIDO' : '✅ OK'}</span>
-                        <div style="font-size:11px; margin-top:4px; color:${c.slaVencido ? '#ff6b6b' : '#aaa'};">${formatarPrazoSLA(c)}</div>
                     </td>
                 </tr>
             `).join('');
@@ -2037,6 +2025,23 @@
                     day: '2-digit',
                     hour: '2-digit',
                     minute: '2-digit',
+                    timeZone: 'America/Sao_Paulo'
+                });
+                return formatter.format(dt);
+            } catch (e) {
+                console.warn('Erro ao formatar data:', d, e);
+                return d;
+            }
+        }
+        function formatarDataCurta(d) {
+            try {
+                if (!d) return '-';
+                let dt = new Date(d);
+                if (isNaN(dt.getTime())) return d;
+                const formatter = new Intl.DateTimeFormat('pt-BR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
                     timeZone: 'America/Sao_Paulo'
                 });
                 return formatter.format(dt);
