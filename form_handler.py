@@ -34,39 +34,84 @@ CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 TENANT_ID = os.getenv('TENANT_ID')
 
-# Senha do Dashboard — configurada como variável de ambiente no Render
+# Senhas do Dashboard — configuradas como variável de ambiente no Render
 # (Environment Variables), NUNCA no código-fonte / GitHub.
+# DASHBOARD_PASSWORD = senha da administradora (acesso completo, inclusive excluir chamados).
+# DASHBOARD_PASSWORD_ESTAGIARIO = senha opcional pra dar acesso a outra pessoa
+# (ex: estagiário) sem revelar a senha principal. Esse papel pode ver e editar
+# chamados, mas NÃO pode excluir. Se essa variável não existir/estiver vazia,
+# só a senha principal funciona (comportamento igual ao de antes).
 DASHBOARD_PASSWORD = os.getenv('DASHBOARD_PASSWORD')
+DASHBOARD_PASSWORD_ESTAGIARIO = os.getenv('DASHBOARD_PASSWORD_ESTAGIARIO')
 
 
-def _token_esperado():
-    """Deriva o token de sessão a partir da senha configurada no ambiente.
-    Assim, depois do login, o navegador guarda apenas esse token (não a
-    senha em texto puro), e o token muda sozinho se a senha for trocada."""
-    if not DASHBOARD_PASSWORD:
+def _tokens_por_papel():
+    """Mapeia token de sessão (sha256 da senha) -> papel ('admin' ou
+    'estagiario'), a partir das senhas configuradas no ambiente. Cada senha
+    configurada gera seu próprio token — assim o navegador nunca guarda a
+    senha em texto puro, só o token, e ele muda sozinho se a senha mudar."""
+    # Ordem importa: se por engano as duas senhas forem iguais (mesmo hash),
+    # a entrada 'admin' é inserida por último e vence — igual à ordem de
+    # checagem em login_dashboard() (admin checado primeiro). Assim a
+    # administradora nunca fica trancada fora de uma ação por causa de uma
+    # senha duplicada.
+    mapa = {}
+    if DASHBOARD_PASSWORD_ESTAGIARIO:
+        mapa[hashlib.sha256(DASHBOARD_PASSWORD_ESTAGIARIO.encode('utf-8')).hexdigest()] = 'estagiario'
+    if DASHBOARD_PASSWORD:
+        mapa[hashlib.sha256(DASHBOARD_PASSWORD.encode('utf-8')).hexdigest()] = 'admin'
+    return mapa
+
+
+def _papel_do_token(token_enviado, tokens_validos):
+    """Compara o token enviado com cada token válido usando comparação seira
+    (hmac.compare_digest), devolvendo o papel correspondente ou None."""
+    if not token_enviado:
         return None
-    return hashlib.sha256(DASHBOARD_PASSWORD.encode('utf-8')).hexdigest()
+    for token_valido, papel in tokens_validos.items():
+        if hmac.compare_digest(token_enviado, token_valido):
+            return papel
+    return None
 
 
 def requer_login(f):
     """Decorator: protege endpoints do Dashboard exigindo o header
-    'Authorization: Bearer <token>' obtido via POST /api/login."""
+    'Authorization: Bearer <token>' obtido via POST /api/login. Aceita
+    qualquer papel válido (admin ou estagiario) e disponibiliza o papel em
+    request.papel_usuario para quem precisar checar depois (ex: requer_admin)."""
     @wraps(f)
     def decorado(*args, **kwargs):
         if request.method == 'OPTIONS':
             return '', 200
 
-        token_valido = _token_esperado()
-        if not token_valido:
-            logger.error("❌ DASHBOARD_PASSWORD não configurada no ambiente (Render)")
+        tokens_validos = _tokens_por_papel()
+        if not tokens_validos:
+            logger.error("❌ Nenhuma senha do Dashboard configurada no ambiente (Render)")
             return jsonify({"status": "erro", "mensagem": "Login não configurado no servidor"}), 500
 
         auth_header = request.headers.get('Authorization', '')
         token_enviado = auth_header.replace('Bearer ', '').strip()
+        papel = _papel_do_token(token_enviado, tokens_validos)
 
-        if not token_enviado or not hmac.compare_digest(token_enviado, token_valido):
+        if not papel:
             return jsonify({"status": "erro", "mensagem": "Não autorizado. Faça login novamente."}), 401
 
+        request.papel_usuario = papel
+        return f(*args, **kwargs)
+    return decorado
+
+
+def requer_admin(f):
+    """Como requer_login, mas além de exigir login válido, exige o papel
+    'admin' — bloqueia o papel 'estagiario'. Usado em ações irreversíveis
+    como excluir chamado."""
+    @requer_login
+    @wraps(f)
+    def decorado(*args, **kwargs):
+        if request.method == 'OPTIONS':
+            return '', 200
+        if getattr(request, 'papel_usuario', None) != 'admin':
+            return jsonify({"status": "erro", "mensagem": "Ação disponível apenas para o administrador."}), 403
         return f(*args, **kwargs)
     return decorado
 
@@ -337,9 +382,10 @@ def preencher_setores_faltantes(items, headers, site_id, list_id):
 @app.route('/api/login', methods=['POST', 'OPTIONS'])
 def login_dashboard():
     """Login do Dashboard. Recebe {"senha": "..."} e devolve um token de
-    sessão (derivado da senha) para ser usado no header Authorization das
-    próximas chamadas. A senha correta fica só na variável de ambiente
-    DASHBOARD_PASSWORD do Render — nunca no código."""
+    sessão (derivado da senha) e o papel correspondente ('admin' ou
+    'estagiario'), pra usar no header Authorization das próximas chamadas.
+    As senhas corretas ficam só nas variáveis de ambiente DASHBOARD_PASSWORD
+    e DASHBOARD_PASSWORD_ESTAGIARIO do Render — nunca no código."""
     if request.method == 'OPTIONS':
         return '', 200
 
@@ -347,14 +393,21 @@ def login_dashboard():
         data = request.json or {}
         senha_enviada = str(data.get('senha', ''))
 
-        if not DASHBOARD_PASSWORD:
-            logger.error("❌ DASHBOARD_PASSWORD não configurada no ambiente (Render)")
+        if not DASHBOARD_PASSWORD and not DASHBOARD_PASSWORD_ESTAGIARIO:
+            logger.error("❌ Nenhuma senha do Dashboard configurada no ambiente (Render)")
             return jsonify({"status": "erro", "mensagem": "Login não configurado no servidor"}), 500
 
-        if not senha_enviada or not hmac.compare_digest(senha_enviada, DASHBOARD_PASSWORD):
+        papel = None
+        if senha_enviada and DASHBOARD_PASSWORD and hmac.compare_digest(senha_enviada, DASHBOARD_PASSWORD):
+            papel = 'admin'
+        elif senha_enviada and DASHBOARD_PASSWORD_ESTAGIARIO and hmac.compare_digest(senha_enviada, DASHBOARD_PASSWORD_ESTAGIARIO):
+            papel = 'estagiario'
+
+        if not papel:
             return jsonify({"status": "erro", "mensagem": "Senha incorreta"}), 401
 
-        return jsonify({"status": "sucesso", "token": _token_esperado()}), 200
+        token = hashlib.sha256(senha_enviada.encode('utf-8')).hexdigest()
+        return jsonify({"status": "sucesso", "token": token, "papel": papel}), 200
 
     except Exception as e:
         logger.error(f"❌ ERRO em login_dashboard: {e}")
@@ -834,7 +887,7 @@ def editar_chamado(item_id):
 
 
 @app.route('/api/deletar-chamado/<item_id>', methods=['DELETE', 'OPTIONS'])
-@requer_login
+@requer_admin
 def deletar_chamado(item_id):
     """Deleta um chamado pelo Dashboard (usa o ID direto do SharePoint)"""
     if request.method == 'OPTIONS':

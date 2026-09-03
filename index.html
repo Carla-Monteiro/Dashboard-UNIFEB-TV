@@ -1123,6 +1123,7 @@
         // e é validado pelo backend a cada chamada às rotas protegidas.
         // ============================================================
         let DASHBOARD_TOKEN = sessionStorage.getItem('unifeb_dashboard_token') || null;
+        let PAPEL_USUARIO = sessionStorage.getItem('unifeb_dashboard_papel') || null;
 
         function mostrarLogin(mensagemErro) {
             document.getElementById('loginOverlay').style.display = 'flex';
@@ -1148,7 +1149,9 @@
 
                 if (response.ok && resultado.token) {
                     DASHBOARD_TOKEN = resultado.token;
+                    PAPEL_USUARIO = resultado.papel || 'admin';
                     sessionStorage.setItem('unifeb_dashboard_token', DASHBOARD_TOKEN);
+                    sessionStorage.setItem('unifeb_dashboard_papel', PAPEL_USUARIO);
                     esconderLogin();
                     iniciarDashboard();
                 } else {
@@ -1161,7 +1164,9 @@
 
         function sairDashboard() {
             sessionStorage.removeItem('unifeb_dashboard_token');
+            sessionStorage.removeItem('unifeb_dashboard_papel');
             DASHBOARD_TOKEN = null;
+            PAPEL_USUARIO = null;
             location.reload();
         }
 
@@ -2097,7 +2102,9 @@
                 `).join('')
                 : '<div style="color:#888; font-size:12px;">Sem eventos registrados.</div>';
 
-            document.getElementById('btnDeletar').style.display = 'block';
+            // Excluir chamado é uma ação só do administrador — o papel
+            // "estagiario" (senha separada, ver fazerLogin) não vê esse botão.
+            document.getElementById('btnDeletar').style.display = (PAPEL_USUARIO === 'estagiario') ? 'none' : 'block';
             document.getElementById('btnSubmit').textContent = 'Atualizar Chamado';
             document.getElementById('modalFormulario').classList.add('active');
         }
