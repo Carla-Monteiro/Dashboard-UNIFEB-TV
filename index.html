@@ -26,15 +26,24 @@
         }
 
         /* ===== LOGO GRANDE E NÍTIDA ===== */
+        /* position: sticky mantém essa faixa (logo + título) sempre visível
+           no topo, mesmo rolando a tela pra ver chamados mais embaixo — pedido
+           específico pra TV, que fica com a lista comprida na tela. O fundo
+           precisa ser praticamente opaco pra esconder as linhas da tabela
+           que passam por baixo dela durante a rolagem. */
         .logo-banner {
             display: flex;
             align-items: center;
             gap: 30px;
             margin-bottom: 30px;
             padding: 20px 30px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(10, 22, 40, 0.97);
             border: 2px solid rgba(255, 165, 0, 0.3);
             border-radius: 14px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
         }
 
         .logo-big {
