@@ -432,6 +432,31 @@ def montar_entrada_historico(texto):
     return {"texto": texto, "data": datetime.now(tz=tz_sp).isoformat()}
 
 
+def limitar_historico(lista, maximo=20):
+    """Mantém só os N eventos mais recentes do histórico antes de gravar no
+    SharePoint. Evita que o campo cresça sem limite pra sempre — o que mais
+    cedo ou mais tarde estoura o tamanho máximo da coluna (e estoura BEM
+    cedo, com poucos eventos, se a coluna 'Historico' tiver sido criada como
+    'Uma linha de texto', que tem limite de só 255 caracteres, em vez de
+    'Várias linhas de texto')."""
+    if not isinstance(lista, list):
+        return []
+    return lista[-maximo:]
+
+
+def extrair_erro_graph(response):
+    """Tenta extrair uma mensagem de erro legível da resposta da Microsoft
+    Graph API (SharePoint), pra devolver pro Dashboard um motivo mais claro
+    do que só "Erro ao salvar" — por exemplo, um campo que estourou o
+    tamanho máximo da coluna. Se não conseguir entender a resposta, devolve
+    string vazia (o chamador mantém a mensagem genérica)."""
+    try:
+        corpo = response.json()
+        return (corpo.get('error') or {}).get('message', '') or ''
+    except Exception:
+        return ''
+
+
 def extrair_id_numerico(numero):
     """Extrai o ID numérico do SharePoint a partir de um número de chamado
     no formato 'CH-0123' (ou já numérico). Mesma lógica usada no rastreador."""
@@ -539,6 +564,11 @@ def obter_chamados():
                 # devolve o padrão — nada quebra até a coluna ser criada.
                 'responsavel': fields.get('Responsavel', ''),
                 'historico': parse_historico(fields.get('Historico')),
+                # 'Origem' identifica como o chamado foi aberto ('QR Code',
+                # 'Dashboard', ou vazio pra chamados que chegam por e-mail via
+                # automação — ver comentário acima sobre setor preenchido
+                # automaticamente pra esses mesmos chamados).
+                'origem': fields.get('Origem', ''),
             }
             chamados.append(chamado)
         
@@ -711,7 +741,7 @@ def concluir_chamado():
         update_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items/{item_id}"
         update_payload = {"fields": {
             "Status": "Concluído",
-            "Historico": json.dumps(historico_atual, ensure_ascii=False)
+            "Historico": json.dumps(limitar_historico(historico_atual), ensure_ascii=False)
         }}
 
         update_response = requests.patch(update_url, headers=headers, json=update_payload, timeout=10)
@@ -801,7 +831,9 @@ def criar_chamado_dashboard():
 
         if response.status_code not in [200, 201]:
             logger.error(f"❌ Erro ao criar: {response.status_code} - {response.text}")
-            return jsonify({"status": "erro", "mensagem": "Erro ao salvar no SharePoint"}), 400
+            detalhe = extrair_erro_graph(response)
+            mensagem = "Erro ao salvar no SharePoint" + (f": {detalhe}" if detalhe else "")
+            return jsonify({"status": "erro", "mensagem": mensagem}), 400
 
         item_criado = response.json()
         novo_id = item_criado.get('id', '')
@@ -864,7 +896,7 @@ def editar_chamado(item_id):
         if 'responsavel' in data:
             campos['Responsavel'] = data['responsavel']
         if 'historico' in data and isinstance(data['historico'], list):
-            campos['Historico'] = json.dumps(data['historico'], ensure_ascii=False)
+            campos['Historico'] = json.dumps(limitar_historico(data['historico']), ensure_ascii=False)
 
         if not campos:
             return jsonify({"status": "erro", "mensagem": "Nenhum campo para atualizar"}), 400
@@ -876,7 +908,9 @@ def editar_chamado(item_id):
 
         if update_response.status_code not in [200, 204]:
             logger.error(f"❌ Erro ao atualizar: {update_response.status_code} - {update_response.text}")
-            return jsonify({"status": "erro", "mensagem": "Erro ao atualizar no SharePoint"}), 400
+            detalhe = extrair_erro_graph(update_response)
+            mensagem = "Erro ao atualizar no SharePoint" + (f": {detalhe}" if detalhe else "")
+            return jsonify({"status": "erro", "mensagem": mensagem}), 400
 
         logger.info(f"✅ Chamado ID={item_id} atualizado com sucesso")
         return jsonify({"status": "sucesso", "mensagem": "✅ Chamado atualizado com sucesso!"}), 200
@@ -910,7 +944,9 @@ def deletar_chamado(item_id):
 
         if delete_response.status_code not in [200, 204]:
             logger.error(f"❌ Erro ao deletar: {delete_response.status_code} - {delete_response.text}")
-            return jsonify({"status": "erro", "mensagem": "Erro ao deletar no SharePoint"}), 400
+            detalhe = extrair_erro_graph(delete_response)
+            mensagem = "Erro ao deletar no SharePoint" + (f": {detalhe}" if detalhe else "")
+            return jsonify({"status": "erro", "mensagem": mensagem}), 400
 
         logger.info(f"✅ Chamado ID={item_id} deletado com sucesso")
         return jsonify({"status": "sucesso", "mensagem": "✅ Chamado deletado com sucesso!"}), 200

@@ -698,6 +698,7 @@
                 <option value="ti">💻 TI</option>
                 <option value="naem">📽️ NAEM</option>
                 <option value="manutencao">🔧 Manutenção</option>
+                <option value="viaemail">📧 Chamados via E-mail</option>
                 <option value="graficos">📊 Gráficos</option>
                 <option value="satisfacao">⭐ Satisfação</option>
             </select>
@@ -971,6 +972,27 @@
             </div>
         </div>
 
+        <!-- ABA: CHAMADOS VIA E-MAIL -->
+        <div id="viaemail" class="tab-content">
+            <div class="table-wrapper">
+                <table id="tabelaEmail">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Status</th>
+                            <th>Prioridade</th>
+                            <th>Título</th>
+                            <th>Solicitante</th>
+                            <th>Data</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="emailBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- SLA MODAL -->
         <div id="slaModal" class="sla-modal" onclick="if(event.target === this) fecharSLA()">
             <div class="sla-card-modal">
@@ -1080,11 +1102,15 @@
                     </div>
                     <div id="statusEditar" style="display: none;">
                         <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Status</label>
-                        <select id="status" style="width: 100%; padding: 12px 14px; background: #1a2f4d; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
+                        <select id="status" onchange="atualizarCampoResolucao()" style="width: 100%; padding: 12px 14px; background: #1a2f4d; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit;">
                             <option value="Aberto" style="background: #1a2f4d; color: #fff;">Aberto</option>
                             <option value="Em andamento" style="background: #1a2f4d; color: #fff;">Em andamento</option>
                             <option value="Concluído" style="background: #1a2f4d; color: #fff;">Concluído</option>
                         </select>
+                    </div>
+                    <div id="resolucaoEditar" style="display: none;">
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Como foi resolvido? *</label>
+                        <textarea id="resolucaoTexto" placeholder="Descreva o que foi feito para solucionar o problema" style="width: 100%; padding: 12px 14px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; font-size: 13px; font-family: inherit; resize: vertical; min-height: 80px;"></textarea>
                     </div>
                     <div id="responsavelEditar" style="display: none;">
                         <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px; text-transform: uppercase;">Responsável</label>
@@ -1311,6 +1337,7 @@
                         bloco: c.bloco || '',
                         sala: c.sala || '',
                         categoria: c.categoria || '',
+                        origem: c.origem || '',
                         responsavel: c.responsavel || '',
                         historico: (Array.isArray(c.historico) && c.historico.length > 0)
                             ? c.historico
@@ -1368,6 +1395,8 @@
                 renderizarNAEM();
             } else if (abaName === 'ti') {
                 renderizarTI();
+            } else if (abaName === 'viaemail') {
+                renderizarEmail();
             } else if (abaName === 'satisfacao') {
                 setTimeout(() => carregarESatisfacao(), 200);
             }
@@ -1439,12 +1468,39 @@
             `).join('');
         }
 
+        // Chamados que chegam pela automação de e-mail não têm "Origem"
+        // marcada no SharePoint (só "QR Code" e "Dashboard" são marcados
+        // explicitamente) — então tudo que não for uma dessas duas cai aqui.
+        function renderizarEmail() {
+            const tbody = document.getElementById('emailBody');
+            const chamadosEmail = CHAMADOS.filter(c => c.origem !== 'QR Code' && c.origem !== 'Dashboard');
+
+            if (chamadosEmail.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="empty-state">📭 Nenhum chamado via e-mail</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = chamadosEmail.map(c => `
+                <tr onclick="abrirFormularioEditar('${c.id}')">
+                    <td><strong>#${c.id}</strong></td>
+                    <td><span class="badge badge-${getBadgeStatus(c.status)}">${c.status}</span></td>
+                    <td><span class="badge badge-${getBadgePrio(c.prioridade)}">${c.prioridade}</span></td>
+                    <td>${c.titulo}</td>
+                    <td>${c.solicitante}</td>
+                    <td>${formatarData(c.data)}</td>
+                    <td><button class="btn" onclick="event.stopPropagation(); abrirFormularioEditar('${c.id}')" style="padding: 5px 10px; font-size: 11px;">Editar</button></td>
+                </tr>
+            `).join('');
+        }
+
         // Trata "Em Andamento"/"Concluido" (sem acento) como equivalentes às
         // grafias canônicas usadas nos filtros/selects, pra evitar que um
         // chamado "suma" da tabela por causa da variação de grafia do status.
+        function canonStatus(s) {
+            return (s === 'Concluido') ? 'Concluído' : (s === 'Em Andamento') ? 'Em andamento' : s;
+        }
         function statusEquivalente(a, b) {
-            const canon = s => (s === 'Concluido') ? 'Concluído' : (s === 'Em Andamento') ? 'Em andamento' : s;
-            return canon(a) === canon(b);
+            return canonStatus(a) === canonStatus(b);
         }
 
         function filtrar() {
@@ -1547,8 +1603,22 @@
             if (event) event.stopPropagation();
             const chamado = CHAMADOS.find(c => c.id === id);
             if (chamado && chamado.status === novoStatus) return;
+
+            let textoEvento = `Status alterado para "${novoStatus}"`;
+            if (novoStatus === 'Concluído') {
+                const resolucao = prompt('Como foi resolvido o chamado? (fica registrado no histórico)');
+                if (resolucao === null) {
+                    // Cancelou — não muda o status, volta o dropdown pro valor atual
+                    // (normalizado, pra não deixar o <select> sem opção correspondente
+                    // caso o dado tenha uma grafia antiga tipo "Concluido"/"Em Andamento").
+                    if (event && event.target) event.target.value = chamado ? canonStatus(chamado.status) : novoStatus;
+                    return;
+                }
+                textoEvento = resolucao.trim() ? `Chamado concluído — Solução: ${resolucao.trim()}` : 'Chamado concluído';
+            }
+
             const historicoAtual = (chamado && Array.isArray(chamado.historico)) ? chamado.historico : [];
-            const novoHistorico = historicoAtual.concat([novaEntradaHistorico(`Status alterado para "${novoStatus}"`)]);
+            const novoHistorico = historicoAtual.concat([novaEntradaHistorico(textoEvento)]);
             try {
                 const response = await authFetch(`${BACKEND_URL}/api/editar-chamado/${id}`, {
                     method: 'PATCH',
@@ -1627,13 +1697,21 @@
         async function aplicarStatusLote(novoStatus) {
             const ids = Array.from(SELECIONADOS);
             if (ids.length === 0) return;
-            if (!confirm(`Alterar o status de ${ids.length} chamado(s) para "${novoStatus}"?`)) return;
+
+            let textoEvento = `Status alterado em lote para "${novoStatus}"`;
+            if (novoStatus === 'Concluído') {
+                const resolucao = prompt(`Como foi resolvido${ids.length > 1 ? 'm' : ''} esse${ids.length > 1 ? 's' : ''} ${ids.length} chamado${ids.length > 1 ? 's' : ''}? (fica registrado no histórico de cada um)`);
+                if (resolucao === null) return; // Cancelou — não altera nada.
+                textoEvento = resolucao.trim() ? `Chamado concluído em lote — Solução: ${resolucao.trim()}` : 'Chamado concluído em lote';
+            } else {
+                if (!confirm(`Alterar o status de ${ids.length} chamado(s) para "${novoStatus}"?`)) return;
+            }
 
             let sucesso = 0, erro = 0;
             for (const id of ids) {
                 const chamado = CHAMADOS.find(c => c.id === id);
                 const historicoAtual = (chamado && Array.isArray(chamado.historico)) ? chamado.historico : [];
-                const novoHistorico = historicoAtual.concat([novaEntradaHistorico(`Status alterado em lote para "${novoStatus}"`)]);
+                const novoHistorico = historicoAtual.concat([novaEntradaHistorico(textoEvento)]);
                 try {
                     const response = await authFetch(`${BACKEND_URL}/api/editar-chamado/${id}`, {
                         method: 'PATCH',
@@ -2062,14 +2140,30 @@
         function imprimir() { window.print(); }
         function novoChamado() { abrirFormularioCriar(); }
 
+        // Só exige "Como foi resolvido?" quando o status está MUDANDO pra
+        // "Concluído" — reabrir um chamado já concluído (pra corrigir outro
+        // detalhe, por exemplo) não força escrever a solução de novo.
+        function atualizarCampoResolucao() {
+            const statusSelecionado = document.getElementById('status').value;
+            const chamadoOriginal = EDICAO_ID ? CHAMADOS.find(c => c.id === EDICAO_ID) : null;
+            const grupo = document.getElementById('resolucaoEditar');
+            const campo = document.getElementById('resolucaoTexto');
+            const pedirResolucao = statusSelecionado === 'Concluído' && (!chamadoOriginal || chamadoOriginal.status !== 'Concluído');
+            grupo.style.display = pedirResolucao ? 'block' : 'none';
+            campo.required = pedirResolucao;
+            if (!pedirResolucao) campo.value = '';
+        }
+
         function abrirFormularioCriar() {
             EDICAO_ID = null;
             document.getElementById('modalTitulo').textContent = '➕ Novo Chamado';
             document.getElementById('formChamado').reset();
+            document.getElementById('email').required = true;
             document.getElementById('statusEditar').style.display = 'none';
             document.getElementById('responsavelEditar').style.display = 'none';
             document.getElementById('historicoSection').style.display = 'none';
             document.getElementById('btnDeletar').style.display = 'none';
+            atualizarCampoResolucao();
             document.getElementById('btnSubmit').textContent = 'Criar Chamado';
             document.getElementById('modalFormulario').classList.add('active');
         }
@@ -2083,6 +2177,11 @@
             document.getElementById('titulo').value = chamado.titulo;
             document.getElementById('descricao').value = limparHTML(chamado.descricao);
             document.getElementById('solicitante').value = chamado.solicitante;
+            document.getElementById('email').value = chamado.email || '';
+            // Editando um chamado já existente, o e-mail não deve travar o
+            // salvamento — alguns chamados antigos podem não ter e-mail
+            // registrado. Só é obrigatório ao CRIAR um chamado novo.
+            document.getElementById('email').required = false;
             document.getElementById('setor').value = chamado.setorAtendimento || '';
             document.getElementById('prioridade').value = chamado.prioridade;
             document.getElementById('status').value = chamado.status;
@@ -2090,6 +2189,7 @@
             document.getElementById('statusEditar').style.display = 'block';
             document.getElementById('responsavelEditar').style.display = 'block';
             document.getElementById('historicoSection').style.display = 'block';
+            atualizarCampoResolucao();
 
             const historicoLista = document.getElementById('historicoLista');
             const hist = Array.isArray(chamado.historico) ? chamado.historico : [];
@@ -2134,7 +2234,12 @@
                 const historicoAtual = (chamadoOriginal && Array.isArray(chamadoOriginal.historico)) ? chamadoOriginal.historico : [];
                 const eventos = [];
                 if (chamadoOriginal && chamadoOriginal.status !== dados.status) {
-                    eventos.push(novaEntradaHistorico(`Status alterado para "${dados.status}"`));
+                    if (dados.status === 'Concluído') {
+                        const resolucao = document.getElementById('resolucaoTexto').value.trim();
+                        eventos.push(novaEntradaHistorico(resolucao ? `Chamado concluído — Solução: ${resolucao}` : 'Chamado concluído'));
+                    } else {
+                        eventos.push(novaEntradaHistorico(`Status alterado para "${dados.status}"`));
+                    }
                 }
                 if (chamadoOriginal && (chamadoOriginal.responsavel || '') !== dados.responsavel) {
                     eventos.push(novaEntradaHistorico(dados.responsavel ? `Responsável definido: ${dados.responsavel}` : 'Responsável removido'));
@@ -2158,7 +2263,14 @@
                     } else {
                         setTimeout(carregarDados, 2000);
                     }
-                } else alert('❌ Erro ao salvar');
+                } else {
+                    let msg = '❌ Erro ao salvar';
+                    try {
+                        const resultado = await response.json();
+                        if (resultado && resultado.mensagem) msg += ': ' + resultado.mensagem;
+                    } catch (e) { /* resposta sem JSON — mantém a mensagem genérica */ }
+                    alert(msg);
+                }
             } catch (error) {
                 alert('❌ Erro: ' + error.message);
             }
@@ -2172,7 +2284,14 @@
                     alert('✅ Deletado!');
                     fecharFormulario();
                     setTimeout(carregarDados, 1000);
-                } else alert('❌ Erro');
+                } else {
+                    let msg = '❌ Erro';
+                    try {
+                        const resultado = await response.json();
+                        if (resultado && resultado.mensagem) msg += ': ' + resultado.mensagem;
+                    } catch (e) { /* resposta sem JSON — mantém a mensagem genérica */ }
+                    alert(msg);
+                }
             } catch (error) {
                 alert('❌ Erro: ' + error.message);
             }
