@@ -391,8 +391,8 @@
         <div class="sidebar">
             <div class="sidebar-section">
                 <div class="sidebar-title">📂 Categorias</div>
-                <div class="sidebar-item active" onclick="filtrarPorCategoria(this, 'email')">📧 E-mail</div>
-                <div class="sidebar-item" onclick="filtrarPorCategoria(this, 'detalhado')">📋 Detalhados</div>
+                <div class="sidebar-item active" onclick="filtrarPorCategoria(this, 'detalhado')">📋 Detalhados</div>
+                <div class="sidebar-item" onclick="filtrarPorCategoria(this, 'email')">📧 E-mail</div>
                 <div class="sidebar-item" onclick="filtrarPorCategoria(this, 'ti')">💻 TI</div>
                 <div class="sidebar-item" onclick="filtrarPorCategoria(this, 'naem')">🏢 NAEM</div>
                 <div class="sidebar-item" onclick="filtrarPorCategoria(this, 'manutencao')">🔧 Manutenção</div>
@@ -432,7 +432,7 @@
             </div>
 
             <div id="pagina-chamados" class="page-content">
-                <div class="categoria-titulo" id="categoriaTitulo">📧 E-mail</div>
+                <div class="categoria-titulo" id="categoriaTitulo">📋 Detalhados</div>
                 <div class="table-container">
                     <table>
                         <thead><tr><th>ID</th><th>Título</th><th>Solicitante</th><th>Status</th><th>Prioridade</th><th>Data</th></tr></thead>
@@ -492,23 +492,7 @@
 
         const API_BASE_URL = 'https://unifeb-backend.onrender.com/api';
         let dadosGlobais = { ativos: [], concluidos: [] };
-        let categoriaAtual = 'email';
-
-        const categoriasMap = {
-            'email': 'Email',
-            'detalhado': 'Detalhado',
-            'ti': 'TI',
-            'naem': 'NAEM',
-            'manutencao': 'Manutenção'
-        };
-
-        const categoriasNomes = {
-            'email': '📧 E-mail',
-            'detalhado': '📋 Detalhados',
-            'ti': '💻 TI',
-            'naem': '🏢 NAEM',
-            'manutencao': '🔧 Manutenção'
-        };
+        let categoriaAtual = 'detalhado';
 
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -529,11 +513,11 @@
         async function carregarTodosDados() {
             try {
                 console.log('🚀 Iniciando carregamento de dados...');
-
+                
                 const ativosResponse = await fetch(`${API_BASE_URL}/chamados/ativos`);
                 console.log('📥 Resposta Ativos:', ativosResponse.status);
                 const ativos = await ativosResponse.json();
-
+                
                 const concluidosResponse = await fetch(`${API_BASE_URL}/chamados/concluidos`);
                 console.log('📥 Resposta Concluídos:', concluidosResponse.status);
                 const concluidos = await concluidosResponse.json();
@@ -541,10 +525,13 @@
                 dadosGlobais.ativos = ativos || [];
                 dadosGlobais.concluidos = concluidos || [];
 
+                // 🎯 AQUI MOSTRA TODAS AS CATEGORIAS ÚNICAS
+                const categoriasUnicas = [...new Set(dadosGlobais.ativos.map(c => c.categoria).filter(Boolean))];
+                console.log('📂 CATEGORIAS NO API:', categoriasUnicas);
+
                 console.log('✅ Dados Carregados:', {
                     ativos: dadosGlobais.ativos.length,
-                    concluidos: dadosGlobais.concluidos.length,
-                    amostraAtivos: dadosGlobais.ativos.slice(0, 3)
+                    concluidos: dadosGlobais.concluidos.length
                 });
 
                 document.getElementById('stat-abertos').textContent = dadosGlobais.ativos.filter(c => c.status === 'Aberto').length;
@@ -557,44 +544,27 @@
                 renderizarTabelaSatisfacao();
                 criarGraficos();
             } catch (error) {
-                console.error('❌ ERRO CRÍTICO:', error);
-                console.log('⚠️ Usando dados de teste...');
-
-                // Dados de teste para demonstração
-                dadosGlobais.ativos = [
-                    { id: 1, titulo: 'Email não chega', solicitante: 'João', categoria: 'Email', status: 'Aberto', prioridade: 'Alta', data_criacao: '2026-09-28' },
-                    { id: 2, titulo: 'Problema TI', solicitante: 'Maria', categoria: 'TI', status: 'Em Andamento', prioridade: 'Média', data_criacao: '2026-09-27' },
-                    { id: 3, titulo: 'Manutenção urgente', solicitante: 'Pedro', categoria: 'Manutenção', status: 'Aberto', prioridade: 'Alta', data_criacao: '2026-09-26' }
-                ];
-
-                dadosGlobais.concluidos = [
-                    { id: 101, titulo: 'Problema resolvido', solicitante: 'Ana', categoria: 'Email', data_conclusao: '2026-09-25' }
-                ];
-
-                document.getElementById('stat-abertos').textContent = 2;
-                document.getElementById('stat-andamento').textContent = 1;
-                document.getElementById('stat-concluidos').textContent = 1;
-                document.getElementById('stat-vencidos').textContent = 0;
-
-                renderizarTabelaChamados();
-                renderizarTabelaConcluidos();
-                renderizarTabelaSatisfacao();
-                criarGraficos();
+                console.error('❌ ERRO:', error);
             }
         }
 
         function renderizarTabelaChamados() {
-            const categoriaBusca = categoriasMap[categoriaAtual];
-            console.log('🔍 Filtrando por:', categoriaBusca, 'Ativos disponíveis:', dadosGlobais.ativos.length);
-
-            const filtrados = dadosGlobais.ativos.filter(c => {
-                const temCategoria = c.categoria && c.categoria.toLowerCase().includes(categoriaBusca.toLowerCase());
-                console.log(`  - ID ${c.id}: categoria="${c.categoria}" matches="${temCategoria}"`);
-                return temCategoria;
-            });
+            let filtrados = dadosGlobais.ativos;
+            
+            if (categoriaAtual !== 'detalhado') {
+                // Filtra por categoria específica
+                const categoriasMap = {
+                    'email': 'email',
+                    'ti': 'ti',
+                    'naem': 'naem',
+                    'manutencao': 'manutenção'
+                };
+                const busca = categoriasMap[categoriaAtual];
+                filtrados = dadosGlobais.ativos.filter(c => c.categoria && c.categoria.toLowerCase().includes(busca.toLowerCase()));
+            }
             
             document.getElementById('tabelaChamados').innerHTML = filtrados.length === 0 
-                ? '<tr><td colspan="6" class="loading">Sem chamados nesta categoria</td></tr>'
+                ? '<tr><td colspan="6" class="loading">Sem chamados</td></tr>'
                 : filtrados.map(c => `<tr><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td><span class="badge badge-${c.status.toLowerCase().replace(' ','-')}">${c.status}</span></td><td><span class="badge badge-${c.prioridade.toLowerCase()}">${c.prioridade}</span></td><td>${new Date(c.data_criacao).toLocaleDateString('pt-BR')}</td></tr>`).join('');
         }
 
@@ -655,10 +625,14 @@
                 });
             }
 
-            const categorias = { 'Email': 0, 'Detalhado': 0, 'TI': 0, 'NAEM': 0, 'Manutenção': 0 };
-            dadosGlobais.ativos.forEach(c => { if (c.categoria && categorias.hasOwnProperty(c.categoria)) categorias[c.categoria]++; });
-
             if (document.getElementById('chartCategory')) {
+                const categorias = {};
+                dadosGlobais.ativos.forEach(c => { 
+                    if (c.categoria) {
+                        categorias[c.categoria] = (categorias[c.categoria] || 0) + 1;
+                    }
+                });
+
                 new Chart(document.getElementById('chartCategory').getContext('2d'), {
                     type: 'bar',
                     data: {
@@ -701,12 +675,21 @@
             element.classList.add('active');
             
             categoriaAtual = categoria;
-            document.getElementById('categoriaTitulo').textContent = categoriasNomes[categoria];
+            
+            const titulos = {
+                'detalhado': '📋 Detalhados',
+                'email': '📧 E-mail',
+                'ti': '💻 TI',
+                'naem': '🏢 NAEM',
+                'manutencao': '🔧 Manutenção'
+            };
+            
+            document.getElementById('categoriaTitulo').textContent = titulos[categoria];
             renderizarTabelaChamados();
             abrirPagina('chamados');
         }
 
-        console.log('✅ Dashboard Final Carregado!');
+        console.log('✅ Dashboard Carregado!');
     </script>
 </body>
 </html>
