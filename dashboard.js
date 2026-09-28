@@ -227,6 +227,36 @@ function selectCategory(element) {
     item.classList.remove('active');
   });
   element.classList.add('active');
+
+  // Obter categoria selecionada
+  const categoriaTexto = element.querySelector('span:last-child').textContent.trim();
+  console.log('📂 Categoria selecionada:', categoriaTexto);
+
+  // Mapear categorias para valores do SharePoint
+  const categoriasMap = {
+    'Chamados via E-mail': 'Email',
+    'Chamados Detalhados': 'Detalhado',
+    'TI': 'TI',
+    'NAEM': 'NAEM',
+    'Manutenção': 'Manutenção',
+    'Gráficos': 'Gráficos',
+    'Satisfação': 'Satisfação'
+  };
+
+  const categoriaFiltro = categoriasMap[categoriaTexto];
+
+  // Filtrar chamados ativos
+  if (categoriaFiltro) {
+    chamadosAtivosFiltrados = chamadosAtivos.filter(c =>
+      c.categoria && c.categoria.toLowerCase().includes(categoriaFiltro.toLowerCase())
+    );
+  } else {
+    chamadosAtivosFiltrados = chamadosAtivos;
+  }
+
+  // Re-renderizar tabela
+  renderizarTabelaAtivos();
+  console.log(`✅ Filtrado: ${chamadosAtivosFiltrados.length} chamados`);
 }
 
 /**
