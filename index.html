@@ -209,7 +209,8 @@
             text-transform: uppercase;
         }
         td { padding: 10px 15px; border-bottom: 1px solid rgba(255, 165, 0, 0.1); font-size: 12px; }
-        tr:hover { background: rgba(255, 165, 0, 0.05); }
+        tbody tr { cursor: pointer; transition: background 0.2s ease; }
+        tbody tr:hover { background: rgba(255, 165, 0, 0.1); }
 
         .badge {
             display: inline-block;
@@ -239,6 +240,63 @@
         }
         .chart-title { font-size: 14px; font-weight: 600; color: var(--gold); margin-bottom: 15px; text-transform: uppercase; }
         .chart-wrapper { position: relative; height: 300px; }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        .modal-overlay.hidden { display: none; }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-gold);
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: var(--red);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px; height: 30px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-close:hover { opacity: 0.9; }
+
+        .modal-header {
+            border-bottom: 2px solid var(--border-gold);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .modal-title { font-size: 22px; font-weight: 700; color: var(--gold); margin-bottom: 5px; }
+        .modal-subtitle { font-size: 12px; color: var(--text-secondary); }
+
+        .modal-field {
+            margin-bottom: 15px;
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 15px;
+        }
+        .modal-label { font-weight: 600; color: var(--gold); font-size: 12px; text-transform: uppercase; }
+        .modal-value { color: var(--text-primary); }
     </style>
 </head>
 <body>
@@ -368,6 +426,45 @@
         </div>
     </div>
 
+    <!-- MODAL DE DETALHES -->
+    <div class="modal-overlay hidden" id="modalOverlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="fecharModal()">✕</button>
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitulo">Detalhes do Chamado</div>
+                <div class="modal-subtitle" id="modalSubtitulo">ID #1</div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-label">Solicitante</div>
+                <div class="modal-value" id="modalSolicitante">-</div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-label">Email</div>
+                <div class="modal-value" id="modalEmail">-</div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-label">Status</div>
+                <div class="modal-value" id="modalStatus">-</div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-label">Prioridade</div>
+                <div class="modal-value" id="modalPrioridade">-</div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-label">Categoria</div>
+                <div class="modal-value" id="modalCategoria">-</div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-label">Data</div>
+                <div class="modal-value" id="modalData">-</div>
+            </div>
+            <div class="modal-field">
+                <div class="modal-label">Descrição</div>
+                <div class="modal-value" id="modalDescricao" style="white-space: pre-wrap;">-</div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const senhas = {
             'Daniel2304@': { nome: 'Carla (Admin)', role: 'admin' },
@@ -395,7 +492,7 @@
 
         async function carregarTodosDados() {
             try {
-                console.log('🚀 Iniciando carregamento...');
+                console.log('🚀 Carregando dados...');
                 const [ativos, concluidos] = await Promise.all([
                     fetch(`${API_BASE_URL}/chamados/ativos`).then(r => r.json()),
                     fetch(`${API_BASE_URL}/chamados/concluidos`).then(r => r.json())
@@ -405,7 +502,7 @@
                 dadosGlobais.concluidos = concluidos || [];
 
                 const categoriasUnicas = [...new Set(dadosGlobais.ativos.map(c => c.categoria).filter(Boolean))];
-                console.log('📂 CATEGORIAS NO API:', categoriasUnicas);
+                console.log('📂 CATEGORIAS:', categoriasUnicas);
 
                 document.getElementById('stat-abertos').textContent = dadosGlobais.ativos.filter(c => c.status === 'Aberto').length;
                 document.getElementById('stat-andamento').textContent = dadosGlobais.ativos.filter(c => c.status === 'Em Andamento').length;
@@ -424,19 +521,12 @@
         function obterCategoriaGrupo(categoria) {
             if (!categoria) return 'email';
             const cat = categoria.toLowerCase();
-
-            // Manutenção
             if (cat.includes('energia') || cat.includes('ar condicionado') || cat.includes('fechadura') ||
                 cat.includes('porta') || cat.includes('janela') || cat.includes('interruptores')) return 'manutencao';
-
-            // NAEM
             if (cat.includes('projetor') || cat.includes('controle') || cat.includes('cabo') ||
                 cat.includes('adaptador') || cat.includes('hdmi') || cat.includes('som')) return 'naem';
-
-            // TI
             if (cat.includes('ti') || cat.includes('internet') || cat.includes('computador') ||
                 cat.includes('teclado') || cat.includes('mouse') || cat.includes('telefone')) return 'ti';
-
             return 'email';
         }
 
@@ -447,13 +537,13 @@
             }
             document.getElementById('tabelaChamados').innerHTML = filtrados.length === 0
                 ? '<tr><td colspan="6" class="loading">Sem chamados</td></tr>'
-                : filtrados.map(c => `<tr><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td><span class="badge badge-${c.status.toLowerCase().replace(' ','-')}">${c.status}</span></td><td><span class="badge badge-${c.prioridade.toLowerCase()}">${c.prioridade}</span></td><td>${new Date(c.data_criacao).toLocaleDateString('pt-BR')}</td></tr>`).join('');
+                : filtrados.map(c => `<tr onclick="abrirModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td><span class="badge badge-${c.status.toLowerCase().replace(' ','-')}">${c.status}</span></td><td><span class="badge badge-${c.prioridade.toLowerCase()}">${c.prioridade}</span></td><td>${c.data_criacao || '-'}</td></tr>`).join('');
         }
 
         function renderizarTabelaConcluidos() {
             document.getElementById('tabelaConcluidos').innerHTML = dadosGlobais.concluidos.length === 0
                 ? '<tr><td colspan="6" class="loading">Sem dados</td></tr>'
-                : dadosGlobais.concluidos.map(c => `<tr><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td>${c.categoria || 'N/A'}</td><td>${new Date(c.data_conclusao).toLocaleDateString('pt-BR')}</td><td>⭐⭐⭐⭐</td></tr>`).join('');
+                : dadosGlobais.concluidos.map(c => `<tr onclick="abrirModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td>${c.categoria || 'N/A'}</td><td>${c.data_conclusao || '-'}</td><td>⭐⭐⭐⭐</td></tr>`).join('');
         }
 
         function renderizarTabelaSatisfacao() {
@@ -462,10 +552,31 @@
             const linhas = dadosGlobais.concluidos.slice(0, 10).map((c, idx) => {
                 const av = avaliacoes[idx % avaliacoes.length];
                 const com = comentarios[idx % comentarios.length];
-                return `<tr><td><b>${c.id}</b></td><td>${c.solicitante}</td><td>${av}</td><td>${com}</td><td>${new Date(c.data_conclusao).toLocaleDateString('pt-BR')}</td></tr>`;
+                return `<tr><td><b>${c.id}</b></td><td>${c.solicitante}</td><td>${av}</td><td>${com}</td><td>${c.data_conclusao || '-'}</td></tr>`;
             }).join('');
             document.getElementById('tabelaSatisfacao').innerHTML = linhas || '<tr><td colspan="5" class="loading">Sem pesquisas</td></tr>';
         }
+
+        function abrirModal(chamado) {
+            document.getElementById('modalTitulo').textContent = chamado.titulo || 'Sem título';
+            document.getElementById('modalSubtitulo').textContent = `ID: ${chamado.id}`;
+            document.getElementById('modalSolicitante').textContent = chamado.solicitante || '-';
+            document.getElementById('modalEmail').textContent = chamado.email || '-';
+            document.getElementById('modalStatus').textContent = chamado.status || '-';
+            document.getElementById('modalPrioridade').textContent = chamado.prioridade || '-';
+            document.getElementById('modalCategoria').textContent = chamado.categoria || '-';
+            document.getElementById('modalData').textContent = chamado.data_criacao || chamado.data_conclusao || '-';
+            document.getElementById('modalDescricao').textContent = chamado.descricao || '-';
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        function fecharModal() {
+            document.getElementById('modalOverlay').classList.add('hidden');
+        }
+
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) fecharModal();
+        });
 
         function criarGraficos() {
             const stats = {
@@ -537,7 +648,6 @@
             document.getElementById('loginOverlay').classList.remove('hidden');
             document.getElementById('dashboard').classList.add('hidden');
             document.getElementById('senhaInput').value = '';
-            document.getElementById('senhaInput').focus();
         }
 
         function abrirPagina(pagina) {
