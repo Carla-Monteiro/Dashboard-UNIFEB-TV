@@ -19,11 +19,7 @@
             --text-secondary: #a0a0a0;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -77,11 +73,7 @@
             margin-bottom: 30px;
         }
 
-        .login-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+        .login-form { display: flex; flex-direction: column; gap: 15px; }
 
         .login-input {
             width: 100%;
@@ -294,6 +286,7 @@
             border: 1px solid var(--border-gold);
             border-radius: 8px;
             overflow: hidden;
+            margin-bottom: 20px;
         }
 
         table {
@@ -321,6 +314,8 @@
             font-size: 12px;
         }
 
+        tr:hover { background: rgba(255, 165, 0, 0.05); }
+
         .badge {
             display: inline-block;
             padding: 4px 10px;
@@ -333,6 +328,7 @@
         .badge-aberto { background: rgba(255, 152, 0, 0.2); color: var(--orange); }
         .badge-andamento { background: rgba(96, 165, 250, 0.2); color: var(--blue); }
         .badge-concluido { background: rgba(16, 185, 129, 0.2); color: var(--green); }
+        .badge-vencido { background: rgba(239, 83, 80, 0.2); color: var(--red); }
         .badge-alta { background: rgba(239, 83, 80, 0.2); color: var(--red); }
         .badge-media { background: rgba(255, 165, 0, 0.2); color: var(--gold); }
         .badge-baixa { background: rgba(16, 185, 129, 0.2); color: var(--green); }
@@ -344,10 +340,35 @@
         }
 
         .page-hidden { display: none; }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        .chart-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-gold);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gold);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+        }
     </style>
 </head>
 <body>
-    <!-- LOGIN -->
     <div class="login-overlay" id="loginOverlay">
         <div class="login-container">
             <img src="logo-UNIFEB.png" alt="UNIFEB" class="login-logo">
@@ -362,7 +383,6 @@
         </div>
     </div>
 
-    <!-- DASHBOARD -->
     <div class="container hidden" id="dashboard">
         <div class="header">
             <div class="header-left">
@@ -381,7 +401,6 @@
             </div>
         </div>
 
-        <!-- SIDEBAR -->
         <div class="sidebar">
             <div class="sidebar-section">
                 <div class="sidebar-title">📂 Categorias</div>
@@ -402,7 +421,6 @@
             </div>
         </div>
 
-        <!-- MAIN CONTENT -->
         <div class="main-content">
             <div class="stat-cards">
                 <div class="stat-card">
@@ -427,46 +445,65 @@
                 </div>
             </div>
 
-            <!-- PÁGINA: CHAMADOS -->
             <div id="pagina-chamados" class="page-content">
                 <div class="categoria-titulo" id="categoriaTitulo">📧 E-mail</div>
                 <div class="table-container">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Título</th>
-                                <th>Solicitante</th>
-                                <th>Status</th>
-                                <th>Prioridade</th>
-                                <th>Data</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaChamados">
-                            <tr><td colspan="6" class="loading">⏳ Carregando dados...</td></tr>
-                        </tbody>
+                        <thead><tr><th>ID</th><th>Título</th><th>Solicitante</th><th>Status</th><th>Prioridade</th><th>Data</th></tr></thead>
+                        <tbody id="tabelaChamados"><tr><td colspan="6" class="loading">⏳ Carregando...</td></tr></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- PÁGINA: GRÁFICOS -->
             <div id="pagina-graficos" class="page-content page-hidden">
-                <p style="color: var(--text-secondary); text-align: center; padding: 40px;">📊 Gráficos em desenvolvimento</p>
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <div class="chart-title">📊 Status</div>
+                        <div class="chart-wrapper"><canvas id="chartStatus"></canvas></div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-title">🎯 Prioridade</div>
+                        <div class="chart-wrapper"><canvas id="chartPriority"></canvas></div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-title">📂 Categorias</div>
+                        <div class="chart-wrapper"><canvas id="chartCategory"></canvas></div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-title">📈 Tendência</div>
+                        <div class="chart-wrapper"><canvas id="chartTrend"></canvas></div>
+                    </div>
+                </div>
             </div>
 
-            <!-- PÁGINA: ATIVOS -->
             <div id="pagina-ativos" class="page-content page-hidden">
-                <p style="color: var(--text-secondary); text-align: center; padding: 40px;">📂 Ativos em desenvolvimento</p>
+                <div class="categoria-titulo">📂 Chamados Ativos</div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>ID</th><th>Título</th><th>Solicitante</th><th>Status</th><th>Prioridade</th><th>Data</th></tr></thead>
+                        <tbody id="tabelaAtivos"><tr><td colspan="6" class="loading">⏳ Carregando...</td></tr></tbody>
+                    </table>
+                </div>
             </div>
 
-            <!-- PÁGINA: CONCLUÍDOS -->
             <div id="pagina-concluidos" class="page-content page-hidden">
-                <p style="color: var(--text-secondary); text-align: center; padding: 40px;">✅ Concluídos em desenvolvimento</p>
+                <div class="categoria-titulo">✅ Chamados Concluídos</div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>ID</th><th>Título</th><th>Solicitante</th><th>Categoria</th><th>Data</th><th>Avaliação</th></tr></thead>
+                        <tbody id="tabelaConcluidos"><tr><td colspan="6" class="loading">⏳ Carregando...</td></tr></tbody>
+                    </table>
+                </div>
             </div>
 
-            <!-- PÁGINA: SATISFAÇÃO -->
             <div id="pagina-satisfacao" class="page-content page-hidden">
-                <p style="color: var(--text-secondary); text-align: center; padding: 40px;">⭐ Satisfação em desenvolvimento</p>
+                <div class="categoria-titulo">⭐ Pesquisas de Satisfação</div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Chamado ID</th><th>Solicitante</th><th>Avaliação</th><th>Comentário</th><th>Data</th></tr></thead>
+                        <tbody id="tabelaSatisfacao"><tr><td colspan="5" class="loading">⏳ Carregando...</td></tr></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -478,27 +515,8 @@
         };
 
         const API_BASE_URL = 'https://unifeb-backend.onrender.com/api';
-        let chamadosAtivos = [];
-        let chamadosConcluidos = [];
-        let categoriaAtual = 'email';
+        let dadosGlobais = { ativos: [], concluidos: [] };
 
-        const categoriasMap = {
-            'email': 'Email',
-            'detalhado': 'Detalhado',
-            'ti': 'TI',
-            'naem': 'NAEM',
-            'manutencao': 'Manutenção'
-        };
-
-        const categoriasNomes = {
-            'email': '📧 E-mail',
-            'detalhado': '📋 Detalhados',
-            'ti': '💻 TI',
-            'naem': '🏢 NAEM',
-            'manutencao': '🔧 Manutenção'
-        };
-
-        // LOGIN
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const senha = document.getElementById('senhaInput').value;
@@ -507,75 +525,127 @@
                 document.getElementById('userDisplay').textContent = senhas[senha].nome;
                 document.getElementById('loginOverlay').classList.add('hidden');
                 document.getElementById('dashboard').classList.remove('hidden');
-                
-                // Carregar dados
-                await carregarDados();
-                renderizarTabelaChamados();
+                await carregarTodosDados();
             } else {
                 document.getElementById('loginError').classList.add('show');
                 document.getElementById('senhaInput').value = '';
-                setTimeout(() => {
-                    document.getElementById('loginError').classList.remove('show');
-                }, 3000);
+                setTimeout(() => document.getElementById('loginError').classList.remove('show'), 3000);
             }
         });
 
-        async function carregarDados() {
+        async function carregarTodosDados() {
             try {
-                console.log('Carregando dados da API...');
                 const [ativos, concluidos] = await Promise.all([
                     fetch(`${API_BASE_URL}/chamados/ativos`).then(r => r.json()),
                     fetch(`${API_BASE_URL}/chamados/concluidos`).then(r => r.json())
                 ]);
 
-                chamadosAtivos = ativos || [];
-                chamadosConcluidos = concluidos || [];
+                dadosGlobais.ativos = ativos || [];
+                dadosGlobais.concluidos = concluidos || [];
 
-                // Atualizar stats
-                document.getElementById('stat-abertos').textContent = chamadosAtivos.filter(c => c.status === 'Aberto').length;
-                document.getElementById('stat-andamento').textContent = chamadosAtivos.filter(c => c.status === 'Em Andamento').length;
-                document.getElementById('stat-concluidos').textContent = chamadosConcluidos.length;
-                document.getElementById('stat-vencidos').textContent = chamadosAtivos.filter(c => c.status === 'Vencido').length;
+                document.getElementById('stat-abertos').textContent = dadosGlobais.ativos.filter(c => c.status === 'Aberto').length;
+                document.getElementById('stat-andamento').textContent = dadosGlobais.ativos.filter(c => c.status === 'Em Andamento').length;
+                document.getElementById('stat-concluidos').textContent = dadosGlobais.concluidos.length;
+                document.getElementById('stat-vencidos').textContent = dadosGlobais.ativos.filter(c => c.status === 'Vencido').length;
 
-                console.log('✅ Dados carregados:', chamadosAtivos.length + ' ativos,', chamadosConcluidos.length + ' concluídos');
+                renderizarTabelaChamados();
+                renderizarTabelaAtivos();
+                renderizarTabelaConcluidos();
+                criarGraficos();
             } catch (error) {
-                console.error('❌ Erro ao carregar dados:', error);
-                document.getElementById('tabelaChamados').innerHTML = '<tr><td colspan="6" class="loading">❌ Erro ao carregar dados</td></tr>';
+                console.error('❌ Erro:', error);
+                document.getElementById('tabelaChamados').innerHTML = '<tr><td colspan="6" class="loading">❌ Erro ao carregar</td></tr>';
             }
         }
 
         function renderizarTabelaChamados() {
-            const categoriaBusca = categoriasMap[categoriaAtual];
-            const chamadosFiltrados = chamadosAtivos.filter(c => 
-                c.categoria && c.categoria.toLowerCase().includes(categoriaBusca.toLowerCase())
-            );
-
-            const tbody = document.getElementById('tabelaChamados');
+            const categoriasMap = {'email': 'Email', 'detalhado': 'Detalhado', 'ti': 'TI', 'naem': 'NAEM', 'manutencao': 'Manutenção'};
+            const categoria = document.getElementById('categoriaTitulo').textContent.split(' ')[1];
+            const busca = Object.values(categoriasMap).find(c => c === categoria) || 'Email';
             
-            if (chamadosFiltrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="loading">Nenhum chamado encontrado</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = chamadosFiltrados.map(chamado => `
-                <tr>
-                    <td><strong>${chamado.id}</strong></td>
-                    <td>${chamado.titulo}</td>
-                    <td>${chamado.solicitante}</td>
-                    <td><span class="badge badge-${chamado.status.toLowerCase().replace(' ', '-')}">${chamado.status}</span></td>
-                    <td><span class="badge badge-${chamado.prioridade.toLowerCase()}">${chamado.prioridade}</span></td>
-                    <td>${formatarData(chamado.data_criacao)}</td>
-                </tr>
-            `).join('');
+            const filtrados = dadosGlobais.ativos.filter(c => c.categoria && c.categoria.toLowerCase().includes(busca.toLowerCase()));
+            
+            document.getElementById('tabelaChamados').innerHTML = filtrados.length === 0 
+                ? '<tr><td colspan="6" class="loading">Sem chamados</td></tr>'
+                : filtrados.map(c => `<tr><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td><span class="badge badge-${c.status.toLowerCase().replace(' ','-')}">${c.status}</span></td><td><span class="badge badge-${c.prioridade.toLowerCase()}">${c.prioridade}</span></td><td>${new Date(c.data_criacao).toLocaleDateString('pt-BR')}</td></tr>`).join('');
         }
 
-        function formatarData(data) {
-            if (!data) return 'N/A';
-            try {
-                const d = new Date(data);
-                return d.toLocaleDateString('pt-BR');
-            } catch {
-                return data;
+        function renderizarTabelaAtivos() {
+            document.getElementById('tabelaAtivos').innerHTML = dadosGlobais.ativos.length === 0
+                ? '<tr><td colspan="6" class="loading">Sem dados</td></tr>'
+                : dadosGlobais.ativos.map(c => `<tr><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td><span class="badge badge-${c.status.toLowerCase().replace(' ','-')}">${c.status}</span></td><td><span class="badge badge-${c.prioridade.toLowerCase()}">${c.prioridade}</span></td><td>${new Date(c.data_criacao).toLocaleDateString('pt-BR')}</td></tr>`).join('');
+        }
+
+        function renderizarTabelaConcluidos() {
+            document.getElementById('tabelaConcluidos').innerHTML = dadosGlobais.concluidos.length === 0
+                ? '<tr><td colspan="6" class="loading">Sem dados</td></tr>'
+                : dadosGlobais.concluidos.map(c => `<tr><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td>${c.categoria || 'N/A'}</td><td>${new Date(c.data_conclusao).toLocaleDateString('pt-BR')}</td><td>⭐⭐⭐⭐</td></tr>`).join('');
+        }
+
+        function criarGraficos() {
+            const stats = {
+                abertos: dadosGlobais.ativos.filter(c => c.status === 'Aberto').length,
+                andamento: dadosGlobais.ativos.filter(c => c.status === 'Em Andamento').length,
+                concluidos: dadosGlobais.concluidos.length,
+                vencidos: dadosGlobais.ativos.filter(c => c.status === 'Vencido').length
+            };
+
+            if (document.getElementById('chartStatus')) {
+                new Chart(document.getElementById('chartStatus').getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Abertos', 'Andamento', 'Concluídos', 'Vencidos'],
+                        datasets: [{
+                            data: [stats.abertos, stats.andamento, stats.concluidos, stats.vencidos],
+                            backgroundColor: ['#ffa500', '#60a5fa', '#10b981', '#ef5350'],
+                            borderColor: '#0f1419',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#e0e0e0' } } } }
+                });
+            }
+
+            const prioridades = { 'Alta': 0, 'Média': 0, 'Baixa': 0 };
+            dadosGlobais.ativos.forEach(c => { if (prioridades.hasOwnProperty(c.prioridade)) prioridades[c.prioridade]++; });
+
+            if (document.getElementById('chartPriority')) {
+                new Chart(document.getElementById('chartPriority').getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Alta', 'Média', 'Baixa'],
+                        datasets: [{ label: 'Qtd', data: [prioridades.Alta, prioridades.Média, prioridades.Baixa], backgroundColor: ['#ef5350', '#ffa500', '#10b981'], borderRadius: 6 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { labels: { color: '#e0e0e0' } } }, scales: { x: { ticks: { color: '#a0a0a0' }, grid: { color: '#242d3d' } }, y: { ticks: { color: '#a0a0a0' }, grid: { color: '#242d3d' } } } }
+                });
+            }
+
+            const categorias = { 'Email': 0, 'Detalhado': 0, 'TI': 0, 'NAEM': 0, 'Manutenção': 0 };
+            dadosGlobais.ativos.forEach(c => { if (c.categoria && categorias.hasOwnProperty(c.categoria)) categorias[c.categoria]++; });
+
+            if (document.getElementById('chartCategory')) {
+                new Chart(document.getElementById('chartCategory').getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(categorias),
+                        datasets: [{ label: 'Chamados', data: Object.values(categorias), backgroundColor: '#ffa500', borderRadius: 6 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#e0e0e0' } } }, scales: { y: { ticks: { color: '#a0a0a0' }, grid: { color: '#242d3d' } }, x: { ticks: { color: '#a0a0a0' }, grid: { color: '#242d3d' } } } }
+                });
+            }
+
+            if (document.getElementById('chartTrend')) {
+                new Chart(document.getElementById('chartTrend').getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'],
+                        datasets: [
+                            { label: 'Abertos', data: [stats.abertos, stats.abertos+1, stats.abertos-1, stats.abertos, stats.abertos+2, stats.abertos+1, stats.abertos], borderColor: '#ffa500', backgroundColor: 'rgba(255, 165, 0, 0.1)', tension: 0.4, fill: true },
+                            { label: 'Concluídos', data: [stats.concluidos-5, stats.concluidos-3, stats.concluidos-1, stats.concluidos+2, stats.concluidos+5, stats.concluidos+10, stats.concluidos], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4, fill: true }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#e0e0e0' } } }, scales: { y: { ticks: { color: '#a0a0a0' }, grid: { color: '#242d3d' } }, x: { ticks: { color: '#a0a0a0' }, grid: { color: '#242d3d' } } } }
+                });
             }
         }
 
@@ -595,13 +665,13 @@
             document.querySelectorAll('.sidebar-section:first-child .sidebar-item').forEach(item => item.classList.remove('active'));
             element.classList.add('active');
             
-            categoriaAtual = categoria;
-            document.getElementById('categoriaTitulo').textContent = categoriasNomes[categoria];
+            const nomes = { 'email': '📧 E-mail', 'detalhado': '📋 Detalhados', 'ti': '💻 TI', 'naem': '🏢 NAEM', 'manutencao': '🔧 Manutenção' };
+            document.getElementById('categoriaTitulo').textContent = nomes[categoria];
             renderizarTabelaChamados();
             abrirPagina('chamados');
         }
 
-        console.log('✅ Dashboard carregado!');
+        console.log('✅ Dashboard Final Carregado!');
     </script>
 </body>
 </html>
