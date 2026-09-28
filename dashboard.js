@@ -111,16 +111,29 @@ function renderizarTabelaConcluidos() {
     return;
   }
 
-  tbody.innerHTML = chamadosConcluidos.map(chamado => `
-    <tr>
-      <td><strong>${chamado.id}</strong></td>
-      <td>${chamado.titulo}</td>
-      <td>${chamado.solicitante}</td>
-      <td>${chamado.categoria || 'N/A'}</td>
-      <td>${formatarData(chamado.data_conclusao)}</td>
-      <td>${chamado.avaliacao || '⭐⭐⭐⭐'}</td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = chamadosConcluidos.map(chamado => {
+    try {
+      const dataFormatada = chamado.data_conclusao ?
+        (typeof chamado.data_conclusao === 'string' && chamado.data_conclusao.includes('/') ?
+          chamado.data_conclusao :
+          formatarData(chamado.data_conclusao)) :
+        'N/A';
+
+      return `
+        <tr onclick="abrirDetalhes('${chamado.id}')">
+          <td><strong>${chamado.id || 'N/A'}</strong></td>
+          <td>${chamado.titulo || 'N/A'}</td>
+          <td>${chamado.solicitante || 'N/A'}</td>
+          <td>${chamado.categoria || 'Outra'}</td>
+          <td>${dataFormatada}</td>
+          <td>${chamado.avaliacao || '⭐⭐⭐⭐'}</td>
+        </tr>
+      `;
+    } catch (error) {
+      console.error('Erro ao renderizar chamado:', chamado, error);
+      return `<tr><td colspan="6">Erro ao carregar chamado</td></tr>`;
+    }
+  }).join('');
 }
 
 /**
