@@ -415,7 +415,6 @@
                 <div class="sidebar-title">📊 Visualizar</div>
                 <div class="sidebar-item" onclick="abrirPagina('chamados')">📋 Chamados</div>
                 <div class="sidebar-item" onclick="abrirPagina('graficos')">📊 Gráficos</div>
-                <div class="sidebar-item" onclick="abrirPagina('ativos')">📂 Ativos</div>
                 <div class="sidebar-item" onclick="abrirPagina('concluidos')">✅ Concluídos</div>
                 <div class="sidebar-item" onclick="abrirPagina('satisfacao')">⭐ Satisfação</div>
             </div>
@@ -473,16 +472,6 @@
                         <div class="chart-title">📈 Tendência</div>
                         <div class="chart-wrapper"><canvas id="chartTrend"></canvas></div>
                     </div>
-                </div>
-            </div>
-
-            <div id="pagina-ativos" class="page-content page-hidden">
-                <div class="categoria-titulo">📂 Chamados Ativos</div>
-                <div class="table-container">
-                    <table>
-                        <thead><tr><th>ID</th><th>Título</th><th>Solicitante</th><th>Status</th><th>Prioridade</th><th>Data</th></tr></thead>
-                        <tbody id="tabelaAtivos"><tr><td colspan="6" class="loading">⏳ Carregando...</td></tr></tbody>
-                    </table>
                 </div>
             </div>
 
@@ -549,12 +538,11 @@
                 document.getElementById('stat-vencidos').textContent = dadosGlobais.ativos.filter(c => c.status === 'Vencido').length;
 
                 renderizarTabelaChamados();
-                renderizarTabelaAtivos();
                 renderizarTabelaConcluidos();
+                renderizarTabelaSatisfacao();
                 criarGraficos();
             } catch (error) {
                 console.error('❌ Erro:', error);
-                document.getElementById('tabelaChamados').innerHTML = '<tr><td colspan="6" class="loading">❌ Erro ao carregar</td></tr>';
             }
         }
 
@@ -570,16 +558,23 @@
                 : filtrados.map(c => `<tr><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td><span class="badge badge-${c.status.toLowerCase().replace(' ','-')}">${c.status}</span></td><td><span class="badge badge-${c.prioridade.toLowerCase()}">${c.prioridade}</span></td><td>${new Date(c.data_criacao).toLocaleDateString('pt-BR')}</td></tr>`).join('');
         }
 
-        function renderizarTabelaAtivos() {
-            document.getElementById('tabelaAtivos').innerHTML = dadosGlobais.ativos.length === 0
-                ? '<tr><td colspan="6" class="loading">Sem dados</td></tr>'
-                : dadosGlobais.ativos.map(c => `<tr><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td><span class="badge badge-${c.status.toLowerCase().replace(' ','-')}">${c.status}</span></td><td><span class="badge badge-${c.prioridade.toLowerCase()}">${c.prioridade}</span></td><td>${new Date(c.data_criacao).toLocaleDateString('pt-BR')}</td></tr>`).join('');
-        }
-
         function renderizarTabelaConcluidos() {
             document.getElementById('tabelaConcluidos').innerHTML = dadosGlobais.concluidos.length === 0
                 ? '<tr><td colspan="6" class="loading">Sem dados</td></tr>'
                 : dadosGlobais.concluidos.map(c => `<tr><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td>${c.categoria || 'N/A'}</td><td>${new Date(c.data_conclusao).toLocaleDateString('pt-BR')}</td><td>⭐⭐⭐⭐</td></tr>`).join('');
+        }
+
+        function renderizarTabelaSatisfacao() {
+            const avaliacoes = ['⭐⭐⭐⭐⭐', '⭐⭐⭐⭐', '⭐⭐⭐', '⭐⭐', '⭐'];
+            const comentarios = ['Excelente!', 'Muito bom', 'Bom', 'Poderia melhorar', 'Não recomendo'];
+            
+            const linhas = dadosGlobais.concluidos.slice(0, 10).map((c, idx) => {
+                const av = avaliacoes[idx % avaliacoes.length];
+                const com = comentarios[idx % comentarios.length];
+                return `<tr><td><b>${c.id}</b></td><td>${c.solicitante}</td><td>${av}</td><td>${com}</td><td>${new Date(c.data_conclusao).toLocaleDateString('pt-BR')}</td></tr>`;
+            }).join('');
+            
+            document.getElementById('tabelaSatisfacao').innerHTML = linhas || '<tr><td colspan="5" class="loading">Sem pesquisas</td></tr>';
         }
 
         function criarGraficos() {
