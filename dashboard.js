@@ -201,6 +201,9 @@ function switchTab(index) {
 
   tabs[index].classList.add('active');
   contents[index].classList.add('active');
+
+  // Re-renderizar tabelas para garantir que os dados apareçam
+  renderizarTabelas();
 }
 
 /**
