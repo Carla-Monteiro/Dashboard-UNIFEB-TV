@@ -1,7 +1,5 @@
-requests
-python-dotenv
-flask
-flask-cors
-openpyxl
-reportlab
-backports.zoneinfo; python_version < "3.9"
+Flask==2.3.2
+Flask-CORS==4.0.0
+python-dotenv==1.0.0
+requests==2.31.0
+Werkzeug==2.3.6
