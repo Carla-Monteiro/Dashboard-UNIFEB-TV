@@ -536,6 +536,12 @@
                 dadosGlobais.ativos = ativos || [];
                 dadosGlobais.concluidos = concluidos || [];
 
+                console.log('📊 Dados Carregados:', {
+                    ativos: dadosGlobais.ativos.length,
+                    concluidos: dadosGlobais.concluidos.length,
+                    amostraAtivos: dadosGlobais.ativos.slice(0, 3)
+                });
+
                 document.getElementById('stat-abertos').textContent = dadosGlobais.ativos.filter(c => c.status === 'Aberto').length;
                 document.getElementById('stat-andamento').textContent = dadosGlobais.ativos.filter(c => c.status === 'Em Andamento').length;
                 document.getElementById('stat-concluidos').textContent = dadosGlobais.concluidos.length;
@@ -552,7 +558,13 @@
 
         function renderizarTabelaChamados() {
             const categoriaBusca = categoriasMap[categoriaAtual];
-            const filtrados = dadosGlobais.ativos.filter(c => c.categoria && c.categoria.toLowerCase() === categoriaBusca.toLowerCase());
+            console.log('🔍 Filtrando por:', categoriaBusca, 'Ativos disponíveis:', dadosGlobais.ativos.length);
+
+            const filtrados = dadosGlobais.ativos.filter(c => {
+                const temCategoria = c.categoria && c.categoria.toLowerCase().includes(categoriaBusca.toLowerCase());
+                console.log(`  - ID ${c.id}: categoria="${c.categoria}" matches="${temCategoria}"`);
+                return temCategoria;
+            });
             
             document.getElementById('tabelaChamados').innerHTML = filtrados.length === 0 
                 ? '<tr><td colspan="6" class="loading">Sem chamados nesta categoria</td></tr>'
