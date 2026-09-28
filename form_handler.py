@@ -1069,7 +1069,6 @@ def formatar_data_iso(data_str):
 
 
 @app.route('/api/chamados/ativos', methods=['GET', 'OPTIONS'])
-@requer_login
 def obter_chamados_ativos():
     """Retorna apenas chamados com status diferente de 'Concluído'"""
     if request.method == 'OPTIONS':
@@ -1135,7 +1134,6 @@ def obter_chamados_ativos():
 
 
 @app.route('/api/chamados/concluidos', methods=['GET', 'OPTIONS'])
-@requer_login
 def obter_chamados_concluidos():
     """Retorna apenas chamados com status 'Concluído'"""
     if request.method == 'OPTIONS':
@@ -1190,7 +1188,6 @@ def obter_chamados_concluidos():
 
 
 @app.route('/api/chamados/stats', methods=['GET', 'OPTIONS'])
-@requer_login
 def obter_stats_chamados():
     """Retorna estatísticas de chamados (contagem por status)"""
     if request.method == 'OPTIONS':
