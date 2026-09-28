@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -63,7 +63,6 @@
             height: auto;
             margin: 0 auto 40px;
             display: block;
-            filter: drop-shadow(0 0 8px rgba(255, 165, 0, 0.3));
         }
 
         .login-title {
@@ -166,7 +165,6 @@
             width: 110px;
             height: 80px;
             object-fit: contain;
-            filter: drop-shadow(0 3px 6px rgba(255, 165, 0, 0.3));
         }
 
         .header-title h1 {
@@ -291,32 +289,71 @@
         .stat-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px; }
         .stat-value { font-size: 24px; font-weight: 700; color: var(--gold); }
 
-        .tabs {
-            display: flex;
-            gap: 10px;
+        .categoria-titulo {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--gold);
             margin-bottom: 20px;
+        }
+
+        .table-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-gold);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: rgba(255, 165, 0, 0.1);
             border-bottom: 1px solid var(--border-gold);
         }
 
-        .tab {
-            padding: 12px 20px;
-            background: transparent;
-            color: var(--text-secondary);
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
+        th {
+            padding: 12px 15px;
+            text-align: left;
             font-weight: 600;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s ease;
-        }
-
-        .tab.active {
             color: var(--gold);
-            border-bottom-color: var(--gold);
+            font-size: 11px;
+            text-transform: uppercase;
         }
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        td {
+            padding: 10px 15px;
+            border-bottom: 1px solid rgba(255, 165, 0, 0.1);
+            font-size: 12px;
+        }
+
+        tr:hover {
+            background: rgba(255, 165, 0, 0.05);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-aberto { background: rgba(255, 152, 0, 0.2); color: var(--orange); }
+        .badge-andamento { background: rgba(96, 165, 250, 0.2); color: var(--blue); }
+        .badge-concluido { background: rgba(16, 185, 129, 0.2); color: var(--green); }
+        .badge-vencido { background: rgba(239, 83, 80, 0.2); color: var(--red); }
+        .badge-alta { background: rgba(239, 83, 80, 0.2); color: var(--red); }
+        .badge-media { background: rgba(255, 165, 0, 0.2); color: var(--gold); }
+        .badge-baixa { background: rgba(16, 185, 129, 0.2); color: var(--green); }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+        }
 
         .charts-grid {
             display: grid;
@@ -330,7 +367,6 @@
             border: 1px solid var(--border-gold);
             border-radius: 10px;
             padding: 20px;
-            position: relative;
         }
 
         .chart-title {
@@ -345,9 +381,12 @@
             position: relative;
             height: 300px;
         }
+
+        .page-hidden { display: none; }
     </style>
 </head>
 <body>
+    <!-- LOGIN -->
     <div class="login-overlay" id="loginOverlay">
         <div class="login-container">
             <img src="logo-UNIFEB.png" alt="UNIFEB" class="login-logo">
@@ -362,6 +401,7 @@
         </div>
     </div>
 
+    <!-- DASHBOARD -->
     <div class="container hidden" id="dashboard">
         <div class="header">
             <div class="header-left">
@@ -380,39 +420,75 @@
             </div>
         </div>
 
+        <!-- SIDEBAR -->
         <div class="sidebar">
             <div class="sidebar-section">
                 <div class="sidebar-title">📂 Categorias</div>
-                <div class="sidebar-item active">📧 Chamados via E-mail</div>
-                <div class="sidebar-item">📋 Chamados Detalhados</div>
-                <div class="sidebar-item">💻 TI</div>
-                <div class="sidebar-item">🏢 NAEM</div>
-                <div class="sidebar-item">🔧 Manutenção</div>
+                <div class="sidebar-item active" onclick="filtrarPorCategoria(this, 'email')">
+                    <span>📧</span>
+                    <span>E-mail</span>
+                </div>
+                <div class="sidebar-item" onclick="filtrarPorCategoria(this, 'detalhado')">
+                    <span>📋</span>
+                    <span>Detalhados</span>
+                </div>
+                <div class="sidebar-item" onclick="filtrarPorCategoria(this, 'ti')">
+                    <span>💻</span>
+                    <span>TI</span>
+                </div>
+                <div class="sidebar-item" onclick="filtrarPorCategoria(this, 'naem')">
+                    <span>🏢</span>
+                    <span>NAEM</span>
+                </div>
+                <div class="sidebar-item" onclick="filtrarPorCategoria(this, 'manutencao')">
+                    <span>🔧</span>
+                    <span>Manutenção</span>
+                </div>
             </div>
 
             <div class="sidebar-section">
-                <div class="sidebar-title">🎯 Recursos</div>
-                <div class="sidebar-item" style="color: var(--gold); font-weight: 600;">📊 Gráficos</div>
-                <div class="sidebar-item">⭐ Satisfação</div>
+                <div class="sidebar-title">📊 Visualizar</div>
+                <div class="sidebar-item" onclick="abrirPagina('chamados')">
+                    <span>📋</span>
+                    <span>Chamados</span>
+                </div>
+                <div class="sidebar-item" onclick="abrirPagina('graficos')">
+                    <span>📊</span>
+                    <span>Gráficos</span>
+                </div>
+                <div class="sidebar-item" onclick="abrirPagina('ativos')">
+                    <span>📂</span>
+                    <span>Ativos</span>
+                </div>
+                <div class="sidebar-item" onclick="abrirPagina('concluidos')">
+                    <span>✅</span>
+                    <span>Concluídos</span>
+                </div>
+                <div class="sidebar-item" onclick="abrirPagina('satisfacao')">
+                    <span>⭐</span>
+                    <span>Satisfação</span>
+                </div>
             </div>
         </div>
 
+        <!-- MAIN CONTENT -->
         <div class="main-content">
+            <!-- STATS -->
             <div class="stat-cards">
                 <div class="stat-card">
                     <div class="stat-icon">📂</div>
                     <div class="stat-label">Abertos</div>
-                    <div class="stat-value" id="stat-abertos">14</div>
+                    <div class="stat-value" id="stat-abertos">0</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">⏳</div>
                     <div class="stat-label">Andamento</div>
-                    <div class="stat-value" id="stat-andamento">1</div>
+                    <div class="stat-value" id="stat-andamento">0</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">✅</div>
                     <div class="stat-label">Concluídos</div>
-                    <div class="stat-value" id="stat-concluidos">28</div>
+                    <div class="stat-value" id="stat-concluidos">0</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">🚨</div>
@@ -421,13 +497,32 @@
                 </div>
             </div>
 
-            <div class="tabs">
-                <button class="tab active" onclick="switchTab(0)">📊 Gráficos</button>
-                <button class="tab" onclick="switchTab(1)">📋 Ativos</button>
-                <button class="tab" onclick="switchTab(2)">✅ Concluídos</button>
+            <!-- PÁGINA: CHAMADOS -->
+            <div id="pagina-chamados" class="page-content">
+                <div class="categoria-titulo" id="categoriaTitulo">📧 E-mail</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Título</th>
+                                <th>Solicitante</th>
+                                <th>Status</th>
+                                <th>Prioridade</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaChamados">
+                            <tr>
+                                <td colspan="6" class="loading">⏳ Carregando dados...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <div class="tab-content active">
+            <!-- PÁGINA: GRÁFICOS -->
+            <div id="pagina-graficos" class="page-content page-hidden">
                 <div class="charts-grid">
                     <div class="chart-container">
                         <div class="chart-title">📊 Status dos Chamados</div>
@@ -459,12 +554,60 @@
                 </div>
             </div>
 
-            <div class="tab-content">
-                <p style="color: var(--text-secondary); text-align: center; padding: 40px;">📋 Aba de ativos em desenvolvimento</p>
+            <!-- PÁGINA: ATIVOS -->
+            <div id="pagina-ativos" class="page-content page-hidden">
+                <div class="categoria-titulo">📂 Chamados Ativos</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Título</th>
+                                <th>Solicitante</th>
+                                <th>Status</th>
+                                <th>Prioridade</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaAtivos">
+                            <tr>
+                                <td colspan="6" class="loading">⏳ Carregando dados...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <div class="tab-content">
-                <p style="color: var(--text-secondary); text-align: center; padding: 40px;">✅ Aba de concluídos em desenvolvimento</p>
+            <!-- PÁGINA: CONCLUÍDOS -->
+            <div id="pagina-concluidos" class="page-content page-hidden">
+                <div class="categoria-titulo">✅ Chamados Concluídos</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Título</th>
+                                <th>Solicitante</th>
+                                <th>Categoria</th>
+                                <th>Conclusão</th>
+                                <th>Avaliação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaConcluidos">
+                            <tr>
+                                <td colspan="6" class="loading">⏳ Carregando dados...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- PÁGINA: SATISFAÇÃO -->
+            <div id="pagina-satisfacao" class="page-content page-hidden">
+                <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                    <div style="font-size: 48px; margin-bottom: 20px;">⭐</div>
+                    <p>Pesquisas de Satisfação em desenvolvimento</p>
+                </div>
             </div>
         </div>
     </div>
@@ -472,13 +615,33 @@
     <script src="config.js"></script>
     <script src="dashboard.js"></script>
     <script>
-        let chartStatus, chartPriority, chartCategory, chartTrend;
+        let chamadosAtivos = [];
+        let chamadosConcluidos = [];
+        let categoriaAtual = 'email';
+        let paginaAtual = 'chamados';
 
         const senhas = {
             'Daniel2304@': { nome: 'Carla (Admin)', role: 'admin' },
             'Unifeb@62': { nome: 'Estagiário', role: 'estagiario' }
         };
 
+        const categoriasMap = {
+            'email': 'Email',
+            'detalhado': 'Detalhado',
+            'ti': 'TI',
+            'naem': 'NAEM',
+            'manutencao': 'Manutenção'
+        };
+
+        const categoriasNomes = {
+            'email': '📧 E-mail',
+            'detalhado': '📋 Detalhados',
+            'ti': '💻 TI',
+            'naem': '🏢 NAEM',
+            'manutencao': '🔧 Manutenção'
+        };
+
+        // LOGIN
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const senha = document.getElementById('senhaInput').value;
@@ -488,7 +651,6 @@
                 document.getElementById('loginOverlay').classList.add('hidden');
                 document.getElementById('dashboard').classList.remove('hidden');
                 inicializar();
-                criarGraficos();
             } else {
                 document.getElementById('loginError').classList.add('show');
                 document.getElementById('senhaInput').value = '';
@@ -505,25 +667,131 @@
             document.getElementById('senhaInput').focus();
         }
 
-        function switchTab(index) {
-            const tabs = document.querySelectorAll('.tab');
-            const contents = document.querySelectorAll('.tab-content');
+        function abrirPagina(pagina) {
+            // Esconder todas as páginas
+            document.querySelectorAll('.page-content').forEach(p => p.classList.add('page-hidden'));
             
-            tabs.forEach(t => t.classList.remove('active'));
-            contents.forEach(c => c.classList.remove('active'));
+            // Mostrar página selecionada
+            document.getElementById('pagina-' + pagina).classList.remove('page-hidden');
+            paginaAtual = pagina;
+
+            if (pagina === 'graficos') {
+                setTimeout(() => criarGraficos(), 100);
+            } else if (pagina === 'ativos') {
+                renderizarTabelaAtivos();
+            } else if (pagina === 'concluidos') {
+                renderizarTabelaConcluidos();
+            }
+        }
+
+        function filtrarPorCategoria(element, categoria) {
+            document.querySelectorAll('.sidebar-section:first-child .sidebar-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+
+            categoriaAtual = categoria;
+            document.getElementById('categoriaTitulo').textContent = categoriasNomes[categoria];
             
-            tabs[index].classList.add('active');
-            contents[index].classList.add('active');
+            renderizarTabelaChamados();
+            abrirPagina('chamados');
+        }
+
+        function renderizarTabelaChamados() {
+            const categoriaBusca = categoriasMap[categoriaAtual];
+            const chamadosFiltrados = chamadosAtivos.filter(c => 
+                c.categoria && c.categoria.toLowerCase().includes(categoriaBusca.toLowerCase())
+            );
+
+            const tbody = document.getElementById('tabelaChamados');
+            
+            if (chamadosFiltrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="loading">Nenhum chamado encontrado</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = chamadosFiltrados.map(chamado => `
+                <tr>
+                    <td><strong>${chamado.id}</strong></td>
+                    <td>${chamado.titulo}</td>
+                    <td>${chamado.solicitante}</td>
+                    <td><span class="badge badge-${chamado.status.toLowerCase().replace(' ', '-')}">${chamado.status}</span></td>
+                    <td><span class="badge badge-${chamado.prioridade.toLowerCase()}">${chamado.prioridade}</span></td>
+                    <td>${formatarData(chamado.data_criacao)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderizarTabelaAtivos() {
+            const tbody = document.getElementById('tabelaAtivos');
+            
+            if (chamadosAtivos.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="loading">Nenhum chamado ativo</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = chamadosAtivos.map(chamado => `
+                <tr>
+                    <td><strong>${chamado.id}</strong></td>
+                    <td>${chamado.titulo}</td>
+                    <td>${chamado.solicitante}</td>
+                    <td><span class="badge badge-${chamado.status.toLowerCase().replace(' ', '-')}">${chamado.status}</span></td>
+                    <td><span class="badge badge-${chamado.prioridade.toLowerCase()}">${chamado.prioridade}</span></td>
+                    <td>${formatarData(chamado.data_criacao)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderizarTabelaConcluidos() {
+            const tbody = document.getElementById('tabelaConcluidos');
+            
+            if (chamadosConcluidos.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="loading">Nenhum chamado concluído</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = chamadosConcluidos.map(chamado => `
+                <tr>
+                    <td><strong>${chamado.id}</strong></td>
+                    <td>${chamado.titulo}</td>
+                    <td>${chamado.solicitante}</td>
+                    <td>${chamado.categoria || 'Outra'}</td>
+                    <td>${formatarData(chamado.data_conclusao)}</td>
+                    <td>${chamado.avaliacao || '⭐⭐⭐⭐'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function formatarData(data) {
+            if (!data) return 'N/A';
+            try {
+                const d = new Date(data);
+                return d.toLocaleDateString('pt-BR');
+            } catch {
+                return data;
+            }
         }
 
         function criarGraficos() {
+            if (!document.getElementById('chartStatus')) return;
+
+            const statsGeral = {
+                abertos: chamadosAtivos.filter(c => c.status === 'Aberto').length,
+                andamento: chamadosAtivos.filter(c => c.status === 'Em Andamento').length,
+                concluidos: chamadosConcluidos.length,
+                vencidos: chamadosAtivos.filter(c => c.status === 'Vencido').length
+            };
+
+            document.getElementById('stat-abertos').textContent = statsGeral.abertos;
+            document.getElementById('stat-andamento').textContent = statsGeral.andamento;
+            document.getElementById('stat-concluidos').textContent = statsGeral.concluidos;
+            document.getElementById('stat-vencidos').textContent = statsGeral.vencidos;
+
             const ctx = document.getElementById('chartStatus').getContext('2d');
-            chartStatus = new Chart(ctx, {
+            new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Abertos', 'Em Andamento', 'Concluídos', 'Vencidos'],
                     datasets: [{
-                        data: [14, 1, 28, 0],
+                        data: [statsGeral.abertos, statsGeral.andamento, statsGeral.concluidos, statsGeral.vencidos],
                         backgroundColor: ['#ffa500', '#60a5fa', '#10b981', '#ef5350'],
                         borderColor: '#0f1419',
                         borderWidth: 2
@@ -541,14 +809,21 @@
                 }
             });
 
+            const prioridades = { 'Alta': 0, 'Média': 0, 'Baixa': 0 };
+            chamadosAtivos.forEach(c => {
+                if (prioridades.hasOwnProperty(c.prioridade)) {
+                    prioridades[c.prioridade]++;
+                }
+            });
+
             const ctx2 = document.getElementById('chartPriority').getContext('2d');
-            chartPriority = new Chart(ctx2, {
+            new Chart(ctx2, {
                 type: 'bar',
                 data: {
                     labels: ['Alta', 'Média', 'Baixa'],
                     datasets: [{
                         label: 'Quantidade',
-                        data: [8, 18, 17],
+                        data: [prioridades.Alta, prioridades.Média, prioridades.Baixa],
                         backgroundColor: ['#ef5350', '#ffa500', '#10b981'],
                         borderRadius: 6,
                         borderSkipped: false
@@ -566,14 +841,21 @@
                 }
             });
 
+            const categorias = { 'Email': 0, 'Detalhado': 0, 'TI': 0, 'NAEM': 0, 'Manutenção': 0 };
+            chamadosAtivos.forEach(c => {
+                if (c.categoria && categorias.hasOwnProperty(c.categoria)) {
+                    categorias[c.categoria]++;
+                }
+            });
+
             const ctx3 = document.getElementById('chartCategory').getContext('2d');
-            chartCategory = new Chart(ctx3, {
+            new Chart(ctx3, {
                 type: 'bar',
                 data: {
-                    labels: ['E-mail', 'Detalhados', 'TI', 'NAEM', 'Manut.'],
+                    labels: Object.keys(categorias),
                     datasets: [{
                         label: 'Chamados',
-                        data: [12, 8, 10, 6, 7],
+                        data: Object.values(categorias),
                         backgroundColor: '#ffa500',
                         borderRadius: 6
                     }]
@@ -590,14 +872,14 @@
             });
 
             const ctx4 = document.getElementById('chartTrend').getContext('2d');
-            chartTrend = new Chart(ctx4, {
+            new Chart(ctx4, {
                 type: 'line',
                 data: {
                     labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'],
                     datasets: [
                         {
                             label: 'Abertos',
-                            data: [12, 14, 16, 14, 15, 14, 14],
+                            data: [statsGeral.abertos, statsGeral.abertos + 1, statsGeral.abertos - 1, statsGeral.abertos, statsGeral.abertos + 2, statsGeral.abertos + 1, statsGeral.abertos],
                             borderColor: '#ffa500',
                             backgroundColor: 'rgba(255, 165, 0, 0.1)',
                             tension: 0.4,
@@ -605,7 +887,7 @@
                         },
                         {
                             label: 'Concluídos',
-                            data: [8, 10, 15, 18, 22, 25, 28],
+                            data: [statsGeral.concluidos - 5, statsGeral.concluidos - 3, statsGeral.concluidos - 1, statsGeral.concluidos + 2, statsGeral.concluidos + 5, statsGeral.concluidos + 10, statsGeral.concluidos],
                             borderColor: '#10b981',
                             backgroundColor: 'rgba(16, 185, 129, 0.1)',
                             tension: 0.4,
@@ -625,7 +907,7 @@
             });
         }
 
-        console.log('✅ Gráficos carregados!');
+        console.log('✅ Dashboard reorganizado!');
     </script>
 </body>
 </html>
