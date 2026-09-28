@@ -3,7 +3,7 @@
 // ========================================
 
 // URL DA API - ALTERE PARA SUA URL REAL
-const API_BASE_URL = 'http://localhost:5000/api'; // Altere conforme sua API
+const API_BASE_URL = 'https://unifeb-backend.onrender.com/api'; // URL de produção no Render
 
 // Endpoints disponíveis
 const ENDPOINTS = {
