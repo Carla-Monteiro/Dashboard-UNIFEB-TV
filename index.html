@@ -65,10 +65,11 @@
 
         .login-logo {
             width: 100%;
-            max-width: 300px;
+            max-width: 280px;
             height: auto;
             margin: 0 auto 40px;
             display: block;
+            filter: drop-shadow(0 0 8px rgba(255, 165, 0, 0.3));
         }
 
         .login-title {
@@ -148,53 +149,85 @@
             display: none;
         }
 
+        /* HEADER MELHORADO */
         .header {
             grid-column: 1 / -1;
             grid-row: 1;
-            background: linear-gradient(135deg, #1a1f2e 0%, #0f1419 100%);
-            border-bottom: 1px solid var(--border-gold);
-            padding: 20px 30px;
+            background: linear-gradient(90deg, #1a1f2e 0%, #242d3d 50%, #1a1f2e 100%);
+            border-bottom: 2px solid var(--border-gold);
+            padding: 18px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 4px 12px rgba(255, 165, 0, 0.1);
         }
 
         .header-left {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 20px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.1), rgba(255, 165, 0, 0.05));
+            border: 2px solid var(--border-gold);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(255, 165, 0, 0.15), inset 0 0 20px rgba(255, 165, 0, 0.1);
         }
 
         .logo {
-            width: 50px;
-            height: 50px;
+            width: 65px;
+            height: 65px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(255, 165, 0, 0.2));
+        }
+
+        .header-title {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
         .header-title h1 {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 700;
             color: var(--text-primary);
+            letter-spacing: -0.5px;
         }
 
         .header-title p {
-            font-size: 12px;
-            color: var(--text-secondary);
+            font-size: 11px;
+            color: var(--border-gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
         }
 
         .status-badge {
             display: flex;
             align-items: center;
-            gap: 8px;
-            background: var(--bg-secondary);
+            gap: 12px;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.1), rgba(255, 165, 0, 0.05));
             border: 1px solid var(--border-gold);
             border-radius: 20px;
-            padding: 8px 15px;
+            padding: 10px 18px;
             font-size: 12px;
             color: var(--text-secondary);
         }
 
+        .user-badge {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
         .logout-btn {
-            padding: 6px 12px;
+            padding: 8px 14px;
             background: var(--red);
             color: white;
             border: none;
@@ -202,11 +235,12 @@
             cursor: pointer;
             font-size: 12px;
             font-weight: 600;
-            margin-left: 10px;
+            transition: all 0.2s ease;
         }
 
         .logout-btn:hover {
             opacity: 0.9;
+            transform: translateY(-1px);
         }
 
         .sidebar {
@@ -283,6 +317,7 @@
         .stat-card:hover {
             border-color: var(--gold);
             background: rgba(255, 165, 0, 0.05);
+            transform: translateY(-2px);
         }
 
         .stat-icon {
@@ -452,6 +487,7 @@
             max-height: 80vh;
             overflow-y: auto;
             padding: 30px;
+            position: relative;
         }
 
         .modal-close {
@@ -498,18 +534,20 @@
 
     <!-- DASHBOARD -->
     <div class="container hidden" id="dashboard">
-        <!-- HEADER -->
+        <!-- HEADER MELHORADO -->
         <div class="header">
             <div class="header-left">
-                <img src="logo-UNIFEB.png" alt="UNIFEB" class="logo">
+                <div class="logo-container">
+                    <img src="logo-UNIFEB.png" alt="UNIFEB" class="logo">
+                </div>
                 <div class="header-title">
                     <h1>Controle de Chamados</h1>
-                    <p>Gerenciamento em Tempo Real - SharePoint</p>
+                    <p>🚀 Sistema de Gerenciamento - SharePoint</p>
                 </div>
             </div>
             
             <div class="status-badge">
-                Usuário: <span id="userDisplay">Admin</span>
+                👤 <span class="user-badge" id="userDisplay">Admin</span>
                 <button class="logout-btn" onclick="logout()">Sair</button>
             </div>
         </div>
@@ -517,7 +555,7 @@
         <!-- SIDEBAR -->
         <div class="sidebar">
             <div class="sidebar-section">
-                <div class="sidebar-title">Categorias</div>
+                <div class="sidebar-title">📂 Categorias</div>
                 <div class="sidebar-item active" onclick="selectCategory(this)">
                     <span>📧</span>
                     <span>Chamados via E-mail</span>
@@ -541,12 +579,12 @@
             </div>
 
             <div class="sidebar-section">
-                <div class="sidebar-title">Recursos</div>
-                <div class="sidebar-item" onclick="alert('Gráficos em breve!')">
+                <div class="sidebar-title">🎯 Recursos</div>
+                <div class="sidebar-item" onclick="alert('📊 Gráficos em breve!')">
                     <span>📊</span>
                     <span>Gráficos</span>
                 </div>
-                <div class="sidebar-item" onclick="alert('Satisfação em breve!')">
+                <div class="sidebar-item" onclick="alert('⭐ Satisfação em breve!')">
                     <span>⭐</span>
                     <span>Satisfação</span>
                 </div>
