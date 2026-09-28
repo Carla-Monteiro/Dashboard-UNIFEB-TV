@@ -165,8 +165,15 @@ function atualizarStats(stats = null) {
  * Abrir modal com detalhes do chamado
  */
 function abrirDetalhes(id) {
-  const chamado = chamadosAtivos.find(c => c.id === id);
-  if (!chamado) return;
+  // Procura em ambos os arrays (ativos e concluídos)
+  let chamado = chamadosAtivos.find(c => c.id === id);
+  if (!chamado) {
+    chamado = chamadosConcluidos.find(c => c.id === id);
+  }
+  if (!chamado) {
+    console.warn('Chamado não encontrado:', id);
+    return;
+  }
 
   document.getElementById('modal-id').textContent = chamado.id;
   document.getElementById('modal-titulo').textContent = chamado.titulo;
