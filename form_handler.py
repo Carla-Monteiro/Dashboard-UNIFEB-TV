@@ -988,13 +988,24 @@ def obter_pesquisas():
                     valor_resumido = str(valor)[:100] if valor else "(vazio)"
                     logger.info(f"   '{chave}' = {valor_resumido}")
             # Campos REAIS do SharePoint - PesquisasSatisfacao
-            avaliacao = fields.get('Avaliacao', '')  # "Ótimo", "Bom", etc
+            avaliacao_texto = fields.get('Avaliacao', '')  # "Ótimo", "Bom", etc
             numero_chamado = fields.get('NumeroChamado', '')
             author_id = fields.get('AuthorLookupId', '')
 
+            # Converter avaliação de texto para número de estrelas
+            mapa_avaliacao = {
+                'Ótimo': 5,
+                'Excelente': 5,
+                'Bom': 4,
+                'Regular': 3,
+                'Ruim': 2,
+                'Péssimo': 1,
+            }
+            avaliacao_num = mapa_avaliacao.get(avaliacao_texto, 0)
+
             pesquisas.append({
                 'id': item.get('id'),
-                'avaliacao': avaliacao,  # Texto: "Ótimo", "Bom", etc
+                'avaliacao': avaliacao_num,  # Número: 1-5
                 'comentario': '',  # Não existe na lista PesquisasSatisfacao
                 'solicitante': f'ID:{author_id}' if author_id else '-',  # AuthorLookupId
                 'numeroChamado': numero_chamado,
