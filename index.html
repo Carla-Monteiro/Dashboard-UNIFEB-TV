@@ -787,34 +787,58 @@
         };
 
         const API_BASE_URL = 'https://unifeb-backend.onrender.com/api';
-        let dadosGlobais = { ativos: [], concluidos: [], pesquisas: [] };
+        let dadosGlobais = { ativos: [], concluidos: [], pesquisas: [], graficos: {} };
         let categoriaAtual = 'detalhado';
         let chamadoSelecionado = null;
         let modoEdicao = false;
+
+        // Helper function para acessar elementos com segurança
+        function setElementText(elementId, text) {
+            const el = document.getElementById(elementId);
+            if (el) el.textContent = text;
+        }
+
+        function setElementHTML(elementId, html) {
+            const el = document.getElementById(elementId);
+            if (el) el.innerHTML = html;
+        }
+
+        function getElement(elementId) {
+            return document.getElementById(elementId);
+        }
 
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const senha = document.getElementById('senhaInput').value;
             if (senhas[senha]) {
-                document.getElementById('userDisplay').textContent = senhas[senha].nome;
-                document.getElementById('loginOverlay').classList.add('hidden');
-                document.getElementById('dashboard').classList.remove('hidden');
+                setElementText('userDisplay', senhas[senha].nome);
+                const overlay = getElement('loginOverlay');
+                const dashboard = getElement('dashboard');
+                if (overlay) overlay.classList.add('hidden');
+                if (dashboard) dashboard.classList.remove('hidden');
                 await carregarTodosDados();
                 setInterval(carregarTodosDados, 30000);
             } else {
-                document.getElementById('loginError').classList.add('show');
+                const errorEl = getElement('loginError');
+                if (errorEl) {
+                    errorEl.classList.add('show');
+                    setTimeout(() => errorEl.classList.remove('show'), 3000);
+                }
                 document.getElementById('senhaInput').value = '';
-                setTimeout(() => document.getElementById('loginError').classList.remove('show'), 3000);
             }
         });
 
         async function carregarTodosDados() {
             try {
-                const [ativos, concluidos, graficos] = await Promise.all([
+                const resultados = await Promise.allSettled([
                     fetch(`${API_BASE_URL}/chamados/ativos`).then(r => r.json()),
                     fetch(`${API_BASE_URL}/chamados/concluidos`).then(r => r.json()),
                     fetch(`${API_BASE_URL}/graficos`).then(r => r.json())
                 ]);
+
+                const ativos = resultados[0].status === 'fulfilled' ? resultados[0].value : [];
+                const concluidos = resultados[1].status === 'fulfilled' ? resultados[1].value : [];
+                const graficos = resultados[2].status === 'fulfilled' ? resultados[2].value : {};
 
                 // Normalizar dados: adicionar campo setor_mapeado baseado em SetordeAtendimento
                 const normalizarChamados = (chamados) => {
@@ -828,12 +852,13 @@
 
                 dadosGlobais.ativos = normalizarChamados(ativos);
                 dadosGlobais.concluidos = normalizarChamados(concluidos);
-                dadosGlobais.graficos = graficos;
+                dadosGlobais.graficos = graficos || {};
 
-                document.getElementById('stat-abertos').textContent = dadosGlobais.ativos.filter(c => c.status === 'Aberto').length;
-                document.getElementById('stat-andamento').textContent = dadosGlobais.ativos.filter(c => c.status === 'Em Andamento').length;
-                document.getElementById('stat-concluidos').textContent = dadosGlobais.concluidos.length;
-                document.getElementById('stat-vencidos').textContent = dadosGlobais.ativos.filter(c => c.status === 'Vencido').length;
+                // Atualizar stats principales com verificação
+                setElementText('stat-abertos', dadosGlobais.ativos.filter(c => c.status === 'Aberto').length);
+                setElementText('stat-andamento', dadosGlobais.ativos.filter(c => c.status === 'Em Andamento').length);
+                setElementText('stat-concluidos', dadosGlobais.concluidos.length);
+                setElementText('stat-vencidos', dadosGlobais.ativos.filter(c => c.status === 'Vencido').length);
 
                 // Atualizar stats dos gráficos
                 const totalChamados = dadosGlobais.ativos.length + dadosGlobais.concluidos.length;
@@ -841,23 +866,21 @@
                 const andamento = dadosGlobais.ativos.filter(c => c.status === 'Em Andamento').length;
                 const concluidosCount = dadosGlobais.concluidos.length;
 
-                if (document.getElementById('graficos-total')) {
-                    document.getElementById('graficos-total').textContent = totalChamados;
-                    document.getElementById('graficos-abertos').textContent = abertos;
-                    document.getElementById('graficos-andamento').textContent = andamento;
-                    document.getElementById('graficos-concluidos').textContent = concluidosCount;
-                }
+                setElementText('graficos-total', totalChamados);
+                setElementText('graficos-abertos', abertos);
+                setElementText('graficos-andamento', andamento);
+                setElementText('graficos-concluidos', concluidosCount);
 
                 renderizarTabelaChamados();
                 renderizarTabelaConcluidos();
 
                 // Carregar dados de satisfação
                 await carregarPesquisas();
-                renderizarTabelaSatisfacao();
 
                 criarGraficos();
+                console.log('✅ Dashboard atualizado com sucesso!');
             } catch (error) {
-                console.error('❌ Erro:', error);
+                console.error('❌ Erro ao carregar dados:', error.message);
             }
         }
 
@@ -868,11 +891,11 @@
                     dadosGlobais.pesquisas = await response.json();
                     console.log(`✅ ${dadosGlobais.pesquisas.length} pesquisas de satisfação carregadas`);
                 } else {
-                    console.warn('⚠️ Erro ao carregar pesquisas (status: ' + response.status + ')');
+                    console.warn(`⚠️ Erro ao carregar pesquisas (status ${response.status}) - ${response.statusText}`);
                     dadosGlobais.pesquisas = [];
                 }
             } catch (error) {
-                console.error('❌ Erro ao carregar pesquisas:', error);
+                console.error('❌ Erro ao carregar pesquisas:', error.message);
                 dadosGlobais.pesquisas = [];
             }
         }
@@ -926,146 +949,159 @@
         }
 
         function renderizarTabelaChamados() {
-            let filtrados = dadosGlobais.ativos;
+            const tabelaEl = getElement('tabelaChamados');
+            if (!tabelaEl) return;
+
+            let filtrados = dadosGlobais.ativos || [];
             if (categoriaAtual !== 'detalhado') {
-                filtrados = dadosGlobais.ativos.filter(c => c.setor_mapeado === categoriaAtual);
+                filtrados = filtrados.filter(c => c.setor_mapeado === categoriaAtual);
             }
-            document.getElementById('tabelaChamados').innerHTML = filtrados.length === 0
+            tabelaEl.innerHTML = filtrados.length === 0
                 ? '<tr><td colspan="6" class="loading">Sem chamados</td></tr>'
                 : filtrados.map(c => `<tr onclick="abrirModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td><span class="badge badge-${c.status.toLowerCase().replace(/ /g,'-')}">${c.status}</span></td><td><span class="badge badge-${c.prioridade.toLowerCase()}">${c.prioridade}</span></td><td>${c.data_criacao || '-'}</td></tr>`).join('');
         }
 
         function renderizarTabelaConcluidos() {
-            document.getElementById('tabelaConcluidos').innerHTML = dadosGlobais.concluidos.length === 0
+            const tabelaEl = getElement('tabelaConcluidos');
+            if (!tabelaEl) return;
+
+            tabelaEl.innerHTML = (dadosGlobais.concluidos || []).length === 0
                 ? '<tr><td colspan="6" class="loading">Sem dados</td></tr>'
-                : dadosGlobais.concluidos.map(c => `<tr onclick="abrirModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td>${c.categoria || 'N/A'}</td><td>${c.data_conclusao || '-'}</td><td>⭐⭐⭐⭐</td></tr>`).join('');
+                : (dadosGlobais.concluidos || []).map(c => `<tr onclick="abrirModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td>${c.categoria || 'N/A'}</td><td>${c.data_conclusao || '-'}</td><td>⭐⭐⭐⭐</td></tr>`).join('');
         }
 
-        function renderizarTabelaSatisfacao() {
-            if (!dadosGlobais.pesquisas || dadosGlobais.pesquisas.length === 0) {
-                document.getElementById('tabelaSatisfacao').innerHTML = '<tr><td colspan="5" class="loading">Nenhuma pesquisa de satisfação encontrada</td></tr>';
-                return;
-            }
-
-            const linhas = dadosGlobais.pesquisas.map(p => {
-                // Formatar avaliação numérica em estrelas
-                let estrelas = '⭐';
-                if (p.avaliacao) {
-                    const num = parseInt(p.avaliacao) || 0;
-                    estrelas = num > 0 ? '⭐'.repeat(Math.min(num, 5)) : '-';
-                }
-
-                // Comentário: só aparece se tiver
-                const comentario = p.comentario && p.comentario.trim() ? p.comentario : '';
-                const data = p.dataResposta
-                    ? new Date(p.dataResposta).toLocaleDateString('pt-BR')
-                    : '-';
-
-                return `<tr>
-                    <td><b>${p.numeroChamado || p.id || '-'}</b></td>
-                    <td>${p.solicitante || '-'}</td>
-                    <td>${estrelas}</td>
-                    <td>${comentario}</td>
-                    <td>${data}</td>
-                </tr>`;
-            }).join('');
-
-            document.getElementById('tabelaSatisfacao').innerHTML = linhas || '<tr><td colspan="5" class="loading">Sem pesquisas</td></tr>';
-        }
 
         function abrirModal(chamado) {
+            if (!chamado) return;
+
             chamadoSelecionado = chamado;
             modoEdicao = false;
-            document.getElementById('modalContent').classList.remove('editing');
+            const modalContent = getElement('modalContent');
+            if (modalContent) modalContent.classList.remove('editing');
 
-            document.getElementById('modalTitulo').textContent = chamado.titulo || 'Sem título';
-            document.getElementById('modalSubtitulo').textContent = `ID: ${chamado.id}`;
-            document.getElementById('modalID').textContent = chamado.id;
-            document.getElementById('modalIDInput').value = chamado.id;
-            document.getElementById('modalSolicitante').textContent = chamado.solicitante || '-';
-            document.getElementById('modalSolicitanteInput').value = chamado.solicitante || '';
-            document.getElementById('modalTituloValue').textContent = chamado.titulo || '-';
-            document.getElementById('modalTituloInput').value = chamado.titulo || '';
-            document.getElementById('modalEmail').textContent = chamado.email || '-';
-            document.getElementById('modalEmailInput').value = chamado.email || '';
+            setElementText('modalTitulo', chamado.titulo || 'Sem título');
+            setElementText('modalSubtitulo', `ID: ${chamado.id}`);
+            setElementText('modalID', chamado.id);
+            const modalIDInput = getElement('modalIDInput');
+            if (modalIDInput) modalIDInput.value = chamado.id;
+
+            setElementText('modalSolicitante', chamado.solicitante || '-');
+            const modalSolicitanteInput = getElement('modalSolicitanteInput');
+            if (modalSolicitanteInput) modalSolicitanteInput.value = chamado.solicitante || '';
+
+            setElementText('modalTituloValue', chamado.titulo || '-');
+            const modalTituloInput = getElement('modalTituloInput');
+            if (modalTituloInput) modalTituloInput.value = chamado.titulo || '';
+
+            setElementText('modalEmail', chamado.email || '-');
+            const modalEmailInput = getElement('modalEmailInput');
+            if (modalEmailInput) modalEmailInput.value = chamado.email || '';
             const status = (chamado.status || '-').trim();
-            const elStatus = document.getElementById('modalStatus');
-            elStatus.textContent = status;
-            elStatus.style.background = 'rgba(255, 165, 0, 0.4)';
-            elStatus.style.color = '#ffb74d';
-            elStatus.style.padding = '4px 8px';
-            elStatus.style.borderRadius = '3px';
-            elStatus.style.display = 'inline-block';
-            elStatus.style.fontWeight = '700';
-            elStatus.style.width = 'fit-content';
-            elStatus.style.flex = 'none';
+            const elStatus = getElement('modalStatus');
+            if (elStatus) {
+                elStatus.textContent = status;
+                elStatus.style.background = 'rgba(255, 165, 0, 0.4)';
+                elStatus.style.color = '#ffb74d';
+                elStatus.style.padding = '4px 8px';
+                elStatus.style.borderRadius = '3px';
+                elStatus.style.display = 'inline-block';
+                elStatus.style.fontWeight = '700';
+                elStatus.style.width = 'fit-content';
+                elStatus.style.flex = 'none';
 
-            if (status.toLowerCase().includes('andamento')) {
-                elStatus.style.background = 'rgba(96, 165, 250, 0.3)';
-                elStatus.style.color = '#64b5f6';
-            } else if (status.toLowerCase().includes('concluído') || status.toLowerCase().includes('concluido')) {
-                elStatus.style.background = 'rgba(16, 185, 129, 0.3)';
-                elStatus.style.color = '#4db8a8';
-            } else if (status.toLowerCase().includes('vencido')) {
-                elStatus.style.background = 'rgba(212, 114, 107, 0.3)';
-                elStatus.style.color = '#ff8a80';
+                if (status.toLowerCase().includes('andamento')) {
+                    elStatus.style.background = 'rgba(96, 165, 250, 0.3)';
+                    elStatus.style.color = '#64b5f6';
+                } else if (status.toLowerCase().includes('concluído') || status.toLowerCase().includes('concluido')) {
+                    elStatus.style.background = 'rgba(16, 185, 129, 0.3)';
+                    elStatus.style.color = '#4db8a8';
+                } else if (status.toLowerCase().includes('vencido')) {
+                    elStatus.style.background = 'rgba(212, 114, 107, 0.3)';
+                    elStatus.style.color = '#ff8a80';
+                }
             }
 
-            document.getElementById('modalStatusInput').value = chamado.status || 'Aberto';
+            const modalStatusInput = getElement('modalStatusInput');
+            if (modalStatusInput) modalStatusInput.value = chamado.status || 'Aberto';
+
             const prioridade = (chamado.prioridade || '-').trim();
-            const elPrioridade = document.getElementById('modalPrioridade');
-            elPrioridade.textContent = prioridade;
-            elPrioridade.style.background = 'rgba(255, 165, 0, 0.4)';
-            elPrioridade.style.color = '#ffb74d';
-            elPrioridade.style.padding = '4px 8px';
-            elPrioridade.style.borderRadius = '3px';
-            elPrioridade.style.display = 'inline-block';
-            elPrioridade.style.fontWeight = '700';
-            elPrioridade.style.width = 'fit-content';
-            elPrioridade.style.flex = 'none';
+            const elPrioridade = getElement('modalPrioridade');
+            if (elPrioridade) {
+                elPrioridade.textContent = prioridade;
+                elPrioridade.style.background = 'rgba(255, 165, 0, 0.4)';
+                elPrioridade.style.color = '#ffb74d';
+                elPrioridade.style.padding = '4px 8px';
+                elPrioridade.style.borderRadius = '3px';
+                elPrioridade.style.display = 'inline-block';
+                elPrioridade.style.fontWeight = '700';
+                elPrioridade.style.width = 'fit-content';
+                elPrioridade.style.flex = 'none';
 
-            if (prioridade.toLowerCase().includes('alta')) {
-                elPrioridade.style.background = 'rgba(212, 114, 107, 0.4)';
-                elPrioridade.style.color = '#ff8a80';
-            } else if (prioridade.toLowerCase().includes('baixa')) {
-                elPrioridade.style.background = 'rgba(16, 185, 129, 0.4)';
-                elPrioridade.style.color = '#4db8a8';
+                if (prioridade.toLowerCase().includes('alta')) {
+                    elPrioridade.style.background = 'rgba(212, 114, 107, 0.4)';
+                    elPrioridade.style.color = '#ff8a80';
+                } else if (prioridade.toLowerCase().includes('baixa')) {
+                    elPrioridade.style.background = 'rgba(16, 185, 129, 0.4)';
+                    elPrioridade.style.color = '#4db8a8';
+                }
             }
-            document.getElementById('modalPrioridadeInput').value = prioridade;
-            document.getElementById('modalDataCriacao').textContent = chamado.data_criacao || '-';
-            document.getElementById('modalDataCriacaoInput').value = chamado.data_criacao || '';
-            document.getElementById('modalPrazoSLA').textContent = chamado.data_prazo || '-';
-            document.getElementById('modalPrazoSLAInput').value = chamado.data_prazo || '';
+
+            const modalPrioridadeInput = getElement('modalPrioridadeInput');
+            if (modalPrioridadeInput) modalPrioridadeInput.value = prioridade;
+
+            setElementText('modalDataCriacao', chamado.data_criacao || '-');
+            const modalDataCriacaoInput = getElement('modalDataCriacaoInput');
+            if (modalDataCriacaoInput) modalDataCriacaoInput.value = chamado.data_criacao || '';
+
+            setElementText('modalPrazoSLA', chamado.data_prazo || '-');
+            const modalPrazoSLAInput = getElement('modalPrazoSLAInput');
+            if (modalPrazoSLAInput) modalPrazoSLAInput.value = chamado.data_prazo || '';
 
             const historico = chamado.historico || [];
-            document.getElementById('modalHistorico').innerHTML = historico.length === 0
-                ? '<div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-action">Sem histórico</div></div></div>'
-                : historico.map(h => `<div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-action">${h.acao || 'Ação'}</div><div class="timeline-time">${h.tempo || '-'}</div></div></div>`).join('');
+            const modalHistorico = getElement('modalHistorico');
+            if (modalHistorico) {
+                modalHistorico.innerHTML = historico.length === 0
+                    ? '<div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-action">Sem histórico</div></div></div>'
+                    : historico.map(h => `<div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-action">${h.acao || 'Ação'}</div><div class="timeline-time">${h.tempo || '-'}</div></div></div>`).join('');
+            }
 
-            document.getElementById('btnEditar').textContent = '✏️ Editar';
-            document.getElementById('modalOverlay').classList.remove('hidden');
+            setElementText('btnEditar', '✏️ Editar');
+            const modalOverlay = getElement('modalOverlay');
+            if (modalOverlay) modalOverlay.classList.remove('hidden');
         }
 
         function toggleEditMode() {
             modoEdicao = !modoEdicao;
+            const modalContent = getElement('modalContent');
+            const btnEditar = getElement('btnEditar');
+
             if (modoEdicao) {
-                document.getElementById('modalContent').classList.add('editing');
-                document.getElementById('btnEditar').textContent = '💾 Salvar';
+                if (modalContent) modalContent.classList.add('editing');
+                if (btnEditar) btnEditar.textContent = '💾 Salvar';
             } else {
-                document.getElementById('modalContent').classList.remove('editing');
-                document.getElementById('btnEditar').textContent = '✏️ Editar';
+                if (modalContent) modalContent.classList.remove('editing');
+                if (btnEditar) btnEditar.textContent = '✏️ Editar';
                 salvarChamado();
             }
         }
 
         async function salvarChamado() {
+            if (!chamadoSelecionado) return;
+
+            const getTitulo = getElement('modalTituloInput');
+            const getSolicitante = getElement('modalSolicitanteInput');
+            const getEmail = getElement('modalEmailInput');
+            const getStatus = getElement('modalStatusInput');
+            const getPrioridade = getElement('modalPrioridadeInput');
+            const getPrazoSLA = getElement('modalPrazoSLAInput');
+
             const dados = {
-                titulo: document.getElementById('modalTituloInput').value,
-                solicitante: document.getElementById('modalSolicitanteInput').value,
-                email: document.getElementById('modalEmailInput').value,
-                status: document.getElementById('modalStatusInput').value,
-                prioridade: document.getElementById('modalPrioridadeInput').value,
-                data_prazo: document.getElementById('modalPrazoSLAInput').value
+                titulo: getTitulo ? getTitulo.value : '',
+                solicitante: getSolicitante ? getSolicitante.value : '',
+                email: getEmail ? getEmail.value : '',
+                status: getStatus ? getStatus.value : '',
+                prioridade: getPrioridade ? getPrioridade.value : '',
+                data_prazo: getPrazoSLA ? getPrazoSLA.value : ''
             };
 
             try {
@@ -1076,23 +1112,30 @@
                 });
 
                 if (response.ok) {
-                    console.log('✅ Salvo!');
+                    console.log('✅ Chamado salvo com sucesso!');
                     await carregarTodosDados();
+                } else {
+                    console.warn(`⚠️ Erro ao salvar (status ${response.status})`);
                 }
             } catch (error) {
-                console.error('❌ Erro:', error);
+                console.error('❌ Erro ao salvar chamado:', error.message);
             }
         }
 
         function fecharModal() {
             modoEdicao = false;
-            document.getElementById('modalContent').classList.remove('editing');
-            document.getElementById('modalOverlay').classList.add('hidden');
+            const modalContent = getElement('modalContent');
+            const modalOverlay = getElement('modalOverlay');
+            if (modalContent) modalContent.classList.remove('editing');
+            if (modalOverlay) modalOverlay.classList.add('hidden');
         }
 
-        document.getElementById('modalOverlay').addEventListener('click', function(e) {
-            if (e.target === this) fecharModal();
-        });
+        const modalOverlay = getElement('modalOverlay');
+        if (modalOverlay) {
+            modalOverlay.addEventListener('click', function(e) {
+                if (e.target === this) fecharModal();
+            });
+        }
 
         // Armazena instâncias dos gráficos para atualizar
         let chartInstances = {
@@ -1118,11 +1161,14 @@
                 : ['Aberto', 'Em Andamento', 'Concluído', 'Vencido'];
             const statusValues = statusLabels.map(label => statusData[label] || 0);
 
-            if (document.getElementById('chartStatus')) {
+            const chartStatusEl = getElement('chartStatus');
+            if (chartStatusEl) {
                 // Destruir gráfico anterior se existir
-                if (chartInstances.chartStatus) chartInstances.chartStatus.destroy();
+                if (chartInstances.chartStatus) {
+                    try { chartInstances.chartStatus.destroy(); } catch(e) {}
+                }
 
-                chartInstances.chartStatus = new Chart(document.getElementById('chartStatus').getContext('2d'), {
+                chartInstances.chartStatus = new Chart(chartStatusEl.getContext('2d'), {
                     type: 'doughnut',
                     data: {
                         labels: statusLabels,
@@ -1142,10 +1188,13 @@
             const prioridadeLabels = ['Alta', 'Média', 'Baixa'];
             const prioridadeValues = prioridadeLabels.map(label => prioridadeData[label] || 0);
 
-            if (document.getElementById('chartPriority')) {
-                if (chartInstances.chartPriority) chartInstances.chartPriority.destroy();
+            const chartPriorityEl = getElement('chartPriority');
+            if (chartPriorityEl) {
+                if (chartInstances.chartPriority) {
+                    try { chartInstances.chartPriority.destroy(); } catch(e) {}
+                }
 
-                chartInstances.chartPriority = new Chart(document.getElementById('chartPriority').getContext('2d'), {
+                chartInstances.chartPriority = new Chart(chartPriorityEl.getContext('2d'), {
                     type: 'bar',
                     data: {
                         labels: prioridadeLabels,
@@ -1162,10 +1211,13 @@
                 : ['Sem dados'];
             const categoriaValues = categoriaLabels.map(label => categoriaData[label] || 0);
 
-            if (document.getElementById('chartCategory')) {
-                if (chartInstances.chartCategory) chartInstances.chartCategory.destroy();
+            const chartCategoryEl = getElement('chartCategory');
+            if (chartCategoryEl) {
+                if (chartInstances.chartCategory) {
+                    try { chartInstances.chartCategory.destroy(); } catch(e) {}
+                }
 
-                chartInstances.chartCategory = new Chart(document.getElementById('chartCategory').getContext('2d'), {
+                chartInstances.chartCategory = new Chart(chartCategoryEl.getContext('2d'), {
                     type: 'bar',
                     data: {
                         labels: categoriaLabels,
@@ -1189,10 +1241,13 @@
                 ? tendenciaData.map(d => d.resolvidos)
                 : [0, 0, 0, 0, 0, 0, 0];
 
-            if (document.getElementById('chartTrend')) {
-                if (chartInstances.chartTrend) chartInstances.chartTrend.destroy();
+            const chartTrendEl = getElement('chartTrend');
+            if (chartTrendEl) {
+                if (chartInstances.chartTrend) {
+                    try { chartInstances.chartTrend.destroy(); } catch(e) {}
+                }
 
-                chartInstances.chartTrend = new Chart(document.getElementById('chartTrend').getContext('2d'), {
+                chartInstances.chartTrend = new Chart(chartTrendEl.getContext('2d'), {
                     type: 'line',
                     data: {
                         labels: diasLabels,
@@ -1222,10 +1277,13 @@
                 : ['Sem dados'];
             const setoresValues = setoresLabels.map(label => setoresData[label] || 0);
 
-            if (document.getElementById('chartEmailSetor')) {
-                if (chartInstances.chartEmailSetor) chartInstances.chartEmailSetor.destroy();
+            const chartEmailSetorEl = getElement('chartEmailSetor');
+            if (chartEmailSetorEl) {
+                if (chartInstances.chartEmailSetor) {
+                    try { chartInstances.chartEmailSetor.destroy(); } catch(e) {}
+                }
 
-                chartInstances.chartEmailSetor = new Chart(document.getElementById('chartEmailSetor').getContext('2d'), {
+                chartInstances.chartEmailSetor = new Chart(chartEmailSetorEl.getContext('2d'), {
                     type: 'bar',
                     data: {
                         labels: setoresLabels,
@@ -1242,10 +1300,13 @@
                 : ['Sem dados'];
             const setoresSatValues = setoresSatLabels.map(label => satisfacaoData[label] || 0);
 
-            if (document.getElementById('chartSatisfacaoSetor')) {
-                if (chartInstances.chartSatisfacaoSetor) chartInstances.chartSatisfacaoSetor.destroy();
+            const chartSatisfacaoSetorEl = getElement('chartSatisfacaoSetor');
+            if (chartSatisfacaoSetorEl) {
+                if (chartInstances.chartSatisfacaoSetor) {
+                    try { chartInstances.chartSatisfacaoSetor.destroy(); } catch(e) {}
+                }
 
-                chartInstances.chartSatisfacaoSetor = new Chart(document.getElementById('chartSatisfacaoSetor').getContext('2d'), {
+                chartInstances.chartSatisfacaoSetor = new Chart(chartSatisfacaoSetorEl.getContext('2d'), {
                     type: 'bar',
                     data: {
                         labels: setoresSatLabels,
@@ -1301,17 +1362,20 @@
             const media = total > 0 ? (soma / total).toFixed(1) : 0;
             const satisfeitosPct = total > 0 ? Math.round((satisfeitos / total) * 100) : 0;
 
-            // Atualizar cards de estatísticas
-            document.getElementById('satisfacao-total').textContent = total;
-            document.getElementById('satisfacao-media').textContent = media;
-            document.getElementById('satisfacao-satisfeitos').textContent = satisfeitosPct + '%';
-            document.getElementById('satisfacao-30d').textContent = ultimos30d;
+            // Atualizar cards de estatísticas com verificação
+            setElementText('satisfacao-total', total);
+            setElementText('satisfacao-media', media);
+            setElementText('satisfacao-satisfeitos', satisfeitosPct + '%');
+            setElementText('satisfacao-30d', ultimos30d);
 
             // Criar gráfico de distribuição
-            if (document.getElementById('chartSatisfacao')) {
-                if (chartInstances.chartSatisfacao) chartInstances.chartSatisfacao.destroy();
+            const chartSatisfacaoEl = getElement('chartSatisfacao');
+            if (chartSatisfacaoEl) {
+                if (chartInstances.chartSatisfacao) {
+                    try { chartInstances.chartSatisfacao.destroy(); } catch(e) {}
+                }
 
-                chartInstances.chartSatisfacao = new Chart(document.getElementById('chartSatisfacao').getContext('2d'), {
+                chartInstances.chartSatisfacao = new Chart(chartSatisfacaoEl.getContext('2d'), {
                     type: 'bar',
                     data: {
                         labels: ['⭐⭐⭐⭐⭐', '⭐⭐⭐⭐', '⭐⭐⭐', '⭐⭐', '⭐'],
@@ -1349,7 +1413,12 @@
                 });
             }
 
-            const container = document.getElementById('satisfacao-cards-grid');
+            const container = getElement('satisfacao-cards-grid');
+            if (!container) {
+                console.warn('⚠️ Container satisfacao-cards-grid não encontrado');
+                return;
+            }
+
             if (!pesquisas || pesquisas.length === 0) {
                 container.innerHTML = '<div class="loading">Nenhuma pesquisa encontrada</div>';
                 return;
@@ -1382,33 +1451,41 @@
             filtroSatisfacaoAtual = nota;
 
             // Atualizar botões de filtro
-            document.querySelectorAll('.satisfacao-filtro-btn').forEach((btn, idx) => {
-                btn.classList.remove('active');
-                if (nota === null && idx === 0) btn.classList.add('active');
-                else if (nota !== null) {
-                    // Comparar com o número na string do botão
-                    const botaoTexto = btn.textContent;
-                    if (botaoTexto.includes('⭐'.repeat(nota))) btn.classList.add('active');
-                }
-            });
+            const botoes = document.querySelectorAll('.satisfacao-filtro-btn');
+            if (botoes && botoes.length > 0) {
+                botoes.forEach((btn, idx) => {
+                    btn.classList.remove('active');
+                    if (nota === null && idx === 0) btn.classList.add('active');
+                    else if (nota !== null) {
+                        // Comparar com o número na string do botão
+                        const botaoTexto = btn.textContent;
+                        if (botaoTexto.includes('⭐'.repeat(nota))) btn.classList.add('active');
+                    }
+                });
+            }
 
             renderizarCardsSatisfacao();
         }
 
         function logout() {
-            document.getElementById('loginOverlay').classList.remove('hidden');
-            document.getElementById('dashboard').classList.add('hidden');
-            document.getElementById('senhaInput').value = '';
+            const overlay = getElement('loginOverlay');
+            const dashboard = getElement('dashboard');
+            const input = getElement('senhaInput');
+
+            if (overlay) overlay.classList.remove('hidden');
+            if (dashboard) dashboard.classList.add('hidden');
+            if (input) input.value = '';
         }
 
         function abrirPagina(pagina) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.add('page-hidden'));
-            document.getElementById('pagina-' + pagina).classList.remove('page-hidden');
+            const paginaEl = getElement('pagina-' + pagina);
+            if (paginaEl) paginaEl.classList.remove('page-hidden');
         }
 
         function filtrarPorCategoria(element, categoria) {
             document.querySelectorAll('.sidebar-section:first-child .sidebar-item').forEach(item => item.classList.remove('active'));
-            element.classList.add('active');
+            if (element) element.classList.add('active');
             categoriaAtual = categoria;
             const titulos = {
                 'detalhado': '📋 Detalhados',
@@ -1417,12 +1494,14 @@
                 'naem': '🏢 NAEM',
                 'manutencao': '🔧 Manutenção'
             };
-            document.getElementById('categoriaTitulo').textContent = titulos[categoria];
+            setElementText('categoriaTitulo', titulos[categoria]);
             renderizarTabelaChamados();
             abrirPagina('chamados');
         }
 
-        console.log('✅ Dashboard Carregado!');
+        console.log('✅ Dashboard JS inicializado com segurança!');
+        console.log('🔗 API Base URL:', API_BASE_URL);
+        console.log('📊 Gráficos disponíveis:', Object.keys(chartInstances));
     </script>
 </body>
 </html>
