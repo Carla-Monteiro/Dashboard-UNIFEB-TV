@@ -7,15 +7,15 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         :root {
-            --bg-dark: #0f1419;
-            --bg-secondary: #1a1f2e;
-            --border-gold: #d4a574;
-            --gold: #ffa500;
-            --orange: #ff9800;
+            --bg-dark: #1a1f2e;
+            --bg-secondary: #242d3d;
+            --border-gold: #c9a961;
+            --gold: #d4a574;
+            --orange: #ffa500;
             --green: #10b981;
-            --red: #ef5350;
+            --red: #d4726b;
             --blue: #60a5fa;
-            --text-primary: #e0e0e0;
+            --text-primary: #dcdcdc;
             --text-secondary: #a0a0a0;
         }
 
@@ -208,7 +208,7 @@
             font-size: 11px;
             text-transform: uppercase;
         }
-        td { padding: 10px 15px; border-bottom: 1px solid rgba(255, 165, 0, 0.1); font-size: 12px; }
+        td { padding: 10px 15px; border-bottom: 1px solid rgba(255, 165, 0, 0.1); font-size: 12px; font-weight: 600; }
         tbody tr { cursor: pointer; transition: background 0.2s ease; }
         tbody tr:hover { background: rgba(255, 165, 0, 0.1); }
 
@@ -220,13 +220,14 @@
             font-weight: 600;
             text-transform: uppercase;
         }
-        .badge-aberto { background: rgba(255, 152, 0, 0.2); color: var(--orange); }
-        .badge-andamento { background: rgba(96, 165, 250, 0.2); color: var(--blue); }
-        .badge-concluido { background: rgba(16, 185, 129, 0.2); color: var(--green); }
-        .badge-vencido { background: rgba(239, 83, 80, 0.2); color: var(--red); }
-        .badge-alta { background: rgba(239, 83, 80, 0.2); color: var(--red); }
-        .badge-media { background: rgba(255, 165, 0, 0.2); color: var(--gold); }
-        .badge-baixa { background: rgba(16, 185, 129, 0.2); color: var(--green); }
+        .badge-aberto { background: rgba(255, 165, 0, 0.4) !important; color: #ffb74d !important; font-weight: 700 !important; }
+        .badge-em-andamento { background: rgba(96, 165, 250, 0.3) !important; color: #64b5f6 !important; font-weight: 700 !important; }
+        .badge-concluido { background: rgba(16, 185, 129, 0.3) !important; color: #4db8a8 !important; font-weight: 700 !important; }
+        .badge-vencido { background: rgba(212, 114, 107, 0.3) !important; color: #ff8a80 !important; font-weight: 700 !important; }
+        .badge-alta { background: rgba(212, 114, 107, 0.4) !important; color: #ff8a80 !important; font-weight: 700 !important; }
+        .badge-média { background: rgba(255, 165, 0, 0.4) !important; color: #ffb74d !important; font-weight: 700 !important; }
+        .badge-media { background: rgba(255, 165, 0, 0.4) !important; color: #ffb74d !important; font-weight: 700 !important; }
+        .badge-baixa { background: rgba(16, 185, 129, 0.4) !important; color: #4db8a8 !important; font-weight: 700 !important; }
 
         .loading { text-align: center; padding: 20px; color: var(--text-secondary); }
         .page-hidden { display: none; }
@@ -245,7 +246,7 @@
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.85);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -256,8 +257,9 @@
         .modal-overlay.hidden { display: none; }
 
         .modal-content {
-            background: var(--bg-secondary);
-            border-radius: 12px;
+            background: #1a1f2e;
+            border: 1px solid #242d3d;
+            border-radius: 8px;
             padding: 30px;
             max-width: 700px;
             width: 100%;
@@ -287,8 +289,8 @@
             padding-bottom: 15px;
             margin-bottom: 20px;
         }
-        .modal-title { font-size: 24px; font-weight: 700; color: var(--gold); margin-bottom: 5px; }
-        .modal-subtitle { font-size: 12px; color: var(--text-secondary); }
+        .modal-title { font-size: 22px; font-weight: 700; color: #dcdcdc; margin-bottom: 5px; }
+        .modal-subtitle { font-size: 12px; color: #b0b0b0; }
 
         .modal-section {
             margin-bottom: 25px;
@@ -298,20 +300,24 @@
         .modal-section:last-of-type { border-bottom: none; }
         .modal-section-title { font-size: 11px; font-weight: 700; color: var(--gold); text-transform: uppercase; margin-bottom: 15px; letter-spacing: 0.5px; }
 
-        .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .modal-field { display: flex; flex-direction: column; gap: 8px; }
+        .modal-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        .modal-field { display: flex; align-items: center; gap: 15px; }
         .modal-field-full { grid-column: 1 / -1; }
-        .modal-label { font-weight: 600; color: var(--gold); font-size: 11px; text-transform: uppercase; }
-        .modal-value { color: var(--text-primary); font-size: 13px; min-height: 20px; }
+        .modal-label { font-weight: 600; color: var(--gold); font-size: 12px; min-width: 120px; text-transform: none; }
+        .modal-value { font-size: 13px; min-height: 20px; flex: 1; font-weight: 500; color: #ffffff; }
+
+
 
         .modal-input, .modal-select {
             background: var(--bg-dark);
             border: 1px solid var(--border-gold);
             border-radius: 6px;
-            padding: 8px 12px;
+            padding: 6px 10px;
             color: var(--text-primary);
             font-size: 12px;
             display: none;
+            flex: 1;
+            min-width: 150px;
         }
         .modal-input:focus, .modal-select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 5px rgba(255, 165, 0, 0.3); }
 
@@ -524,22 +530,22 @@
                 <div class="modal-section-title">Informações Gerais</div>
                 <div class="modal-grid">
                     <div class="modal-field">
-                        <div class="modal-label">ID</div>
+                        <div class="modal-label">ID:</div>
                         <div class="modal-value" id="modalID">-</div>
                         <input type="text" class="modal-input" id="modalIDInput" readonly>
                     </div>
                     <div class="modal-field">
-                        <div class="modal-label">Solicitante</div>
+                        <div class="modal-label">Solicitante:</div>
                         <div class="modal-value" id="modalSolicitante">-</div>
                         <input type="text" class="modal-input" id="modalSolicitanteInput">
                     </div>
                     <div class="modal-field modal-field-full">
-                        <div class="modal-label">Título</div>
+                        <div class="modal-label">Título:</div>
                         <div class="modal-value" id="modalTituloValue">-</div>
                         <input type="text" class="modal-input" id="modalTituloInput">
                     </div>
                     <div class="modal-field modal-field-full">
-                        <div class="modal-label">Email</div>
+                        <div class="modal-label">Email:</div>
                         <div class="modal-value" id="modalEmail">-</div>
                         <input type="email" class="modal-input" id="modalEmailInput">
                     </div>
@@ -551,7 +557,7 @@
                 <div class="modal-section-title">Prioridade & Prazos</div>
                 <div class="modal-grid">
                     <div class="modal-field">
-                        <div class="modal-label">Status</div>
+                        <div class="modal-label">Status:</div>
                         <div class="modal-value" id="modalStatus">-</div>
                         <select class="modal-select" id="modalStatusInput">
                             <option>Aberto</option>
@@ -561,7 +567,7 @@
                         </select>
                     </div>
                     <div class="modal-field">
-                        <div class="modal-label">Prioridade</div>
+                        <div class="modal-label">Prioridade:</div>
                         <div class="modal-value" id="modalPrioridade">-</div>
                         <select class="modal-select" id="modalPrioridadeInput">
                             <option>Baixa</option>
@@ -570,12 +576,12 @@
                         </select>
                     </div>
                     <div class="modal-field">
-                        <div class="modal-label">Data Criação</div>
+                        <div class="modal-label">Data Criação:</div>
                         <div class="modal-value" id="modalDataCriacao">-</div>
                         <input type="text" class="modal-input" id="modalDataCriacaoInput" placeholder="dd/mm/aaaa">
                     </div>
                     <div class="modal-field">
-                        <div class="modal-label">Prazo SLA</div>
+                        <div class="modal-label">Prazo SLA:</div>
                         <div class="modal-value" id="modalPrazoSLA">-</div>
                         <input type="text" class="modal-input" id="modalPrazoSLAInput" placeholder="dd/mm/aaaa">
                     </div>
@@ -657,13 +663,24 @@
 
         function obterCategoriaGrupo(categoria) {
             if (!categoria) return 'email';
-            const cat = categoria.toLowerCase();
-            if (cat.includes('energia') || cat.includes('ar condicionado') || cat.includes('fechadura') ||
-                cat.includes('porta') || cat.includes('janela') || cat.includes('interruptores')) return 'manutencao';
-            if (cat.includes('projetor') || cat.includes('controle') || cat.includes('cabo') ||
-                cat.includes('adaptador') || cat.includes('hdmi') || cat.includes('som')) return 'naem';
-            if (cat.includes('ti') || cat.includes('internet') || cat.includes('computador') ||
-                cat.includes('teclado') || cat.includes('mouse') || cat.includes('telefone')) return 'ti';
+            const cat = categoria.toLowerCase().trim();
+
+            // MANUTENÇÃO
+            if (cat.includes('energia') || cat.includes('ar condicionado') ||
+                cat.includes('fechadura') || cat.includes('porta') ||
+                cat.includes('janela') || cat.includes('interruptores')) return 'manutencao';
+
+            // NAEM
+            if (cat.includes('projetor') || cat.includes('controle projetor') ||
+                cat.includes('cabo vga') || cat.includes('adaptador vga') ||
+                cat.includes('hdmi') || cat.includes('som') || cat.includes('controle a/c')) return 'naem';
+
+            // TI
+            if (cat.includes('internet') || cat.includes('wi-fi') || cat.includes('computador') ||
+                cat.includes('teclado') || cat.includes('mouse') || cat.includes('energia/tomada') ||
+                cat.includes('telefone')) return 'ti';
+
+            // E-MAIL (padrão para "Outro" genérico ou não categorizado)
             return 'email';
         }
 
@@ -674,7 +691,7 @@
             }
             document.getElementById('tabelaChamados').innerHTML = filtrados.length === 0
                 ? '<tr><td colspan="6" class="loading">Sem chamados</td></tr>'
-                : filtrados.map(c => `<tr onclick="abrirModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td><span class="badge badge-${c.status.toLowerCase().replace(' ','-')}">${c.status}</span></td><td><span class="badge badge-${c.prioridade.toLowerCase()}">${c.prioridade}</span></td><td>${c.data_criacao || '-'}</td></tr>`).join('');
+                : filtrados.map(c => `<tr onclick="abrirModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td><span class="badge badge-${c.status.toLowerCase().replace(/ /g,'-')}">${c.status}</span></td><td><span class="badge badge-${c.prioridade.toLowerCase()}">${c.prioridade}</span></td><td>${c.data_criacao || '-'}</td></tr>`).join('');
         }
 
         function renderizarTabelaConcluidos() {
@@ -709,10 +726,50 @@
             document.getElementById('modalTituloInput').value = chamado.titulo || '';
             document.getElementById('modalEmail').textContent = chamado.email || '-';
             document.getElementById('modalEmailInput').value = chamado.email || '';
-            document.getElementById('modalStatus').textContent = chamado.status || '-';
+            const status = (chamado.status || '-').trim();
+            const elStatus = document.getElementById('modalStatus');
+            elStatus.textContent = status;
+            elStatus.style.background = 'rgba(255, 165, 0, 0.4)';
+            elStatus.style.color = '#ffb74d';
+            elStatus.style.padding = '4px 8px';
+            elStatus.style.borderRadius = '3px';
+            elStatus.style.display = 'inline-block';
+            elStatus.style.fontWeight = '700';
+            elStatus.style.width = 'fit-content';
+            elStatus.style.flex = 'none';
+
+            if (status.toLowerCase().includes('andamento')) {
+                elStatus.style.background = 'rgba(96, 165, 250, 0.3)';
+                elStatus.style.color = '#64b5f6';
+            } else if (status.toLowerCase().includes('concluído') || status.toLowerCase().includes('concluido')) {
+                elStatus.style.background = 'rgba(16, 185, 129, 0.3)';
+                elStatus.style.color = '#4db8a8';
+            } else if (status.toLowerCase().includes('vencido')) {
+                elStatus.style.background = 'rgba(212, 114, 107, 0.3)';
+                elStatus.style.color = '#ff8a80';
+            }
+
             document.getElementById('modalStatusInput').value = chamado.status || 'Aberto';
-            document.getElementById('modalPrioridade').textContent = chamado.prioridade || '-';
-            document.getElementById('modalPrioridadeInput').value = chamado.prioridade || 'Média';
+            const prioridade = (chamado.prioridade || '-').trim();
+            const elPrioridade = document.getElementById('modalPrioridade');
+            elPrioridade.textContent = prioridade;
+            elPrioridade.style.background = 'rgba(255, 165, 0, 0.4)';
+            elPrioridade.style.color = '#ffb74d';
+            elPrioridade.style.padding = '4px 8px';
+            elPrioridade.style.borderRadius = '3px';
+            elPrioridade.style.display = 'inline-block';
+            elPrioridade.style.fontWeight = '700';
+            elPrioridade.style.width = 'fit-content';
+            elPrioridade.style.flex = 'none';
+
+            if (prioridade.toLowerCase().includes('alta')) {
+                elPrioridade.style.background = 'rgba(212, 114, 107, 0.4)';
+                elPrioridade.style.color = '#ff8a80';
+            } else if (prioridade.toLowerCase().includes('baixa')) {
+                elPrioridade.style.background = 'rgba(16, 185, 129, 0.4)';
+                elPrioridade.style.color = '#4db8a8';
+            }
+            document.getElementById('modalPrioridadeInput').value = prioridade;
             document.getElementById('modalDataCriacao').textContent = chamado.data_criacao || '-';
             document.getElementById('modalDataCriacaoInput').value = chamado.data_criacao || '';
             document.getElementById('modalPrazoSLA').textContent = chamado.data_prazo || '-';
