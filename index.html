@@ -250,6 +250,8 @@
             align-items: center;
             justify-content: center;
             z-index: 10000;
+            overflow-y: auto;
+            padding: 20px;
         }
         .modal-overlay.hidden { display: none; }
 
@@ -258,9 +260,9 @@
             border: 2px solid var(--border-gold);
             border-radius: 12px;
             padding: 30px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 80vh;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
             overflow-y: auto;
             position: relative;
         }
@@ -286,17 +288,99 @@
             padding-bottom: 15px;
             margin-bottom: 20px;
         }
-        .modal-title { font-size: 22px; font-weight: 700; color: var(--gold); margin-bottom: 5px; }
+        .modal-title { font-size: 24px; font-weight: 700; color: var(--gold); margin-bottom: 5px; }
         .modal-subtitle { font-size: 12px; color: var(--text-secondary); }
 
-        .modal-field {
-            margin-bottom: 15px;
-            display: grid;
-            grid-template-columns: 120px 1fr;
-            gap: 15px;
+        .modal-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 165, 0, 0.2);
         }
-        .modal-label { font-weight: 600; color: var(--gold); font-size: 12px; text-transform: uppercase; }
-        .modal-value { color: var(--text-primary); }
+        .modal-section:last-of-type { border-bottom: none; }
+        .modal-section-title { font-size: 12px; font-weight: 700; color: var(--gold); text-transform: uppercase; margin-bottom: 15px; letter-spacing: 0.5px; }
+
+        .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .modal-field { display: flex; flex-direction: column; gap: 5px; }
+        .modal-label { font-weight: 600; color: var(--gold); font-size: 11px; text-transform: uppercase; }
+        .modal-value { color: var(--text-primary); font-size: 13px; }
+
+        .modal-input {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-gold);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-size: 12px;
+        }
+        .modal-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 5px rgba(255, 165, 0, 0.3); }
+
+        .modal-timeline {
+            background: rgba(255, 165, 0, 0.05);
+            border-left: 3px solid var(--gold);
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 12px;
+            align-items: flex-start;
+        }
+        .timeline-item:last-child { margin-bottom: 0; }
+
+        .timeline-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--gold);
+            border-radius: 50%;
+            margin-top: 5px;
+            flex-shrink: 0;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-action { font-weight: 600; color: var(--gold); font-size: 12px; }
+        .timeline-time { font-size: 11px; color: var(--text-secondary); }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 165, 0, 0.2);
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .modal-btn-close {
+            background: transparent;
+            border: 1px solid var(--border-gold);
+            color: var(--gold);
+        }
+        .modal-btn-close:hover { background: rgba(255, 165, 0, 0.1); }
+
+        .modal-btn-save {
+            background: var(--gold);
+            color: #000;
+            font-weight: 600;
+        }
+        .modal-btn-save:hover { background: var(--orange); }
+
+        .editing .modal-value { display: none; }
+        .editing .modal-input { display: block; }
+        .not-editing .modal-input { display: none; }
     </style>
 </head>
 <body>
@@ -426,41 +510,97 @@
         </div>
     </div>
 
-    <!-- MODAL DE DETALHES -->
+    <!-- MODAL ESTRUTURADA -->
     <div class="modal-overlay hidden" id="modalOverlay">
         <div class="modal-content">
             <button class="modal-close" onclick="fecharModal()">✕</button>
+
             <div class="modal-header">
                 <div class="modal-title" id="modalTitulo">Detalhes do Chamado</div>
                 <div class="modal-subtitle" id="modalSubtitulo">ID #1</div>
             </div>
-            <div class="modal-field">
-                <div class="modal-label">Solicitante</div>
-                <div class="modal-value" id="modalSolicitante">-</div>
+
+            <!-- INFORMAÇÕES GERAIS -->
+            <div class="modal-section">
+                <div class="modal-section-title">Informações Gerais</div>
+                <div class="modal-grid">
+                    <div class="modal-field">
+                        <div class="modal-label">ID</div>
+                        <div class="modal-value" id="modalID">-</div>
+                        <input type="text" class="modal-input not-editing" id="modalIDInput">
+                    </div>
+                    <div class="modal-field">
+                        <div class="modal-label">Solicitante</div>
+                        <div class="modal-value" id="modalSolicitante">-</div>
+                        <input type="text" class="modal-input not-editing" id="modalSolicitanteInput">
+                    </div>
+                    <div class="modal-field" style="grid-column: 1 / -1;">
+                        <div class="modal-label">Título</div>
+                        <div class="modal-value" id="modalTituloValue">-</div>
+                        <input type="text" class="modal-input not-editing" id="modalTituloInput" style="width: 100%;">
+                    </div>
+                    <div class="modal-field" style="grid-column: 1 / -1;">
+                        <div class="modal-label">Email</div>
+                        <div class="modal-value" id="modalEmail">-</div>
+                        <input type="email" class="modal-input not-editing" id="modalEmailInput">
+                    </div>
+                </div>
             </div>
-            <div class="modal-field">
-                <div class="modal-label">Email</div>
-                <div class="modal-value" id="modalEmail">-</div>
+
+            <!-- PRIORIDADE & PRAZOS -->
+            <div class="modal-section">
+                <div class="modal-section-title">Prioridade & Prazos</div>
+                <div class="modal-grid">
+                    <div class="modal-field">
+                        <div class="modal-label">Status</div>
+                        <div class="modal-value" id="modalStatus">-</div>
+                        <select class="modal-input not-editing" id="modalStatusInput">
+                            <option>Aberto</option>
+                            <option>Em Andamento</option>
+                            <option>Concluído</option>
+                            <option>Vencido</option>
+                        </select>
+                    </div>
+                    <div class="modal-field">
+                        <div class="modal-label">Prioridade</div>
+                        <div class="modal-value" id="modalPrioridade">-</div>
+                        <select class="modal-input not-editing" id="modalPrioridadeInput">
+                            <option>Baixa</option>
+                            <option>Média</option>
+                            <option>Alta</option>
+                        </select>
+                    </div>
+                    <div class="modal-field">
+                        <div class="modal-label">Data Criação</div>
+                        <div class="modal-value" id="modalDataCriacao">-</div>
+                        <input type="date" class="modal-input not-editing" id="modalDataCriacaoInput">
+                    </div>
+                    <div class="modal-field">
+                        <div class="modal-label">Prazo SLA</div>
+                        <div class="modal-value" id="modalPrazoSLA">-</div>
+                        <input type="date" class="modal-input not-editing" id="modalPrazoSLAInput">
+                    </div>
+                </div>
             </div>
-            <div class="modal-field">
-                <div class="modal-label">Status</div>
-                <div class="modal-value" id="modalStatus">-</div>
+
+            <!-- HISTÓRICO -->
+            <div class="modal-section">
+                <div class="modal-section-title">Histórico</div>
+                <div class="modal-timeline" id="modalHistorico">
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-action">Carregando histórico...</div>
+                            <div class="timeline-time">-</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="modal-field">
-                <div class="modal-label">Prioridade</div>
-                <div class="modal-value" id="modalPrioridade">-</div>
-            </div>
-            <div class="modal-field">
-                <div class="modal-label">Categoria</div>
-                <div class="modal-value" id="modalCategoria">-</div>
-            </div>
-            <div class="modal-field">
-                <div class="modal-label">Data</div>
-                <div class="modal-value" id="modalData">-</div>
-            </div>
-            <div class="modal-field">
-                <div class="modal-label">Descrição</div>
-                <div class="modal-value" id="modalDescricao" style="white-space: pre-wrap;">-</div>
+
+            <!-- BOTÕES -->
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-close" onclick="fecharModal()">Fechar</button>
+                <button class="modal-btn modal-btn-save" id="btnEditar" onclick="editarChamado()">✏️ Editar</button>
             </div>
         </div>
     </div>
@@ -474,6 +614,8 @@
         const API_BASE_URL = 'https://unifeb-backend.onrender.com/api';
         let dadosGlobais = { ativos: [], concluidos: [] };
         let categoriaAtual = 'detalhado';
+        let chamadoSelecionado = null;
+        let modoEdicao = false;
 
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -483,6 +625,7 @@
                 document.getElementById('loginOverlay').classList.add('hidden');
                 document.getElementById('dashboard').classList.remove('hidden');
                 await carregarTodosDados();
+                setInterval(carregarTodosDados, 30000); // Auto-refresh a cada 30s
             } else {
                 document.getElementById('loginError').classList.add('show');
                 document.getElementById('senhaInput').value = '';
@@ -492,7 +635,6 @@
 
         async function carregarTodosDados() {
             try {
-                console.log('🚀 Carregando dados...');
                 const [ativos, concluidos] = await Promise.all([
                     fetch(`${API_BASE_URL}/chamados/ativos`).then(r => r.json()),
                     fetch(`${API_BASE_URL}/chamados/concluidos`).then(r => r.json())
@@ -500,9 +642,6 @@
 
                 dadosGlobais.ativos = ativos || [];
                 dadosGlobais.concluidos = concluidos || [];
-
-                const categoriasUnicas = [...new Set(dadosGlobais.ativos.map(c => c.categoria).filter(Boolean))];
-                console.log('📂 CATEGORIAS:', categoriasUnicas);
 
                 document.getElementById('stat-abertos').textContent = dadosGlobais.ativos.filter(c => c.status === 'Aberto').length;
                 document.getElementById('stat-andamento').textContent = dadosGlobais.ativos.filter(c => c.status === 'Em Andamento').length;
@@ -558,19 +697,86 @@
         }
 
         function abrirModal(chamado) {
+            chamadoSelecionado = chamado;
+            modoEdicao = false;
+
             document.getElementById('modalTitulo').textContent = chamado.titulo || 'Sem título';
             document.getElementById('modalSubtitulo').textContent = `ID: ${chamado.id}`;
+            document.getElementById('modalID').textContent = chamado.id;
+            document.getElementById('modalIDInput').value = chamado.id;
             document.getElementById('modalSolicitante').textContent = chamado.solicitante || '-';
+            document.getElementById('modalSolicitanteInput').value = chamado.solicitante || '';
+            document.getElementById('modalTituloValue').textContent = chamado.titulo || '-';
+            document.getElementById('modalTituloInput').value = chamado.titulo || '';
             document.getElementById('modalEmail').textContent = chamado.email || '-';
+            document.getElementById('modalEmailInput').value = chamado.email || '';
             document.getElementById('modalStatus').textContent = chamado.status || '-';
+            document.getElementById('modalStatusInput').value = chamado.status || 'Aberto';
             document.getElementById('modalPrioridade').textContent = chamado.prioridade || '-';
-            document.getElementById('modalCategoria').textContent = chamado.categoria || '-';
-            document.getElementById('modalData').textContent = chamado.data_criacao || chamado.data_conclusao || '-';
-            document.getElementById('modalDescricao').textContent = chamado.descricao || '-';
+            document.getElementById('modalPrioridadeInput').value = chamado.prioridade || 'Média';
+            document.getElementById('modalDataCriacao').textContent = chamado.data_criacao || '-';
+            document.getElementById('modalDataCriacaoInput').value = chamado.data_criacao || '';
+            document.getElementById('modalPrazoSLA').textContent = chamado.data_prazo || '-';
+            document.getElementById('modalPrazoSLAInput').value = chamado.data_prazo || '';
+
+            // Renderizar histórico
+            const historico = chamado.historico || [];
+            document.getElementById('modalHistorico').innerHTML = historico.length === 0
+                ? '<div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-action">Sem histórico</div></div></div>'
+                : historico.map(h => `<div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-action">${h.acao || 'Ação'}</div><div class="timeline-time">${h.tempo || '-'}</div></div></div>`).join('');
+
+            document.getElementById('btnEditar').textContent = '✏️ Editar';
             document.getElementById('modalOverlay').classList.remove('hidden');
         }
 
+        function editarChamado() {
+            modoEdicao = !modoEdicao;
+            const campos = document.querySelectorAll('.modal-field');
+            campos.forEach(campo => {
+                if (modoEdicao) {
+                    campo.classList.add('editing');
+                } else {
+                    campo.classList.remove('editing');
+                }
+            });
+
+            if (modoEdicao) {
+                document.getElementById('btnEditar').textContent = '💾 Salvar';
+            } else {
+                document.getElementById('btnEditar').textContent = '✏️ Editar';
+                salvarChamado();
+            }
+        }
+
+        async function salvarChamado() {
+            const dados = {
+                titulo: document.getElementById('modalTituloInput').value,
+                solicitante: document.getElementById('modalSolicitanteInput').value,
+                email: document.getElementById('modalEmailInput').value,
+                status: document.getElementById('modalStatusInput').value,
+                prioridade: document.getElementById('modalPrioridadeInput').value,
+                data_prazo: document.getElementById('modalPrazoSLAInput').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/editar-chamado/${chamadoSelecionado.id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                if (response.ok) {
+                    console.log('✅ Chamado atualizado!');
+                    await carregarTodosDados();
+                }
+            } catch (error) {
+                console.error('❌ Erro ao salvar:', error);
+            }
+        }
+
         function fecharModal() {
+            modoEdicao = false;
+            document.querySelectorAll('.modal-field').forEach(campo => campo.classList.remove('editing'));
             document.getElementById('modalOverlay').classList.add('hidden');
         }
 
