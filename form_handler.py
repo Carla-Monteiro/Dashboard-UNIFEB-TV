@@ -987,11 +987,25 @@ def obter_pesquisas():
                 for chave, valor in fields.items():
                     valor_resumido = str(valor)[:100] if valor else "(vazio)"
                     logger.info(f"   '{chave}' = {valor_resumido}")
+            # Tentar múltiplos nomes de campos (case-insensitive)
+            avaliacao = (fields.get('Avaliacao') or fields.get('avaliacao') or
+                        fields.get('Rating') or fields.get('rating') or '')
+            comentario = (fields.get('Comentario') or fields.get('comentario') or
+                         fields.get('Comentários') or fields.get('comments') or
+                         fields.get('Comment') or fields.get('Feedback') or '')
+            solicitante = (fields.get('Solicitante') or fields.get('solicitante') or
+                          fields.get('Author') or fields.get('author') or
+                          fields.get('Nome') or fields.get('nome') or '')
+            numero_chamado = (fields.get('NumeroChamado') or fields.get('numeroChamado') or
+                             fields.get('TicketNumber') or fields.get('ticketNumber') or
+                             fields.get('ID') or '')
+
             pesquisas.append({
                 'id': item.get('id'),
-                'avaliacao': fields.get('Avaliacao', ''),
-                'comentario': fields.get('Comentario') or fields.get('comentario') or fields.get('Comentários') or '',
-                'numeroChamado': fields.get('NumeroChamado', ''),
+                'avaliacao': avaliacao,
+                'comentario': comentario,
+                'solicitante': solicitante,
+                'numeroChamado': numero_chamado,
                 'dataResposta': fields.get('Created', datetime.now().isoformat()),
             })
 
