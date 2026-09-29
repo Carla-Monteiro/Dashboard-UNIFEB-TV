@@ -991,6 +991,7 @@ def obter_pesquisas():
             avaliacao_texto = fields.get('Avaliacao', '')  # "Ótimo", "Bom", etc
             numero_chamado = fields.get('NumeroChamado', '')
             author_id = fields.get('AuthorLookupId', '')
+            comentario = fields.get('comentario', '')  # Campo de sugestão/feedback
 
             # Converter avaliação de texto para número de estrelas
             mapa_avaliacao = {
@@ -1006,7 +1007,7 @@ def obter_pesquisas():
             pesquisas.append({
                 'id': item.get('id'),
                 'avaliacao': avaliacao_num,  # Número: 1-5
-                'comentario': '',  # Não existe na lista PesquisasSatisfacao
+                'comentario': comentario,  # Dados REAIS do SharePoint
                 'solicitante': f'ID:{author_id}' if author_id else '-',  # AuthorLookupId
                 'numeroChamado': numero_chamado,
                 'dataResposta': fields.get('Created', datetime.now().isoformat()),
