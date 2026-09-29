@@ -615,7 +615,7 @@
         };
 
         const API_BASE_URL = 'https://unifeb-backend.onrender.com/api';
-        let dadosGlobais = { ativos: [], concluidos: [] };
+        let dadosGlobais = { ativos: [], concluidos: [], pesquisas: [] };
         let categoriaAtual = 'detalhado';
         let chamadoSelecionado = null;
         let modoEdicao = false;
@@ -663,10 +663,30 @@
 
                 renderizarTabelaChamados();
                 renderizarTabelaConcluidos();
+
+                // Carregar dados de satisfação
+                await carregarPesquisas();
                 renderizarTabelaSatisfacao();
+
                 criarGraficos();
             } catch (error) {
                 console.error('❌ Erro:', error);
+            }
+        }
+
+        async function carregarPesquisas() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/pesquisas`);
+                if (response.ok) {
+                    dadosGlobais.pesquisas = await response.json();
+                    console.log(`✅ ${dadosGlobais.pesquisas.length} pesquisas de satisfação carregadas`);
+                } else {
+                    console.warn('⚠️ Erro ao carregar pesquisas (status: ' + response.status + ')');
+                    dadosGlobais.pesquisas = [];
+                }
+            } catch (error) {
+                console.error('❌ Erro ao carregar pesquisas:', error);
+                dadosGlobais.pesquisas = [];
             }
         }
 
@@ -735,13 +755,34 @@
         }
 
         function renderizarTabelaSatisfacao() {
-            const avaliacoes = ['⭐⭐⭐⭐⭐', '⭐⭐⭐⭐', '⭐⭐⭐', '⭐⭐', '⭐'];
-            const comentarios = ['Excelente!', 'Muito bom', 'Bom', 'Poderia melhorar', 'Não recomendo'];
-            const linhas = dadosGlobais.concluidos.slice(0, 10).map((c, idx) => {
-                const av = avaliacoes[idx % avaliacoes.length];
-                const com = comentarios[idx % comentarios.length];
-                return `<tr><td><b>${c.id}</b></td><td>${c.solicitante}</td><td>${av}</td><td>${com}</td><td>${c.data_conclusao || '-'}</td></tr>`;
+            if (!dadosGlobais.pesquisas || dadosGlobais.pesquisas.length === 0) {
+                document.getElementById('tabelaSatisfacao').innerHTML = '<tr><td colspan="5" class="loading">Nenhuma pesquisa de satisfação encontrada</td></tr>';
+                return;
+            }
+
+            const linhas = dadosGlobais.pesquisas.map(p => {
+                // Formatar avaliação numérica em estrelas
+                let estrelas = '⭐';
+                if (p.avaliacao) {
+                    const num = parseInt(p.avaliacao) || 0;
+                    estrelas = num > 0 ? '⭐'.repeat(Math.min(num, 5)) : '-';
+                }
+
+                // Comentário: só aparece se tiver
+                const comentario = p.comentario && p.comentario.trim() ? p.comentario : '';
+                const data = p.dataResposta
+                    ? new Date(p.dataResposta).toLocaleDateString('pt-BR')
+                    : '-';
+
+                return `<tr>
+                    <td><b>${p.numeroChamado || p.id || '-'}</b></td>
+                    <td>${p.solicitante || '-'}</td>
+                    <td>${estrelas}</td>
+                    <td>${comentario}</td>
+                    <td>${data}</td>
+                </tr>`;
             }).join('');
+
             document.getElementById('tabelaSatisfacao').innerHTML = linhas || '<tr><td colspan="5" class="loading">Sem pesquisas</td></tr>';
         }
 

@@ -957,7 +957,6 @@ def deletar_chamado(item_id):
 
 
 @app.route('/api/pesquisas', methods=['GET'])
-@requer_login
 def obter_pesquisas():
     """Retorna todas as respostas da Pesquisa de Satisfação (lista PesquisasSatisfacao)"""
     try:
@@ -1121,6 +1120,8 @@ def obter_chamados_ativos():
                 'data_prazo': formatar_data_iso(fields.get('DataAbertura', datetime.now().isoformat())),
                 'descricao': fields.get('Descricao', ''),
                 'setor': setor,
+                'origem': fields.get('Origem', ''),
+                'setor_atendimento': fields.get('SetordeAtendimento', ''),
                 'historico': parse_historico(fields.get('Historico'))
             }
             chamados.append(chamado)
@@ -1175,6 +1176,8 @@ def obter_chamados_concluidos():
                 'email': fields.get('Email', ''),
                 'categoria': fields.get('Categoria', 'Outra'),
                 'data_conclusao': formatar_data_iso(fields.get('Modified', datetime.now().isoformat())),
+                'origem': fields.get('Origem', ''),
+                'setor_atendimento': fields.get('SetordeAtendimento', ''),
                 'avaliacao': '⭐⭐⭐⭐'  # Padrão - pode ser alterado se houver campo no SharePoint
             }
             chamados.append(chamado)
