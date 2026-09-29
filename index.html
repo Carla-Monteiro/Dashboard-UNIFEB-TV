@@ -386,6 +386,216 @@
         .modal-content.editing .modal-value { display: none; }
         .modal-content.editing .modal-input,
         .modal-content.editing .modal-select { display: block; }
+
+        /* SATISFAÇÃO - NOVA SEÇÃO */
+        .satisfacao-container { width: 100%; }
+
+        /* Cards de Estatísticas de Satisfação */
+        .satisfacao-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card-satisfaction {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-gold);
+            border-radius: 10px;
+            padding: 18px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card-satisfaction:hover {
+            transform: translateY(-5px);
+            border-color: var(--gold);
+            box-shadow: 0 8px 24px rgba(255, 165, 0, 0.2);
+        }
+
+        .stat-satisfaction-icon { font-size: 28px; margin-bottom: 8px; }
+        .stat-satisfaction-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
+        .stat-satisfaction-value { font-size: 28px; font-weight: 700; color: var(--gold); }
+        .stat-satisfaction-unit { font-size: 12px; color: var(--text-secondary); margin-left: 4px; }
+
+        /* Filtros de Satisfação */
+        .satisfacao-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: rgba(255, 165, 0, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 165, 0, 0.2);
+        }
+
+        .filter-btn {
+            padding: 10px 16px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-gold);
+            border-radius: 6px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover {
+            background: rgba(255, 165, 0, 0.1);
+            border-color: var(--gold);
+        }
+
+        .filter-btn.active {
+            background: var(--gold);
+            color: #000;
+            border-color: var(--gold);
+        }
+
+        /* Grid de Cards de Satisfação */
+        .satisfacao-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .card-satisfaction {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-gold);
+            border-radius: 10px;
+            padding: 18px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-satisfaction:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--border-gold);
+        }
+
+        .card-satisfaction.card-otimo:before { background: #10b981; }
+        .card-satisfaction.card-bom:before { background: #ffd700; }
+        .card-satisfaction.card-regular:before { background: #ffa500; }
+        .card-satisfaction.card-ruim:before { background: #d4726b; }
+
+        .card-satisfaction:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 32px rgba(255, 165, 0, 0.25);
+        }
+
+        .card-id {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .card-id strong { color: var(--gold); }
+
+        .card-avaliacao {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .card-avaliacao-stars {
+            font-size: 20px;
+        }
+
+        .card-avaliacao-text {
+            font-weight: 700;
+            font-size: 13px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .card-avaliacao-text.otimo {
+            background: rgba(16, 185, 129, 0.3);
+            color: #4db8a8;
+        }
+
+        .card-avaliacao-text.bom {
+            background: rgba(255, 215, 0, 0.3);
+            color: #ffd700;
+        }
+
+        .card-avaliacao-text.regular {
+            background: rgba(255, 165, 0, 0.3);
+            color: #ffb74d;
+        }
+
+        .card-avaliacao-text.ruim {
+            background: rgba(212, 114, 107, 0.3);
+            color: #ff8a80;
+        }
+
+        .card-comentario {
+            font-size: 12px;
+            color: var(--text-primary);
+            line-height: 1.5;
+            padding: 12px;
+            background: rgba(255, 165, 0, 0.05);
+            border-left: 3px solid var(--gold);
+            border-radius: 4px;
+            min-height: 40px;
+            max-height: 80px;
+            overflow-y: auto;
+        }
+
+        .card-comentario:empty:before {
+            content: 'Sem comentário';
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        /* Gráfico de Distribuição */
+        .satisfacao-grafico-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-gold);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .grafico-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gold);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .grafico-wrapper {
+            position: relative;
+            height: 250px;
+        }
+
+        /* Mensagem vazia */
+        .satisfacao-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .satisfacao-empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .satisfacao-empty-text {
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -504,11 +714,56 @@
 
             <div id="pagina-satisfacao" class="page-content page-hidden">
                 <div class="categoria-titulo">⭐ Pesquisas de Satisfação</div>
-                <div class="table-container">
-                    <table>
-                        <thead><tr><th>Chamado ID</th><th>Avaliação</th><th>Comentário</th></tr></thead>
-                        <tbody id="tabelaSatisfacao"><tr><td colspan="3" class="loading">⏳ Carregando...</td></tr></tbody>
-                    </table>
+
+                <div class="satisfacao-container">
+                    <!-- ESTATÍSTICAS -->
+                    <div class="satisfacao-stats">
+                        <div class="stat-card-satisfaction">
+                            <div class="stat-satisfaction-icon">📊</div>
+                            <div class="stat-satisfaction-label">Total</div>
+                            <div class="stat-satisfaction-value" id="satisfacao-total">0</div>
+                        </div>
+                        <div class="stat-card-satisfaction">
+                            <div class="stat-satisfaction-icon">⭐</div>
+                            <div class="stat-satisfaction-label">Avaliação Média</div>
+                            <div class="stat-satisfaction-value" id="satisfacao-media">0<span class="stat-satisfaction-unit">/5</span></div>
+                        </div>
+                        <div class="stat-card-satisfaction">
+                            <div class="stat-satisfaction-icon">✅</div>
+                            <div class="stat-satisfaction-label">% Satisfação</div>
+                            <div class="stat-satisfaction-value" id="satisfacao-percentual">0<span class="stat-satisfaction-unit">%</span></div>
+                        </div>
+                        <div class="stat-card-satisfaction">
+                            <div class="stat-satisfaction-icon">📅</div>
+                            <div class="stat-satisfaction-label">Últimos 30d</div>
+                            <div class="stat-satisfaction-value" id="satisfacao-30dias">0</div>
+                        </div>
+                    </div>
+
+                    <!-- FILTROS -->
+                    <div class="satisfacao-filters">
+                        <button class="filter-btn active" onclick="filtrarSatisfacao('todos')">Todos</button>
+                        <button class="filter-btn" onclick="filtrarSatisfacao('otimo')">⭐⭐⭐⭐⭐ Ótimo</button>
+                        <button class="filter-btn" onclick="filtrarSatisfacao('bom')">⭐⭐⭐⭐ Bom</button>
+                        <button class="filter-btn" onclick="filtrarSatisfacao('regular')">⭐⭐⭐ Regular</button>
+                        <button class="filter-btn" onclick="filtrarSatisfacao('ruim')">⭐⭐ Ruim</button>
+                    </div>
+
+                    <!-- GRÁFICO DE DISTRIBUIÇÃO -->
+                    <div class="satisfacao-grafico-container">
+                        <div class="grafico-title">📈 Distribuição de Avaliações</div>
+                        <div class="grafico-wrapper">
+                            <canvas id="chartSatisfacao"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- GRID DE CARDS -->
+                    <div id="satisfacao-grid" class="satisfacao-grid">
+                        <div class="satisfacao-empty">
+                            <div class="satisfacao-empty-icon">⏳</div>
+                            <div class="satisfacao-empty-text">Carregando pesquisas...</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -754,34 +1009,206 @@
                 : dadosGlobais.concluidos.map(c => `<tr onclick="abrirModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td>${c.categoria || 'N/A'}</td><td>${c.data_conclusao || '-'}</td><td>⭐⭐⭐⭐</td></tr>`).join('');
         }
 
-        function renderizarTabelaSatisfacao() {
+        // Variável global para controlar filtro atual
+        let filtroSatisfacaoAtual = 'todos';
+
+        function obterTextosAvaliacao(valor) {
+            const mapa_texto = {
+                '5': 'Ótimo',
+                '4': 'Bom',
+                '3': 'Regular',
+                '2': 'Ruim',
+                '1': 'Péssimo'
+            };
+            return mapa_texto[String(valor)] || '-';
+        }
+
+        function obterClasseAvaliacao(valor) {
+            const num = parseInt(valor);
+            if (num >= 5) return 'otimo';
+            if (num === 4) return 'bom';
+            if (num === 3) return 'regular';
+            return 'ruim';
+        }
+
+        function calcularEstatisticasSatisfacao() {
             if (!dadosGlobais.pesquisas || dadosGlobais.pesquisas.length === 0) {
-                document.getElementById('tabelaSatisfacao').innerHTML = '<tr><td colspan="3" class="loading">Nenhuma pesquisa de satisfação encontrada</td></tr>';
+                return {
+                    total: 0,
+                    media: 0,
+                    percentualSatisfacao: 0,
+                    ultimos30dias: 0,
+                    distribuicao: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+                };
+            }
+
+            const pesquisas = dadosGlobais.pesquisas;
+            const total = pesquisas.length;
+            let soma = 0;
+            let satisfeitos = 0;
+            const distribuicao = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+
+            pesquisas.forEach(p => {
+                const aval = parseInt(p.avaliacao) || 0;
+                if (aval > 0) {
+                    soma += aval;
+                    if (aval >= 4) satisfeitos++;
+                    if (distribuicao.hasOwnProperty(aval)) distribuicao[aval]++;
+                }
+            });
+
+            const media = total > 0 ? (soma / total).toFixed(1) : 0;
+            const percentualSatisfacao = total > 0 ? Math.round((satisfeitos / total) * 100) : 0;
+
+            return {
+                total: total,
+                media: media,
+                percentualSatisfacao: percentualSatisfacao,
+                ultimos30dias: total, // Simplificado: considera todos como últimos 30 dias
+                distribuicao: distribuicao
+            };
+        }
+
+        function renderizarTabelaSatisfacao() {
+            const stats = calcularEstatisticasSatisfacao();
+
+            // Atualizar cards de estatísticas
+            document.getElementById('satisfacao-total').textContent = stats.total;
+            document.getElementById('satisfacao-media').innerHTML = `${stats.media}<span class="stat-satisfaction-unit">/5</span>`;
+            document.getElementById('satisfacao-percentual').innerHTML = `${stats.percentualSatisfacao}<span class="stat-satisfaction-unit">%</span>`;
+            document.getElementById('satisfacao-30dias').textContent = stats.ultimos30dias;
+
+            // Renderizar grid de cards
+            renderizarGridCardsSatisfacao();
+
+            // Renderizar gráfico
+            renderizarGraficoSatisfacao(stats.distribuicao);
+        }
+
+        function renderizarGridCardsSatisfacao() {
+            if (!dadosGlobais.pesquisas || dadosGlobais.pesquisas.length === 0) {
+                document.getElementById('satisfacao-grid').innerHTML = `
+                    <div style="grid-column: 1/-1;">
+                        <div class="satisfacao-empty">
+                            <div class="satisfacao-empty-icon">😕</div>
+                            <div class="satisfacao-empty-text">Nenhuma pesquisa de satisfação encontrada</div>
+                        </div>
+                    </div>
+                `;
                 return;
             }
 
-            const linhas = dadosGlobais.pesquisas.map(p => {
-                // Mostrar avaliação em TEXTO (Ótimo, Bom, Ruim)
-                const mapa_texto = {
-                    '5': 'Ótimo',
-                    '4': 'Bom',
-                    '3': 'Regular',
-                    '2': 'Ruim',
-                    '1': 'Péssimo'
-                };
-                const avaliacao = mapa_texto[String(p.avaliacao)] || '-';
+            let pesquisasFiltradas = dadosGlobais.pesquisas;
 
-                // Comentário: só aparece se tiver
-                const comentario = p.comentario && p.comentario.trim() ? p.comentario : '';
+            // Aplicar filtro
+            if (filtroSatisfacaoAtual !== 'todos') {
+                pesquisasFiltradas = dadosGlobais.pesquisas.filter(p => {
+                    const classe = obterClasseAvaliacao(p.avaliacao);
+                    return classe === filtroSatisfacaoAtual;
+                });
+            }
 
-                return `<tr>
-                    <td><b>${p.numeroChamado || p.id || '-'}</b></td>
-                    <td>${avaliacao}</td>
-                    <td>${comentario}</td>
-                </tr>`;
+            if (pesquisasFiltradas.length === 0) {
+                document.getElementById('satisfacao-grid').innerHTML = `
+                    <div style="grid-column: 1/-1;">
+                        <div class="satisfacao-empty">
+                            <div class="satisfacao-empty-icon">🔍</div>
+                            <div class="satisfacao-empty-text">Nenhuma pesquisa encontrada neste filtro</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            const cards = pesquisasFiltradas.map(p => {
+                const textoAvaliacao = obterTextosAvaliacao(p.avaliacao);
+                const classeAvaliacao = obterClasseAvaliacao(p.avaliacao);
+                const numeroChamado = p.numeroChamado || p.id || '-';
+                const comentario = (p.comentario && p.comentario.trim()) ? p.comentario : '';
+
+                // Gerar estrelas
+                const numEstrelas = Math.round(parseFloat(p.avaliacao) || 0);
+                const estrelas = '⭐'.repeat(numEstrelas) + '☆'.repeat(5 - numEstrelas);
+
+                return `
+                    <div class="card-satisfaction card-${classeAvaliacao}">
+                        <div class="card-id">Chamado <strong>#${numeroChamado}</strong></div>
+                        <div class="card-avaliacao">
+                            <div class="card-avaliacao-stars">${estrelas}</div>
+                            <span class="card-avaliacao-text ${classeAvaliacao}">${textoAvaliacao}</span>
+                        </div>
+                        <div class="card-comentario">${comentario}</div>
+                    </div>
+                `;
             }).join('');
 
-            document.getElementById('tabelaSatisfacao').innerHTML = linhas || '<tr><td colspan="3" class="loading">Sem pesquisas</td></tr>';
+            document.getElementById('satisfacao-grid').innerHTML = cards;
+        }
+
+        function filtrarSatisfacao(filtro) {
+            filtroSatisfacaoAtual = filtro;
+
+            // Atualizar botões
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Re-renderizar grid
+            renderizarGridCardsSatisfacao();
+        }
+
+        function renderizarGraficoSatisfacao(distribuicao) {
+            const ctx = document.getElementById('chartSatisfacao');
+            if (!ctx) return;
+
+            // Destruir gráfico anterior se existir
+            if (window.chartSatisfacaoInstance) {
+                window.chartSatisfacaoInstance.destroy();
+            }
+
+            const labels = ['Ótimo (5⭐)', 'Bom (4⭐)', 'Regular (3⭐)', 'Ruim (2⭐)', 'Péssimo (1⭐)'];
+            const data = [
+                distribuicao[5] || 0,
+                distribuicao[4] || 0,
+                distribuicao[3] || 0,
+                distribuicao[2] || 0,
+                distribuicao[1] || 0
+            ];
+            const cores = ['#10b981', '#ffd700', '#ffa500', '#ff8a80', '#d4726b'];
+
+            window.chartSatisfacaoInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Quantidade de Pesquisas',
+                        data: data,
+                        backgroundColor: cores,
+                        borderColor: '#1a1f2e',
+                        borderWidth: 2,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#e0e0e0', font: { size: 12 } }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: { color: '#a0a0a0', font: { size: 11 } },
+                            grid: { color: '#242d3d' },
+                            beginAtZero: true
+                        },
+                        x: {
+                            ticks: { color: '#a0a0a0', font: { size: 11 } },
+                            grid: { color: 'transparent' }
+                        }
+                    }
+                }
+            });
         }
 
         function abrirModal(chamado) {
