@@ -431,7 +431,6 @@
 
             <div class="sidebar-section">
                 <div class="sidebar-title">📊 Visualizar</div>
-                <div class="sidebar-item" onclick="abrirPagina('chamados')">📋 Chamados</div>
                 <div class="sidebar-item" onclick="abrirPagina('graficos')">📊 Gráficos</div>
                 <div class="sidebar-item" onclick="abrirPagina('concluidos')">✅ Concluídos</div>
                 <div class="sidebar-item" onclick="abrirPagina('satisfacao')">⭐ Satisfação</div>
@@ -644,8 +643,25 @@
                     fetch(`${API_BASE_URL}/chamados/concluidos`).then(r => r.json())
                 ]);
 
-                dadosGlobais.ativos = ativos || [];
-                dadosGlobais.concluidos = concluidos || [];
+                // Normalizar dados: adicionar campo setor_mapeado
+                const normalizarChamados = (chamados) => {
+                    return (chamados || []).map(c => {
+                        // Se origem é vazia/null (email), e categoria é genérica → E-mail
+                        if (!c.origem || c.origem.trim() === '') {
+                            return { ...c, setor_mapeado: 'email' };
+                        }
+                        // Se origem é QR Code, usar SetordeAtendimento, categoria ou título
+                        return {
+                            ...c,
+                            setor_mapeado: obterSetorDoSetor(c.setor_atendimento || c.SetordeAtendimento) ||
+                                           obterCategoriaGrupo(c.categoria, c.titulo) ||
+                                           'email'
+                        };
+                    });
+                };
+
+                dadosGlobais.ativos = normalizarChamados(ativos);
+                dadosGlobais.concluidos = normalizarChamados(concluidos);
 
                 document.getElementById('stat-abertos').textContent = dadosGlobais.ativos.filter(c => c.status === 'Aberto').length;
                 document.getElementById('stat-andamento').textContent = dadosGlobais.ativos.filter(c => c.status === 'Em Andamento').length;
@@ -661,24 +677,79 @@
             }
         }
 
-        function obterCategoriaGrupo(categoria) {
-            if (!categoria) return 'email';
-            const cat = categoria.toLowerCase().trim();
+        // Mapeia SetordeAtendimento do SharePoint para os nomes das abas
+        function obterSetorDoSetor(setor) {
+            if (!setor) return null;
+            const s = setor.toLowerCase().trim();
 
-            // MANUTENÇÃO
-            if (cat.includes('energia') || cat.includes('ar condicionado') ||
-                cat.includes('fechadura') || cat.includes('porta') ||
-                cat.includes('janela') || cat.includes('interruptores')) return 'manutencao';
+            // Manutenção Predial
+            if (s.includes('manutenção') || s.includes('manutencao')) return 'manutencao';
 
-            // NAEM
-            if (cat.includes('projetor') || cat.includes('controle projetor') ||
-                cat.includes('cabo vga') || cat.includes('adaptador vga') ||
-                cat.includes('hdmi') || cat.includes('som') || cat.includes('controle a/c')) return 'naem';
+            // Multimídia (NAEM)
+            if (s.includes('multimídia') || s.includes('multimedia') || s.includes('naem')) return 'naem';
 
-            // TI
-            if (cat.includes('internet') || cat.includes('wi-fi') || cat.includes('computador') ||
-                cat.includes('teclado') || cat.includes('mouse') || cat.includes('energia/tomada') ||
-                cat.includes('telefone')) return 'ti';
+            // TI / Internet
+            if (s.includes('ti') || s.includes('internet') || s.includes('dti') || s.includes('suporte')) return 'ti';
+
+            // Suporte DTI (genérico) → E-mail
+            if (s.includes('geral') || s === 'suporte dti') return 'email';
+
+            return null;
+        }
+
+        function obterCategoriaGrupo(categoria, titulo = '') {
+            // Primeiro tenta categoria específica
+            if (categoria) {
+                const cat = categoria.toLowerCase().trim();
+
+                // MANUTENÇÃO
+                if (cat.includes('energia') || cat.includes('ar condicionado') ||
+                    cat.includes('fechadura') || cat.includes('porta') ||
+                    cat.includes('janela') || cat.includes('interruptores')) return 'manutencao';
+
+                // NAEM
+                if (cat.includes('projetor') || cat.includes('controle projetor') ||
+                    cat.includes('cabo vga') || cat.includes('adaptador vga') ||
+                    cat.includes('hdmi') || cat.includes('som') || cat.includes('controle a/c')) return 'naem';
+
+                // TI
+                if (cat.includes('internet') || cat.includes('wi-fi') || cat.includes('computador') ||
+                    cat.includes('teclado') || cat.includes('mouse') || cat.includes('energia/tomada') ||
+                    cat.includes('telefone')) return 'ti';
+
+                // OUTRA: Se tem emoji, reconhece
+                if (cat.includes('🚪')) return 'manutencao';
+                if (cat.includes('📻')) return 'naem';
+                if (cat.includes('🔴')) return 'ti';
+            }
+
+            // Se categoria é genérica ou vazia, tenta analisar o TÍTULO
+            if (titulo) {
+                const tit = titulo.toLowerCase().trim();
+
+                // MANUTENÇÃO por título
+                if (tit.includes('manutenção') || tit.includes('manutencao') || tit.includes('ar condicionado') ||
+                    tit.includes('fechadura') || tit.includes('porta') || tit.includes('janela') ||
+                    tit.includes('interruptor') || tit.includes('energia elétrica') || tit.includes('energia eletrica'))
+                    return 'manutencao';
+
+                // NAEM por título
+                if (tit.includes('projetor') || tit.includes('multimídia') || tit.includes('multimedia') ||
+                    tit.includes('vga') || tit.includes('hdmi') || tit.includes('cabo') || tit.includes('som') ||
+                    tit.includes('áudio') || tit.includes('audio')) return 'naem';
+
+                // TI por título
+                if (tit.includes('internet') || tit.includes('wi-fi') || tit.includes('wifi') ||
+                    tit.includes('computador') || tit.includes('teclado') || tit.includes('mouse') ||
+                    tit.includes('impressora') || tit.includes('ssd') || tit.includes('hd') ||
+                    tit.includes('word') || tit.includes('office') || tit.includes('telefone') ||
+                    tit.includes('email') || tit.includes('acesso') || tit.includes('pacote office') ||
+                    tit.includes('windows') || tit.includes('antivírus') || tit.includes('antivirus') ||
+                    tit.includes('vírus') || tit.includes('virus') || tit.includes('software') ||
+                    tit.includes('instalação') || tit.includes('instalacao') || tit.includes('desinstalar') ||
+                    tit.includes('ativação') || tit.includes('ativacao') || tit.includes('ramal') ||
+                    tit.includes('sinal') || tit.includes('conexão') || tit.includes('conexao')) return 'ti';
+            }
 
             // E-MAIL (padrão para "Outro" genérico ou não categorizado)
             return 'email';
@@ -687,7 +758,7 @@
         function renderizarTabelaChamados() {
             let filtrados = dadosGlobais.ativos;
             if (categoriaAtual !== 'detalhado') {
-                filtrados = dadosGlobais.ativos.filter(c => obterCategoriaGrupo(c.categoria) === categoriaAtual);
+                filtrados = dadosGlobais.ativos.filter(c => c.setor_mapeado === categoriaAtual);
             }
             document.getElementById('tabelaChamados').innerHTML = filtrados.length === 0
                 ? '<tr><td colspan="6" class="loading">Sem chamados</td></tr>'
@@ -695,9 +766,15 @@
         }
 
         function renderizarTabelaConcluidos() {
+            const nomeSetores = {
+                'email': '📧 E-mail',
+                'ti': '💻 TI',
+                'naem': '🏢 NAEM',
+                'manutencao': '🔧 Manutenção'
+            };
             document.getElementById('tabelaConcluidos').innerHTML = dadosGlobais.concluidos.length === 0
                 ? '<tr><td colspan="6" class="loading">Sem dados</td></tr>'
-                : dadosGlobais.concluidos.map(c => `<tr onclick="abrirModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td>${c.categoria || 'N/A'}</td><td>${c.data_conclusao || '-'}</td><td>⭐⭐⭐⭐</td></tr>`).join('');
+                : dadosGlobais.concluidos.map(c => `<tr onclick="abrirModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td>${nomeSetores[c.setor_mapeado] || c.categoria || 'N/A'}</td><td>${c.data_conclusao || '-'}</td><td>⭐⭐⭐⭐</td></tr>`).join('');
         }
 
         function renderizarTabelaSatisfacao() {
