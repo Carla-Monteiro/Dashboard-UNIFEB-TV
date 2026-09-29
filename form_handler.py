@@ -983,15 +983,31 @@ def obter_pesquisas():
 
             # DEBUG: Imprimir campos da primeira resposta
             if idx == 0:
-                logger.info(f"🔍 DEBUG - Campos brutos da primeira pesquisa:")
+                logger.info(f"🔍 DEBUG - TODOS os campos brutos da primeira pesquisa:")
                 for chave, valor in fields.items():
-                    valor_resumido = str(valor)[:100] if valor else "(vazio)"
-                    logger.info(f"   '{chave}' = {valor_resumido}")
+                    valor_resumido = str(valor)[:150] if valor else "(vazio)"
+                    valor_tipo = type(valor).__name__
+                    logger.info(f"   '{chave}' ({valor_tipo}) = {valor_resumido}")
+                logger.info(f"🔍 TOTAL: {len(fields)} campos")
             # Campos REAIS do SharePoint - PesquisasSatisfacao
             avaliacao_texto = fields.get('Avaliacao', '')  # "Ótimo", "Bom", etc
             numero_chamado = fields.get('NumeroChamado', '')
             author_id = fields.get('AuthorLookupId', '')
-            comentario = fields.get('comentario', '')  # Campo de sugestão/feedback
+
+            # Tentar vários nomes possíveis para o campo de comentário
+            comentario = (
+                fields.get('comentario', '') or
+                fields.get('Comentario', '') or
+                fields.get('Comment', '') or
+                fields.get('comment', '') or
+                fields.get('Sugestao', '') or
+                fields.get('sugestao', '') or
+                fields.get('Feedback', '') or
+                fields.get('feedback', '') or
+                fields.get('Observacao', '') or
+                fields.get('observacao', '') or
+                ''
+            )
 
             # Converter avaliação de texto para número de estrelas
             mapa_avaliacao = {
