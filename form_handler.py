@@ -1017,6 +1017,42 @@ def obter_pesquisas():
         return jsonify([]), 200
 
 
+@app.route('/api/pesquisas-debug', methods=['GET'])
+def debug_pesquisas():
+    """DEBUG: Mostra os campos brutos da primeira pesquisa"""
+    try:
+        token = get_access_token()
+        if not token:
+            return jsonify({"erro": "Não autenticado"}), 401
+
+        headers = {'Authorization': f'Bearer {token}'}
+        site_id, list_id = obter_site_e_lista(headers, LISTA_PESQUISAS)
+        if not site_id or not list_id:
+            return jsonify({"erro": "Lista não encontrada"}), 404
+
+        items_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$expand=fields&$top=1"
+        items_response = requests.get(items_url, headers=headers, timeout=10)
+
+        if items_response.status_code != 200:
+            return jsonify({"erro": f"Status {items_response.status_code}"}), items_response.status_code
+
+        items = items_response.json().get('value', [])
+        if not items:
+            return jsonify({"erro": "Nenhum item encontrado"}), 404
+
+        # Retornar campos brutos da primeira pesquisa
+        fields = items[0].get('fields', {})
+        return jsonify({
+            "campos_brutos": fields,
+            "total_campos": len(fields),
+            "chaves": list(fields.keys())
+        }), 200
+
+    except Exception as e:
+        logger.error(f"ERRO em debug_pesquisas: {e}")
+        return jsonify({"erro": str(e)}), 500
+
+
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({"status": "ok"}), 200
