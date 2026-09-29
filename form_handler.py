@@ -1057,6 +1057,51 @@ def debug_pesquisas():
         return jsonify({"erro": str(e)}), 500
 
 
+@app.route('/api/pesquisas-debug-completo', methods=['GET'])
+def debug_pesquisas_completo():
+    """DEBUG COMPLETO: Mostra TODOS os campos e valores da primeira pesquisa"""
+    try:
+        token = get_access_token()
+        if not token:
+            return jsonify({"erro": "Não autenticado"}), 401
+
+        headers = {'Authorization': f'Bearer {token}'}
+        site_id, list_id = obter_site_e_lista(headers, LISTA_PESQUISAS)
+        if not site_id or not list_id:
+            return jsonify({"erro": "Lista não encontrada"}), 404
+
+        items_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$expand=fields&$top=1"
+        items_response = requests.get(items_url, headers=headers, timeout=10)
+
+        if items_response.status_code != 200:
+            return jsonify({"erro": f"Status {items_response.status_code}"}), items_response.status_code
+
+        items = items_response.json().get('value', [])
+        if not items:
+            return jsonify({"erro": "Nenhum item encontrado"}), 404
+
+        # Retornar TUDO com valores
+        fields = items[0].get('fields', {})
+        resultado = {}
+        for chave, valor in fields.items():
+            # Mostra cada campo com seu valor (truncado se muito longo)
+            valor_str = str(valor)[:200] if valor else "(vazio)"
+            resultado[chave] = {
+                "valor": valor,
+                "valor_resumido": valor_str,
+                "tipo": type(valor).__name__
+            }
+
+        return jsonify({
+            "total_campos": len(fields),
+            "campos_com_valores": resultado
+        }), 200
+
+    except Exception as e:
+        logger.error(f"ERRO em debug_pesquisas_completo: {e}")
+        return jsonify({"erro": str(e)}), 500
+
+
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({"status": "ok"}), 200
