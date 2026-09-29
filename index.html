@@ -839,13 +839,13 @@
                 const totalChamados = dadosGlobais.ativos.length + dadosGlobais.concluidos.length;
                 const abertos = dadosGlobais.ativos.filter(c => c.status === 'Aberto').length;
                 const andamento = dadosGlobais.ativos.filter(c => c.status === 'Em Andamento').length;
-                const concluidos = dadosGlobais.concluidos.length;
+                const concluidosCount = dadosGlobais.concluidos.length;
 
                 if (document.getElementById('graficos-total')) {
                     document.getElementById('graficos-total').textContent = totalChamados;
                     document.getElementById('graficos-abertos').textContent = abertos;
                     document.getElementById('graficos-andamento').textContent = andamento;
-                    document.getElementById('graficos-concluidos').textContent = concluidos;
+                    document.getElementById('graficos-concluidos').textContent = concluidosCount;
                 }
 
                 renderizarTabelaChamados();
