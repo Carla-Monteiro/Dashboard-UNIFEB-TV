@@ -983,48 +983,28 @@ def obter_pesquisas():
 
             # DEBUG: Imprimir campos da primeira resposta
             if idx == 0:
-                logger.info(f"🔍 DEBUG - TODOS os campos brutos da primeira pesquisa:")
+                logger.info(f"🔍 DEBUG - Campos brutos da primeira pesquisa:")
                 for chave, valor in fields.items():
-                    valor_resumido = str(valor)[:150] if valor else "(vazio)"
-                    valor_tipo = type(valor).__name__
-                    logger.info(f"   '{chave}' ({valor_tipo}) = {valor_resumido}")
-                logger.info(f"🔍 TOTAL: {len(fields)} campos")
-            # Campos REAIS do SharePoint - PesquisasSatisfacao
-            avaliacao_texto = fields.get('Avaliacao', '')  # "Ótimo", "Bom", etc
-            numero_chamado = fields.get('NumeroChamado', '')
-            author_id = fields.get('AuthorLookupId', '')
-
-            # Tentar vários nomes possíveis para o campo de comentário
-            comentario = (
-                fields.get('comentario', '') or
-                fields.get('Comentario', '') or
-                fields.get('Comment', '') or
-                fields.get('comment', '') or
-                fields.get('Sugestao', '') or
-                fields.get('sugestao', '') or
-                fields.get('Feedback', '') or
-                fields.get('feedback', '') or
-                fields.get('Observacao', '') or
-                fields.get('observacao', '') or
-                ''
-            )
-
-            # Converter avaliação de texto para número de estrelas
-            mapa_avaliacao = {
-                'Ótimo': 5,
-                'Excelente': 5,
-                'Bom': 4,
-                'Regular': 3,
-                'Ruim': 2,
-                'Péssimo': 1,
-            }
-            avaliacao_num = mapa_avaliacao.get(avaliacao_texto, 0)
+                    valor_resumido = str(valor)[:100] if valor else "(vazio)"
+                    logger.info(f"   '{chave}' = {valor_resumido}")
+            # Tentar múltiplos nomes de campos (case-insensitive)
+            avaliacao = (fields.get('Avaliacao') or fields.get('avaliacao') or
+                        fields.get('Rating') or fields.get('rating') or '')
+            comentario = (fields.get('Comentario') or fields.get('comentario') or
+                         fields.get('Comentários') or fields.get('comments') or
+                         fields.get('Comment') or fields.get('Feedback') or '')
+            solicitante = (fields.get('Solicitante') or fields.get('solicitante') or
+                          fields.get('Author') or fields.get('author') or
+                          fields.get('Nome') or fields.get('nome') or '')
+            numero_chamado = (fields.get('NumeroChamado') or fields.get('numeroChamado') or
+                             fields.get('TicketNumber') or fields.get('ticketNumber') or
+                             fields.get('ID') or '')
 
             pesquisas.append({
                 'id': item.get('id'),
-                'avaliacao': avaliacao_num,  # Número: 1-5
-                'comentario': comentario,  # Dados REAIS do SharePoint
-                'solicitante': f'ID:{author_id}' if author_id else '-',  # AuthorLookupId
+                'avaliacao': avaliacao,
+                'comentario': comentario,
+                'solicitante': solicitante,
                 'numeroChamado': numero_chamado,
                 'dataResposta': fields.get('Created', datetime.now().isoformat()),
             })
@@ -1035,87 +1015,6 @@ def obter_pesquisas():
     except Exception as e:
         logger.error(f"ERRO em obter_pesquisas: {e}")
         return jsonify([]), 200
-
-
-@app.route('/api/pesquisas-debug', methods=['GET'])
-def debug_pesquisas():
-    """DEBUG: Mostra os campos brutos da primeira pesquisa"""
-    try:
-        token = get_access_token()
-        if not token:
-            return jsonify({"erro": "Não autenticado"}), 401
-
-        headers = {'Authorization': f'Bearer {token}'}
-        site_id, list_id = obter_site_e_lista(headers, LISTA_PESQUISAS)
-        if not site_id or not list_id:
-            return jsonify({"erro": "Lista não encontrada"}), 404
-
-        items_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$expand=fields&$top=1"
-        items_response = requests.get(items_url, headers=headers, timeout=10)
-
-        if items_response.status_code != 200:
-            return jsonify({"erro": f"Status {items_response.status_code}"}), items_response.status_code
-
-        items = items_response.json().get('value', [])
-        if not items:
-            return jsonify({"erro": "Nenhum item encontrado"}), 404
-
-        # Retornar campos brutos da primeira pesquisa
-        fields = items[0].get('fields', {})
-        return jsonify({
-            "campos_brutos": fields,
-            "total_campos": len(fields),
-            "chaves": list(fields.keys())
-        }), 200
-
-    except Exception as e:
-        logger.error(f"ERRO em debug_pesquisas: {e}")
-        return jsonify({"erro": str(e)}), 500
-
-
-@app.route('/api/pesquisas-debug-completo', methods=['GET'])
-def debug_pesquisas_completo():
-    """DEBUG COMPLETO: Mostra TODOS os campos e valores da primeira pesquisa"""
-    try:
-        token = get_access_token()
-        if not token:
-            return jsonify({"erro": "Não autenticado"}), 401
-
-        headers = {'Authorization': f'Bearer {token}'}
-        site_id, list_id = obter_site_e_lista(headers, LISTA_PESQUISAS)
-        if not site_id or not list_id:
-            return jsonify({"erro": "Lista não encontrada"}), 404
-
-        items_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$expand=fields&$top=1"
-        items_response = requests.get(items_url, headers=headers, timeout=10)
-
-        if items_response.status_code != 200:
-            return jsonify({"erro": f"Status {items_response.status_code}"}), items_response.status_code
-
-        items = items_response.json().get('value', [])
-        if not items:
-            return jsonify({"erro": "Nenhum item encontrado"}), 404
-
-        # Retornar TUDO com valores
-        fields = items[0].get('fields', {})
-        resultado = {}
-        for chave, valor in fields.items():
-            # Mostra cada campo com seu valor (truncado se muito longo)
-            valor_str = str(valor)[:200] if valor else "(vazio)"
-            resultado[chave] = {
-                "valor": valor,
-                "valor_resumido": valor_str,
-                "tipo": type(valor).__name__
-            }
-
-        return jsonify({
-            "total_campos": len(fields),
-            "campos_com_valores": resultado
-        }), 200
-
-    except Exception as e:
-        logger.error(f"ERRO em debug_pesquisas_completo: {e}")
-        return jsonify({"erro": str(e)}), 500
 
 
 @app.route('/health', methods=['GET'])
@@ -1378,6 +1277,183 @@ def obter_stats_chamados():
             'andamento': 0,
             'concluidos': 0,
             'vencidos': 0
+        }), 200
+
+
+@app.route('/api/graficos', methods=['GET', 'OPTIONS'])
+def obter_graficos():
+    """Retorna dados estruturados para os gráficos da aba 'Gráficos'"""
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    try:
+        token = get_access_token()
+        if not token:
+            return jsonify({
+                'status': {},
+                'prioridade': {},
+                'categorias': {},
+                'setores_email': {},
+                'tendencia_semana': [],
+                'satisfacao_setores': {}
+            }), 200
+
+        headers = {'Authorization': f'Bearer {token}'}
+        site_id, list_id = obter_site_e_lista(headers)
+        if not site_id or not list_id:
+            return jsonify({
+                'status': {},
+                'prioridade': {},
+                'categorias': {},
+                'setores_email': {},
+                'tendencia_semana': [],
+                'satisfacao_setores': {}
+            }), 200
+
+        # ===== CHAMADOS =====
+        items_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$expand=fields"
+        items_response = requests.get(items_url, headers=headers, timeout=10)
+
+        if items_response.status_code != 200:
+            return jsonify({
+                'status': {},
+                'prioridade': {},
+                'categorias': {},
+                'setores_email': {},
+                'tendencia_semana': [],
+                'satisfacao_setores': {}
+            }), 200
+
+        items = items_response.json().get('value', [])
+        preencher_setores_faltantes(items, headers, site_id, list_id)
+
+        # ===== CONTAGENS =====
+        status_count = {'Aberto': 0, 'Em Andamento': 0, 'Concluído': 0, 'Vencido': 0}
+        prioridade_count = {'Alta': 0, 'Média': 0, 'Baixa': 0}
+        categoria_count = {}
+        setor_email_count = {}
+        tendencia_dias = {}  # {data_YYYY-MM-DD: {abertos, resolvidos}}
+        setor_satisfacao = {}  # {setor: [notas]}
+
+        for item in items:
+            fields = item.get('fields', {})
+
+            # === Status ===
+            status_raw = fields.get('Status', 'Aberto')
+            status_norm = normalizar_status(status_raw)
+            if status_norm in status_count:
+                status_count[status_norm] += 1
+
+            # === Prioridade ===
+            prioridade_raw = fields.get('Prioridade', 'Média')
+            prioridade_norm = normalizar_prioridade(prioridade_raw)
+            if prioridade_norm in prioridade_count:
+                prioridade_count[prioridade_norm] += 1
+
+            # === Categorias ===
+            categoria = fields.get('Categoria', 'Outra')
+            categoria_count[categoria] = categoria_count.get(categoria, 0) + 1
+
+            # === Setores por Email ===
+            email = fields.get('Email', '')
+            if email:
+                setor_email = extrair_setor_do_email(email)
+                if setor_email:
+                    setor_email_count[setor_email] = setor_email_count.get(setor_email, 0) + 1
+
+            # === Tendência por Data (últimos 7 dias) ===
+            data_abertura = fields.get('DataAbertura', '')
+            if data_abertura:
+                try:
+                    if 'T' in data_abertura:
+                        dt = datetime.fromisoformat(data_abertura.replace('Z', '+00:00'))
+                        tz_sp = ZoneInfo('America/Sao_Paulo')
+                        dt_sp = dt.astimezone(tz_sp)
+                        data_key = dt_sp.strftime('%Y-%m-%d')
+                    else:
+                        data_key = data_abertura[:10]  # Assumir formato YYYY-MM-DD
+
+                    if data_key not in tendencia_dias:
+                        tendencia_dias[data_key] = {'abertos': 0, 'resolvidos': 0}
+
+                    if status_norm == 'Concluído':
+                        tendencia_dias[data_key]['resolvidos'] += 1
+                    else:
+                        tendencia_dias[data_key]['abertos'] += 1
+                except Exception as e:
+                    logger.warning(f"⚠️ Erro ao processar data: {e}")
+
+        # ===== PESQUISAS DE SATISFAÇÃO =====
+        pesquisas_list_id = None
+        try:
+            pesquisa_site_id, pesquisas_list_id = obter_site_e_lista(headers, LISTA_PESQUISAS)
+            if pesquisa_site_id and pesquisas_list_id:
+                pesquisas_url = f"{GRAPH_API}/sites/{pesquisa_site_id}/lists/{pesquisas_list_id}/items?$expand=fields"
+                pesquisas_response = requests.get(pesquisas_url, headers=headers, timeout=10)
+
+                if pesquisas_response.status_code == 200:
+                    pesquisas = pesquisas_response.json().get('value', [])
+                    for pesquisa in pesquisas:
+                        fields_pesq = pesquisa.get('fields', {})
+                        avaliacao = fields_pesq.get('Avaliacao') or fields_pesq.get('avaliacao') or fields_pesq.get('Rating') or 0
+                        setor_pesq = fields_pesq.get('SetordeAtendimento') or fields_pesq.get('Setor') or 'Geral'
+
+                        try:
+                            nota = int(avaliacao) if avaliacao else 0
+                            if nota > 0:
+                                if setor_pesq not in setor_satisfacao:
+                                    setor_satisfacao[setor_pesq] = []
+                                setor_satisfacao[setor_pesq].append(nota)
+                        except ValueError:
+                            pass
+        except Exception as e:
+            logger.warning(f"⚠️ Erro ao carregar pesquisas: {e}")
+
+        # ===== CALCULAR MÉDIAS DE SATISFAÇÃO =====
+        satisfacao_medias = {}
+        for setor, notas in setor_satisfacao.items():
+            if notas:
+                satisfacao_medias[setor] = round(sum(notas) / len(notas), 2)
+            else:
+                satisfacao_medias[setor] = 0
+
+        # ===== FORMATAR TENDÊNCIA (últimos 7 dias) =====
+        hoje = date.today()
+        tendencia_array = []
+        for i in range(6, -1, -1):  # Últimos 7 dias (do mais antigo para o mais recente)
+            data_dia = hoje - timedelta(days=i)
+            data_key = data_dia.strftime('%Y-%m-%d')
+            dia_semana = data_dia.strftime('%a').capitalize()  # Mon, Tue, etc
+            abertos = tendencia_dias.get(data_key, {}).get('abertos', 0)
+            resolvidos = tendencia_dias.get(data_key, {}).get('resolvidos', 0)
+            tendencia_array.append({
+                'dia': dia_semana,
+                'data': data_key,
+                'abertos': abertos,
+                'resolvidos': resolvidos
+            })
+
+        resultado = {
+            'status': status_count,
+            'prioridade': prioridade_count,
+            'categorias': categoria_count,
+            'setores_email': setor_email_count,
+            'tendencia_semana': tendencia_array,
+            'satisfacao_setores': satisfacao_medias
+        }
+
+        logger.info(f"✅ Gráficos retornados com sucesso")
+        return jsonify(resultado), 200
+
+    except Exception as e:
+        logger.error(f"❌ ERRO em obter_graficos: {e}")
+        return jsonify({
+            'status': {},
+            'prioridade': {},
+            'categorias': {},
+            'setores_email': {},
+            'tendencia_semana': [],
+            'satisfacao_setores': {}
         }), 200
 
 
