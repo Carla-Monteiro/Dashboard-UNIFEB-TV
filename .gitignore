@@ -2,3 +2,6 @@
 .env.txt
 *.pyc
 __pycache__/
+
+.vercel
+.env*
