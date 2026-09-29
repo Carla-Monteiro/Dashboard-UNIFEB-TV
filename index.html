@@ -506,8 +506,8 @@
                 <div class="categoria-titulo">⭐ Pesquisas de Satisfação</div>
                 <div class="table-container">
                     <table>
-                        <thead><tr><th>Chamado ID</th><th>Solicitante</th><th>Avaliação</th><th>Comentário</th><th>Data</th></tr></thead>
-                        <tbody id="tabelaSatisfacao"><tr><td colspan="5" class="loading">⏳ Carregando...</td></tr></tbody>
+                        <thead><tr><th>Chamado ID</th><th>Avaliação</th><th>Comentário</th></tr></thead>
+                        <tbody id="tabelaSatisfacao"><tr><td colspan="3" class="loading">⏳ Carregando...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -756,34 +756,32 @@
 
         function renderizarTabelaSatisfacao() {
             if (!dadosGlobais.pesquisas || dadosGlobais.pesquisas.length === 0) {
-                document.getElementById('tabelaSatisfacao').innerHTML = '<tr><td colspan="5" class="loading">Nenhuma pesquisa de satisfação encontrada</td></tr>';
+                document.getElementById('tabelaSatisfacao').innerHTML = '<tr><td colspan="3" class="loading">Nenhuma pesquisa de satisfação encontrada</td></tr>';
                 return;
             }
 
             const linhas = dadosGlobais.pesquisas.map(p => {
-                // Formatar avaliação numérica em estrelas
-                let estrelas = '⭐';
-                if (p.avaliacao) {
-                    const num = parseInt(p.avaliacao) || 0;
-                    estrelas = num > 0 ? '⭐'.repeat(Math.min(num, 5)) : '-';
-                }
+                // Mostrar avaliação em TEXTO (Ótimo, Bom, Ruim)
+                const mapa_texto = {
+                    '5': 'Ótimo',
+                    '4': 'Bom',
+                    '3': 'Regular',
+                    '2': 'Ruim',
+                    '1': 'Péssimo'
+                };
+                const avaliacao = mapa_texto[String(p.avaliacao)] || '-';
 
                 // Comentário: só aparece se tiver
                 const comentario = p.comentario && p.comentario.trim() ? p.comentario : '';
-                const data = p.dataResposta
-                    ? new Date(p.dataResposta).toLocaleDateString('pt-BR')
-                    : '-';
 
                 return `<tr>
                     <td><b>${p.numeroChamado || p.id || '-'}</b></td>
-                    <td>${p.solicitante || '-'}</td>
-                    <td>${estrelas}</td>
+                    <td>${avaliacao}</td>
                     <td>${comentario}</td>
-                    <td>${data}</td>
                 </tr>`;
             }).join('');
 
-            document.getElementById('tabelaSatisfacao').innerHTML = linhas || '<tr><td colspan="5" class="loading">Sem pesquisas</td></tr>';
+            document.getElementById('tabelaSatisfacao').innerHTML = linhas || '<tr><td colspan="3" class="loading">Sem pesquisas</td></tr>';
         }
 
         function abrirModal(chamado) {
