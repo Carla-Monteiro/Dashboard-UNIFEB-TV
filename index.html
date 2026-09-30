@@ -1885,14 +1885,9 @@
         function formatarDataComHora(data) {
             if (!data) return '-';
             try {
-                // Se já vem formatado como "DD/MM/YYYY HH:MM", retorna direto!
-                if (data.includes('/') && data.includes(':')) {
-                    return data;  // ✅ Já tem hora, retorna como está!
-                }
-
                 let d;
 
-                // Tenta parse como DD/MM/YYYY (sem hora)
+                // Tenta parse como DD/MM/YYYY
                 if (data.includes('/') && !data.includes('T')) {
                     const [dia, mes, ano] = data.split('/');
                     if (dia && mes && ano) {
@@ -1936,21 +1931,9 @@
                 try {
                     let d;
                     if (dataStr.includes('/')) {
-                        // Extrair apenas a parte da data (antes do espaço ou dois pontos)
-                        const dataParte = dataStr.split(' ')[0]; // Pega "DD/MM/YYYY"
-                        const [dia, mes, ano] = dataParte.split('/');
+                        const [dia, mes, ano] = dataStr.split('/');
                         if (dia && mes && ano) {
-                            // Extrair hora se houver
-                            let horas = 0, minutos = 0;
-                            if (dataStr.includes(':')) {
-                                const horaParte = dataStr.split(' ')[1]; // Pega "HH:MM"
-                                if (horaParte) {
-                                    const [h, m] = horaParte.split(':');
-                                    horas = parseInt(h) || 0;
-                                    minutos = parseInt(m) || 0;
-                                }
-                            }
-                            d = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia), horas, minutos);
+                            d = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
                         }
                     }
                     if (!d || isNaN(d.getTime())) {
@@ -2441,22 +2424,8 @@
                 try {
                     let data;
                     if (dataAbertura.includes('/')) {
-                        // Extrair data e hora se existir
-                        const dataParte = dataAbertura.split(' ')[0]; // "DD/MM/YYYY"
-                        const [dia, mes, ano] = dataParte.split('/');
-                        let horas = 9, minutos = 0; // Padrão: 09:00
-
-                        // Se tem hora, extrair
-                        if (dataAbertura.includes(':')) {
-                            const horaParte = dataAbertura.split(' ')[1]; // "HH:MM"
-                            if (horaParte) {
-                                const [h, m] = horaParte.split(':');
-                                horas = parseInt(h) || 9;
-                                minutos = parseInt(m) || 0;
-                            }
-                        }
-
-                        data = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia), horas, minutos, 0);
+                        const [dia, mes, ano] = dataAbertura.split('/');
+                        data = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia), 9, 0, 0);
                     } else {
                         data = new Date(dataAbertura);
                         if (data.getHours() === 0) data.setHours(9, 0, 0);
