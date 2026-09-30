@@ -1989,7 +1989,13 @@
                     const prioridade = c.prioridade || c.Prioridade || 'Média';
                     const data = c.dataAbertura || c.data_criacao || c.data || '';
                     // Armazenar dados em atributo data-json para evitar problemas com caracteres especiais
-                    const dataJson = btoa(JSON.stringify(c)); // Codificar em base64
+                    let dataJson = '';
+                    try {
+                        dataJson = btoa(JSON.stringify(c)); // Codificar em base64
+                    } catch (e) {
+                        console.warn('⚠️ Erro ao codificar objeto:', e);
+                        dataJson = btoa(JSON.stringify({id: c.id, titulo: c.titulo})); // Fallback simples
+                    }
                     return `<tr onclick="abrirModalFromJson('${dataJson}')" style="cursor: pointer;">
                         <td><b>${c.id}</b></td>
                         <td>${titulo}</td>
@@ -2204,7 +2210,13 @@
                 const solicitante = c.solicitante || c.Solicitante || '-';
                 const categoria = c.categoria || c.Categoria || c.category || 'Outra';
 
-                const dataJsonConcluido = btoa(JSON.stringify(c)); // Codificar em base64
+                let dataJsonConcluido = '';
+                try {
+                    dataJsonConcluido = btoa(JSON.stringify(c)); // Codificar em base64
+                } catch (e) {
+                    console.warn('⚠️ Erro ao codificar objeto concluído:', e);
+                    dataJsonConcluido = btoa(JSON.stringify({id: c.id, titulo: c.titulo})); // Fallback simples
+                }
                 return `<tr onclick="abrirModalFromJson('${dataJsonConcluido}')" style="cursor: pointer;">
                     <td class="id-cell"><b>${c.id || '-'}</b></td>
                     <td class="titulo-cell" title="${titulo}">${titulo}</td>
