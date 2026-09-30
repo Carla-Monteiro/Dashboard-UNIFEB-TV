@@ -1936,9 +1936,21 @@
                 try {
                     let d;
                     if (dataStr.includes('/')) {
-                        const [dia, mes, ano] = dataStr.split('/');
+                        // Extrair apenas a parte da data (antes do espaço ou dois pontos)
+                        const dataParte = dataStr.split(' ')[0]; // Pega "DD/MM/YYYY"
+                        const [dia, mes, ano] = dataParte.split('/');
                         if (dia && mes && ano) {
-                            d = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+                            // Extrair hora se houver
+                            let horas = 0, minutos = 0;
+                            if (dataStr.includes(':')) {
+                                const horaParte = dataStr.split(' ')[1]; // Pega "HH:MM"
+                                if (horaParte) {
+                                    const [h, m] = horaParte.split(':');
+                                    horas = parseInt(h) || 0;
+                                    minutos = parseInt(m) || 0;
+                                }
+                            }
+                            d = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia), horas, minutos);
                         }
                     }
                     if (!d || isNaN(d.getTime())) {
