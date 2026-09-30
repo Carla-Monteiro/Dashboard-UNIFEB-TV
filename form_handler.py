@@ -1062,10 +1062,10 @@ def normalizar_prioridade(prioridade):
 
 
 def formatar_data_iso(data_str):
-    """Converte data ISO para formato DD/MM/YYYY"""
+    """Converte data ISO para formato DD/MM/YYYY HH:MM (com hora)"""
     try:
         if not data_str:
-            return datetime.now().strftime('%d/%m/%Y')
+            return datetime.now().strftime('%d/%m/%Y %H:%M')
 
         # Se for ISO format
         if 'T' in data_str:
@@ -1073,12 +1073,12 @@ def formatar_data_iso(data_str):
             # Converter para timezone de São Paulo
             tz_sp = ZoneInfo('America/Sao_Paulo')
             dt_sp = dt.astimezone(tz_sp)
-            return dt_sp.strftime('%d/%m/%Y')
+            return dt_sp.strftime('%d/%m/%Y %H:%M')  # ✅ Agora com hora!
 
         return data_str
     except Exception as e:
         logger.error(f"Erro ao formatar data {data_str}: {e}")
-        return datetime.now().strftime('%d/%m/%Y')
+        return datetime.now().strftime('%d/%m/%Y %H:%M')
 
 
 @app.route('/api/chamados/ativos', methods=['GET', 'OPTIONS'])
