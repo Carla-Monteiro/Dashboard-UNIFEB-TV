@@ -1991,10 +1991,10 @@
                     // Armazenar dados em atributo data-json para evitar problemas com caracteres especiais
                     let dataJson = '';
                     try {
-                        dataJson = btoa(JSON.stringify(c)); // Codificar em base64
+                        dataJson = encodeBase64UTF8(JSON.stringify(c)); // Codificar em base64 UTF-8
                     } catch (e) {
                         console.warn('⚠️ Erro ao codificar objeto:', e);
-                        dataJson = btoa(JSON.stringify({id: c.id, titulo: c.titulo})); // Fallback simples
+                        dataJson = encodeBase64UTF8(JSON.stringify({id: c.id, titulo: c.titulo})); // Fallback simples
                     }
                     return `<tr onclick="abrirModalFromJson('${dataJson}')" style="cursor: pointer;">
                         <td><b>${c.id}</b></td>
@@ -2212,10 +2212,10 @@
 
                 let dataJsonConcluido = '';
                 try {
-                    dataJsonConcluido = btoa(JSON.stringify(c)); // Codificar em base64
+                    dataJsonConcluido = encodeBase64UTF8(JSON.stringify(c)); // Codificar em base64 UTF-8
                 } catch (e) {
                     console.warn('⚠️ Erro ao codificar objeto concluído:', e);
-                    dataJsonConcluido = btoa(JSON.stringify({id: c.id, titulo: c.titulo})); // Fallback simples
+                    dataJsonConcluido = encodeBase64UTF8(JSON.stringify({id: c.id, titulo: c.titulo})); // Fallback simples
                 }
                 return `<tr onclick="abrirModalFromJson('${dataJsonConcluido}')" style="cursor: pointer;">
                     <td class="id-cell"><b>${c.id || '-'}</b></td>
@@ -2311,10 +2311,30 @@
             });
         }
 
+        // Função para encodar UTF-8 em Base64
+        function encodeBase64UTF8(str) {
+            try {
+                return btoa(unescape(encodeURIComponent(str)));
+            } catch (e) {
+                console.warn('Fallback para encode:', e);
+                return btoa(str); // Fallback
+            }
+        }
+
+        // Função para decodificar Base64 UTF-8
+        function decodeBase64UTF8(str) {
+            try {
+                return decodeURIComponent(escape(atob(str)));
+            } catch (e) {
+                console.warn('Fallback para decode:', e);
+                return atob(str); // Fallback
+            }
+        }
+
         // Decodificar dados do atributo e abrir modal
         function abrirModalFromJson(dataJson) {
             try {
-                const chamado = JSON.parse(atob(dataJson));
+                const chamado = JSON.parse(decodeBase64UTF8(dataJson));
                 abrirModal(chamado);
             } catch (e) {
                 console.error('❌ Erro ao decodificar dados do modal:', e);
