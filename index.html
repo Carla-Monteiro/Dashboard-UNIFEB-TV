@@ -2441,8 +2441,22 @@
                 try {
                     let data;
                     if (dataAbertura.includes('/')) {
-                        const [dia, mes, ano] = dataAbertura.split('/');
-                        data = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia), 9, 0, 0);
+                        // Extrair data e hora se existir
+                        const dataParte = dataAbertura.split(' ')[0]; // "DD/MM/YYYY"
+                        const [dia, mes, ano] = dataParte.split('/');
+                        let horas = 9, minutos = 0; // Padrão: 09:00
+
+                        // Se tem hora, extrair
+                        if (dataAbertura.includes(':')) {
+                            const horaParte = dataAbertura.split(' ')[1]; // "HH:MM"
+                            if (horaParte) {
+                                const [h, m] = horaParte.split(':');
+                                horas = parseInt(h) || 9;
+                                minutos = parseInt(m) || 0;
+                            }
+                        }
+
+                        data = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia), horas, minutos, 0);
                     } else {
                         data = new Date(dataAbertura);
                         if (data.getHours() === 0) data.setHours(9, 0, 0);
