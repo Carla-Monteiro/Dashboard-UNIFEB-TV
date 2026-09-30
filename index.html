@@ -1885,9 +1885,14 @@
         function formatarDataComHora(data) {
             if (!data) return '-';
             try {
+                // Se já vem formatado como "DD/MM/YYYY HH:MM", retorna direto!
+                if (data.includes('/') && data.includes(':')) {
+                    return data;  // ✅ Já tem hora, retorna como está!
+                }
+
                 let d;
 
-                // Tenta parse como DD/MM/YYYY
+                // Tenta parse como DD/MM/YYYY (sem hora)
                 if (data.includes('/') && !data.includes('T')) {
                     const [dia, mes, ano] = data.split('/');
                     if (dia && mes && ano) {
