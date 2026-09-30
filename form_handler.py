@@ -1189,6 +1189,7 @@ def obter_chamados_concluidos():
                 'solicitante': fields.get('Solicitante', ''),
                 'email': fields.get('Email', ''),
                 'categoria': fields.get('Categoria', 'Outra'),
+                'data_criacao': formatar_data_iso(fields.get('DataAbertura', datetime.now().isoformat())),
                 'data_conclusao': formatar_data_iso(fields.get('DataConclusao', datetime.now().isoformat())),
                 'origem': fields.get('Origem', ''),
                 'setor_atendimento': fields.get('SetordeAtendimento', ''),
