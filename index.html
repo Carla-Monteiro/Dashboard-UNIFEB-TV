@@ -220,14 +220,14 @@
             font-weight: 600;
             text-transform: uppercase;
         }
-        .badge-aberto { background: rgba(255, 165, 0, 0.4) !important; color: #ffb74d !important; font-weight: 700 !important; }
-        .badge-em-andamento { background: rgba(96, 165, 250, 0.3) !important; color: #64b5f6 !important; font-weight: 700 !important; }
-        .badge-concluido { background: rgba(16, 185, 129, 0.3) !important; color: #4db8a8 !important; font-weight: 700 !important; }
-        .badge-vencido { background: rgba(212, 114, 107, 0.3) !important; color: #ff8a80 !important; font-weight: 700 !important; }
-        .badge-alta { background: rgba(212, 114, 107, 0.4) !important; color: #ff8a80 !important; font-weight: 700 !important; }
-        .badge-média { background: rgba(255, 165, 0, 0.4) !important; color: #ffb74d !important; font-weight: 700 !important; }
-        .badge-media { background: rgba(255, 165, 0, 0.4) !important; color: #ffb74d !important; font-weight: 700 !important; }
-        .badge-baixa { background: rgba(16, 185, 129, 0.4) !important; color: #4db8a8 !important; font-weight: 700 !important; }
+        .badge-aberto { background: rgba(239, 68, 68, 0.7) !important; color: #fca5a5 !important; font-weight: 700 !important; border-radius: 6px; padding: 6px 12px; border: 1px solid #dc2626 !important; }
+        .badge-em-andamento { background: rgba(59, 130, 246, 0.7) !important; color: #bfdbfe !important; font-weight: 700 !important; border-radius: 6px; padding: 6px 12px; border: 1px solid #1e40af !important; }
+        .badge-concluido { background: rgba(34, 197, 94, 0.7) !important; color: #bbf7d0 !important; font-weight: 700 !important; border-radius: 6px; padding: 6px 12px; border: 1px solid #15803d !important; }
+        .badge-vencido { background: rgba(239, 68, 68, 0.9) !important; color: #fecaca !important; font-weight: 700 !important; border-radius: 6px; padding: 6px 12px; border: 1px solid #dc2626 !important; }
+        .badge-alta { background: rgba(239, 68, 68, 0.8) !important; color: #fecaca !important; font-weight: 700 !important; border-radius: 6px; padding: 6px 12px; border: 1px solid #dc2626 !important; }
+        .badge-média { background: rgba(234, 179, 8, 0.7) !important; color: #fef3c7 !important; font-weight: 700 !important; border-radius: 6px; padding: 6px 12px; border: 1px solid #b45309 !important; }
+        .badge-media { background: rgba(234, 179, 8, 0.7) !important; color: #fef3c7 !important; font-weight: 700 !important; border-radius: 6px; padding: 6px 12px; border: 1px solid #b45309 !important; }
+        .badge-baixa { background: rgba(34, 197, 94, 0.7) !important; color: #bbf7d0 !important; font-weight: 700 !important; border-radius: 6px; padding: 6px 12px; border: 1px solid #15803d !important; }
 
         .loading { text-align: center; padding: 20px; color: var(--text-secondary); }
 
@@ -1022,6 +1022,262 @@
         .modal-content.editing .modal-value { display: none; }
         .modal-content.editing .modal-input,
         .modal-content.editing .modal-select { display: block; }
+
+        /* ========== ESTILOS DO ARTIFACT ========== */
+
+        /* STATS CARDS */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--bg-secondary), #2d3d50);
+            border-left: 4px solid var(--gold);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(212, 165, 116, 0.1);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .stat-percentage {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        /* FILTROS */
+        .filters-section {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(212, 165, 116, 0.2);
+        }
+
+        .filters-title {
+            color: var(--gold);
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        .filter-input,
+        .filter-select {
+            background: rgba(212, 165, 116, 0.1);
+            border: 1px solid var(--border-gold);
+            color: var(--text-primary);
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        .filter-input:focus,
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 8px rgba(212, 165, 116, 0.3);
+            background: rgba(212, 165, 116, 0.15);
+        }
+
+        /* TABELA MELHORADA */
+        .table-wrapper {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+
+        thead {
+            background: rgba(212, 165, 116, 0.15);
+            border-bottom: 2px solid var(--border-gold);
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            color: var(--gold);
+            font-weight: 600;
+            font-size: 0.95em;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        th:hover {
+            background: rgba(212, 165, 116, 0.25);
+        }
+
+        th::after {
+            content: " ↕️";
+            opacity: 0;
+            font-size: 0.8em;
+            transition: opacity 0.2s;
+        }
+
+        th:hover::after {
+            opacity: 1;
+        }
+
+        .id-cell {
+            font-weight: 700;
+            color: var(--orange);
+            min-width: 60px;
+        }
+
+        .titulo-cell {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* PAGINAÇÃO */
+        .pagination-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(212, 165, 116, 0.1);
+            border-radius: 6px;
+        }
+
+        .pagination-info {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .pagination-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pagination-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-gold);
+            color: var(--gold);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .pagination-btn:hover {
+            background: var(--gold);
+            color: #000;
+        }
+
+        .pagination-btn.active {
+            background: var(--gold);
+            color: #000;
+            border-color: var(--gold);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* MODAL MELHORADO */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 2px solid var(--gold);
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(255, 165, 0, 0.3);
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 2em;
+            cursor: pointer;
+            color: var(--gold);
+            border: none;
+            background: none;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--orange);
+        }
+
+        .modal-header {
+            border-bottom: 2px solid var(--gold);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            clear: both;
+        }
+
+        .highlight {
+            background: rgba(212, 165, 116, 0.2);
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid var(--gold);
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .highlight strong {
+            color: var(--gold);
+        }
     </style>
 </head>
 <body>
@@ -1079,26 +1335,60 @@
                     <div class="stat-icon">📂</div>
                     <div class="stat-label">Abertos</div>
                     <div class="stat-value" id="stat-abertos">0</div>
+                    <div class="stat-percentage" id="stat-abertos-pct">0% do total</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">⏳</div>
                     <div class="stat-label">Andamento</div>
                     <div class="stat-value" id="stat-andamento">0</div>
+                    <div class="stat-percentage" id="stat-andamento-pct">0% do total</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">✅</div>
                     <div class="stat-label">Concluídos</div>
                     <div class="stat-value" id="stat-concluidos">0</div>
+                    <div class="stat-percentage" id="stat-concluidos-pct">0% do total</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">🚨</div>
                     <div class="stat-label">Vencidos</div>
                     <div class="stat-value" id="stat-vencidos">0</div>
+                    <div class="stat-percentage" id="stat-vencidos-pct">0% do total</div>
                 </div>
             </div>
 
             <div id="pagina-chamados" class="page-content">
                 <div class="categoria-titulo" id="categoriaTitulo">📋 Detalhados</div>
+
+                <!-- FILTROS -->
+                <div class="filters-section">
+                    <div class="filters-title">🔍 Filtros</div>
+                    <div class="filters-grid">
+                        <div class="filter-group">
+                            <label class="filter-label">Buscar por ID, Título ou Solicitante:</label>
+                            <input type="text" class="filter-input" id="filtro-busca" placeholder="Ex: 1142, Projetor, João..." />
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Status:</label>
+                            <select class="filter-select" id="filtro-status">
+                                <option value="">Todos</option>
+                                <option value="Aberto">Aberto</option>
+                                <option value="Em Andamento">Em Andamento</option>
+                                <option value="Concluído">Concluído</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Prioridade:</label>
+                            <select class="filter-select" id="filtro-prioridade">
+                                <option value="">Todas</option>
+                                <option value="Alta">Alta</option>
+                                <option value="Média">Média</option>
+                                <option value="Baixa">Baixa</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="table-container">
                     <table>
                         <thead><tr><th>ID</th><th>Título</th><th>Solicitante</th><th>Status</th><th>Prioridade</th><th>Data</th></tr></thead>
@@ -1295,8 +1585,16 @@
             <button class="modal-close" onclick="fecharModal()">✕</button>
 
             <div class="modal-header">
-                <div class="modal-title" id="modalTitulo">Detalhes do Chamado</div>
-                <div class="modal-subtitle" id="modalSubtitulo">ID #1</div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <h2 id="modalTitulo" style="color: var(--text-primary); font-size: 1.4em; margin: 0; line-height: 1.3;">Título do Chamado</h2>
+                    </div>
+                    <span id="modalSubtitulo" style="color: var(--orange); font-weight: 700; font-size: 1.1em; white-space: nowrap; margin-left: 15px;">ID: 0000</span>
+                </div>
+                <div style="background: linear-gradient(135deg, rgba(212, 165, 116, 0.2), rgba(255, 165, 0, 0.08)); padding: 15px; border-radius: 6px; border-left: 4px solid var(--gold); margin-bottom: 15px; border-bottom: 2px solid var(--border-gold);">
+                    <div style="color: var(--text-secondary); font-size: 0.85em; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">📝 Descrição do Problema</div>
+                    <p id="modalDescricao" style="color: var(--text-primary); line-height: 1.6; font-size: 0.95em; margin: 0;">-</p>
+                </div>
             </div>
 
             <!-- INFORMAÇÕES GERAIS -->
@@ -1358,19 +1656,6 @@
                         <div class="modal-label">Prazo SLA:</div>
                         <div class="modal-value" id="modalPrazoSLA">-</div>
                         <input type="text" class="modal-input" id="modalPrazoSLAInput" placeholder="dd/mm/aaaa">
-                    </div>
-                </div>
-            </div>
-
-            <!-- HISTÓRICO -->
-            <div class="modal-section">
-                <div class="modal-section-title">Histórico</div>
-                <div class="modal-timeline" id="modalHistorico">
-                    <div class="timeline-item">
-                        <div class="timeline-dot"></div>
-                        <div class="timeline-content">
-                            <div class="timeline-action">Sem histórico</div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1464,15 +1749,27 @@
                 dadosGlobais.concluidos = normalizarChamados(concluidos);
                 dadosGlobais.graficos = graficos || {};
 
-                setElementText('stat-abertos', dadosGlobais.ativos.filter(c => c.status === 'Aberto').length);
-                setElementText('stat-andamento', dadosGlobais.ativos.filter(c => c.status === 'Em Andamento').length);
-                setElementText('stat-concluidos', dadosGlobais.concluidos.length);
-                setElementText('stat-vencidos', dadosGlobais.ativos.filter(c => c.status === 'Vencido').length);
-
-                const totalChamados = dadosGlobais.ativos.length + dadosGlobais.concluidos.length;
                 const abertos = dadosGlobais.ativos.filter(c => c.status === 'Aberto').length;
                 const andamento = dadosGlobais.ativos.filter(c => c.status === 'Em Andamento').length;
                 const concluidosCount = dadosGlobais.concluidos.length;
+                const vencidos = dadosGlobais.ativos.filter(c => c.status === 'Vencido').length;
+                const totalChamados = dadosGlobais.ativos.length + dadosGlobais.concluidos.length;
+
+                setElementText('stat-abertos', abertos);
+                setElementText('stat-andamento', andamento);
+                setElementText('stat-concluidos', concluidosCount);
+                setElementText('stat-vencidos', vencidos);
+
+                // CALCULAR PORCENTAGENS
+                const pctAbertos = totalChamados > 0 ? Math.round((abertos / totalChamados) * 100) : 0;
+                const pctAndamento = totalChamados > 0 ? Math.round((andamento / totalChamados) * 100) : 0;
+                const pctConcluidos = totalChamados > 0 ? Math.round((concluidosCount / totalChamados) * 100) : 0;
+                const pctVencidos = totalChamados > 0 ? Math.round((vencidos / totalChamados) * 100) : 0;
+
+                setElementText('stat-abertos-pct', `${pctAbertos}% do total`);
+                setElementText('stat-andamento-pct', `${pctAndamento}% do total`);
+                setElementText('stat-concluidos-pct', `${pctConcluidos}% do total`);
+                setElementText('stat-vencidos-pct', `${pctVencidos}% do total`);
 
                 setElementText('graficos-total', totalChamados);
                 setElementText('graficos-abertos', abertos);
@@ -1584,6 +1881,42 @@
             return 'email';
         }
 
+        // ⏰ Formata data COM HORA (DD/MM/YYYY HH:MM) - FUNÇÃO GLOBAL
+        function formatarDataComHora(data) {
+            if (!data) return '-';
+            try {
+                let d;
+
+                // Tenta parse como DD/MM/YYYY
+                if (data.includes('/') && !data.includes('T')) {
+                    const [dia, mes, ano] = data.split('/');
+                    if (dia && mes && ano) {
+                        d = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+                    }
+                }
+                // Se for ISO string com T (tem hora)
+                else if (data.includes('T')) {
+                    d = new Date(data);
+                }
+                // Tenta como Date string genérica
+                else {
+                    d = new Date(data);
+                }
+
+                // Se ainda não conseguiu, retorna "-"
+                if (isNaN(d.getTime())) {
+                    return '-';
+                }
+
+                // Formata com data e hora
+                const dataStr = d.toLocaleDateString('pt-BR');
+                const horaStr = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                return `${dataStr} ${horaStr}`;
+            } catch (e) {
+                return '-';
+            }
+        }
+
         function renderizarTabelaChamados() {
             const tabelaEl = getElement('tabelaChamados');
             if (!tabelaEl) return;
@@ -1592,13 +1925,58 @@
                 filtrados = filtrados.filter(c => c.setor_mapeado === categoriaAtual);
             }
 
+            // ORDENAR POR DATA - NOVOS PRIMEIRO!
+            const parseData = (dataStr) => {
+                if (!dataStr) return new Date(0);
+                try {
+                    let d;
+                    if (dataStr.includes('/')) {
+                        const [dia, mes, ano] = dataStr.split('/');
+                        if (dia && mes && ano) {
+                            d = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+                        }
+                    }
+                    if (!d || isNaN(d.getTime())) {
+                        d = new Date(dataStr);
+                    }
+                    return isNaN(d.getTime()) ? new Date(0) : d;
+                } catch (e) {
+                    return new Date(0);
+                }
+            };
+
+            filtrados = filtrados.sort((a, b) => {
+                const dataA = parseData(a.dataAbertura || a.data_criacao || a.data);
+                const dataB = parseData(b.dataAbertura || b.data_criacao || b.data);
+                return dataB - dataA; // Descendente (novos primeiro)
+            });
+
             const formatarDataAbertura = (data) => {
                 if (!data) return '-';
                 try {
-                    const d = new Date(data);
+                    let d;
+
+                    // Tenta parse como DD/MM/YYYY
+                    if (data.includes('/')) {
+                        const [dia, mes, ano] = data.split('/');
+                        if (dia && mes && ano) {
+                            d = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+                        }
+                    }
+
+                    // Se não conseguiu, tenta como ISO ou Date string
+                    if (!d || isNaN(d.getTime())) {
+                        d = new Date(data);
+                    }
+
+                    // Se ainda não conseguiu, retorna "-"
+                    if (isNaN(d.getTime())) {
+                        return '-';
+                    }
+
                     return d.toLocaleDateString('pt-BR');
                 } catch (e) {
-                    return data;
+                    return '-';
                 }
             };
 
@@ -1610,7 +1988,9 @@
                     const status = c.status || 'Aberto';
                     const prioridade = c.prioridade || c.Prioridade || 'Média';
                     const data = c.dataAbertura || c.data_criacao || c.data || '';
-                    return `<tr onclick="abrirModal(${JSON.stringify(c).replace(/"/g, '&quot;')})">
+                    // Armazenar dados em atributo data-json para evitar problemas com caracteres especiais
+                    const dataJson = btoa(JSON.stringify(c)); // Codificar em base64
+                    return `<tr onclick="abrirModalFromJson('${dataJson}')" style="cursor: pointer;">
                         <td><b>${c.id}</b></td>
                         <td>${titulo}</td>
                         <td>${solicitante}</td>
@@ -1824,7 +2204,8 @@
                 const solicitante = c.solicitante || c.Solicitante || '-';
                 const categoria = c.categoria || c.Categoria || c.category || 'Outra';
 
-                return `<tr onclick="abrirModal(${JSON.stringify(c).replace(/"/g, '&quot;')})">
+                const dataJsonConcluido = btoa(JSON.stringify(c)); // Codificar em base64
+                return `<tr onclick="abrirModalFromJson('${dataJsonConcluido}')" style="cursor: pointer;">
                     <td class="id-cell"><b>${c.id || '-'}</b></td>
                     <td class="titulo-cell" title="${titulo}">${titulo}</td>
                     <td class="solicitante-cell" title="${solicitante}">${solicitante}</td>
@@ -1918,6 +2299,16 @@
             });
         }
 
+        // Decodificar dados do atributo e abrir modal
+        function abrirModalFromJson(dataJson) {
+            try {
+                const chamado = JSON.parse(atob(dataJson));
+                abrirModal(chamado);
+            } catch (e) {
+                console.error('❌ Erro ao decodificar dados do modal:', e);
+            }
+        }
+
         function abrirModal(chamado) {
             if (!chamado) return;
             chamadoSelecionado = chamado;
@@ -1926,6 +2317,12 @@
             if (modalContent) modalContent.classList.remove('editing');
             setElementText('modalTitulo', chamado.titulo || 'Sem título');
             setElementText('modalSubtitulo', `ID: ${chamado.id}`);
+            // Limpar descrição removendo tags HTML extras do SharePoint
+            let descricao = chamado.descricao || chamado.Descricao || '-';
+            descricao = descricao.replace(/<div[^>]*class="ExternalClass[^"]*"[^>]*>/g, '')
+                                 .replace(/<\/div>/g, '')
+                                 .replace(/<[^>]+>/g, ''); // Remove qualquer tag HTML
+            setElementText('modalDescricao', descricao);
             setElementText('modalID', chamado.id);
             const modalIDInput = getElement('modalIDInput');
             if (modalIDInput) modalIDInput.value = chamado.id;
@@ -1985,12 +2382,60 @@
             }
             const modalPrioridadeInput = getElement('modalPrioridadeInput');
             if (modalPrioridadeInput) modalPrioridadeInput.value = prioridade;
-            setElementText('modalDataCriacao', chamado.data_criacao || '-');
+            setElementText('modalDataCriacao', formatarDataComHora(chamado.data_criacao));
             const modalDataCriacaoInput = getElement('modalDataCriacaoInput');
             if (modalDataCriacaoInput) modalDataCriacaoInput.value = chamado.data_criacao || '';
-            setElementText('modalPrazoSLA', chamado.data_prazo || '-');
+
+            // CALCULAR PRAZO SLA (APENAS HORÁRIO COMERCIAL: SEG-SEX 08:00-18:00)
+            const calcularPrazoSLA = (dataAbertura, prioridade) => {
+                if (!dataAbertura) return '-';
+                try {
+                    let data;
+                    if (dataAbertura.includes('/')) {
+                        const [dia, mes, ano] = dataAbertura.split('/');
+                        data = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia), 9, 0, 0);
+                    } else {
+                        data = new Date(dataAbertura);
+                        if (data.getHours() === 0) data.setHours(9, 0, 0);
+                    }
+
+                    let horasRestantes = 8;
+                    if (prioridade && prioridade.toLowerCase().includes('alta')) horasRestantes = 2;
+                    else if (prioridade && prioridade.toLowerCase().includes('baixa')) horasRestantes = 48;
+
+                    while (horasRestantes > 0) {
+                        const diaSemana = data.getDay();
+                        const hora = data.getHours();
+                        if (diaSemana === 0) { data.setDate(data.getDate() + 1); data.setHours(8, 0, 0); continue; }
+                        if (diaSemana === 6) { data.setDate(data.getDate() + 2); data.setHours(8, 0, 0); continue; }
+                        if (hora < 8) { data.setHours(8, 0, 0); continue; }
+                        if (hora >= 18) { data.setDate(data.getDate() + 1); data.setHours(8, 0, 0); continue; }
+                        const horasAteFim = 18 - hora;
+                        if (horasRestantes >= horasAteFim) {
+                            horasRestantes -= horasAteFim;
+                            data.setDate(data.getDate() + 1);
+                            data.setHours(8, 0, 0);
+                        } else {
+                            data.setHours(hora + horasRestantes);
+                            horasRestantes = 0;
+                        }
+                    }
+
+                    const dia = String(data.getDate()).padStart(2, '0');
+                    const mes = String(data.getMonth() + 1).padStart(2, '0');
+                    const ano = data.getFullYear();
+                    const hora = String(data.getHours()).padStart(2, '0');
+                    const minuto = String(data.getMinutes()).padStart(2, '0');
+                    return `até ${dia}/${mes}/${ano} às ${hora}:${minuto}`;
+                } catch (e) {
+                    return dataAbertura;
+                }
+            };
+
+            const prazoSLA = calcularPrazoSLA(chamado.dataAbertura || chamado.data_criacao || chamado.data, chamado.prioridade);
+            setElementText('modalPrazoSLA', prazoSLA);
             const modalPrazoSLAInput = getElement('modalPrazoSLAInput');
-            if (modalPrazoSLAInput) modalPrazoSLAInput.value = chamado.data_prazo || '';
+            if (modalPrazoSLAInput) modalPrazoSLAInput.value = prazoSLA;
             const historico = chamado.historico || [];
             const modalHistorico = getElement('modalHistorico');
             if (modalHistorico) {
