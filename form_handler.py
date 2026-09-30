@@ -1189,7 +1189,7 @@ def obter_chamados_concluidos():
                 'solicitante': fields.get('Solicitante', ''),
                 'email': fields.get('Email', ''),
                 'categoria': fields.get('Categoria', 'Outra'),
-                'data_conclusao': formatar_data_iso(fields.get('Modified', datetime.now().isoformat())),
+                'data_conclusao': formatar_data_iso(fields.get('DataConclusao', datetime.now().isoformat())),
                 'origem': fields.get('Origem', ''),
                 'setor_atendimento': fields.get('SetordeAtendimento', ''),
                 'avaliacao': '⭐⭐⭐⭐'  # Padrão - pode ser alterado se houver campo no SharePoint
