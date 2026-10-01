@@ -1062,20 +1062,16 @@ def normalizar_prioridade(prioridade):
 
 
 def formatar_data_iso(data_str):
-    """Retorna data/hora como vem do SharePoint (ignorar timezone completamente)"""
+    """Converte data ISO do SharePoint para São Paulo (UTC-3)"""
     try:
         if not data_str:
             return datetime.now().strftime('%d/%m/%Y %H:%M')
 
-        # Se for ISO format
         if 'T' in data_str:
-            import re
-            # APENAS EXTRAIR: YYYY-MM-DD HH:MM:SS (remover timezone completamente)
-            # Exemplo: "2026-10-01T11:53:00-03:00" → "2026-10-01 11:53:00"
-            match = re.search(r'(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})', data_str)
-            if match:
-                ano, mes, dia, hora, minuto, segundo = match.groups()
-                return f"{dia}/{mes}/{ano} {hora}:{minuto}"
+            # SharePoint retorna em UTC (com Z) - converter para São Paulo UTC-3
+            dt_utc = datetime.fromisoformat(data_str.replace('Z', '+00:00'))
+            dt_sp = dt_utc.astimezone(timezone(timedelta(hours=-3)))
+            return dt_sp.strftime('%d/%m/%Y %H:%M')
 
         return data_str
     except Exception as e:
