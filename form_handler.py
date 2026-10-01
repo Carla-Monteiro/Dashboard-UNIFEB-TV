@@ -1062,40 +1062,24 @@ def normalizar_prioridade(prioridade):
 
 
 def formatar_data_iso(data_str):
-    """Retorna data/hora exatamente como vem do SharePoint (já em São Paulo)"""
+    """Retorna data/hora como vem do SharePoint (ignorar timezone completamente)"""
     try:
         if not data_str:
             return datetime.now().strftime('%d/%m/%Y %H:%M')
 
         # Se for ISO format
         if 'T' in data_str:
-            # DEBUG: log do valor RAW
-            logger.info(f"🔍 DATA RAW DO SHAREPOINT: {data_str}")
-
-            # SharePoint retorna com timezone -03:00 (São Paulo) ou Z (UTC)
-            # Se tiver -03:00, remover e usar direto (já em SP)
-            # Se tiver Z, converter de UTC para SP
-            if '+' in data_str or '-03:00' in data_str or '-03' in data_str:
-                # Tem timezone -03:00, remover
-                data_limpa = data_str.split('+')[0].split('-03')[0]
-            elif 'Z' in data_str:
-                # É UTC, converter para SP (-3 horas)
-                data_limpa = data_str.replace('Z', '+00:00')
-                dt_utc = datetime.fromisoformat(data_limpa)
-                tz_sp = timezone(timedelta(hours=-3))
-                dt = dt_utc.astimezone(tz_sp)
-                return dt.strftime('%d/%m/%Y %H:%M')
-            else:
-                # Sem timezone, assumir SP
-                data_limpa = data_str
-
-            dt = datetime.fromisoformat(data_limpa)
-            logger.info(f"✅ DATA FORMATADA: {dt.strftime('%d/%m/%Y %H:%M')}")
-            return dt.strftime('%d/%m/%Y %H:%M')
+            import re
+            # APENAS EXTRAIR: YYYY-MM-DD HH:MM:SS (remover timezone completamente)
+            # Exemplo: "2026-10-01T11:53:00-03:00" → "2026-10-01 11:53:00"
+            match = re.search(r'(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})', data_str)
+            if match:
+                ano, mes, dia, hora, minuto, segundo = match.groups()
+                return f"{dia}/{mes}/{ano} {hora}:{minuto}"
 
         return data_str
     except Exception as e:
-        logger.error(f"Erro ao formatar data {data_str}: {e}")
+        logger.error(f"❌ Erro ao formatar data '{data_str}': {e}")
         return datetime.now().strftime('%d/%m/%Y %H:%M')
 
 
