@@ -1681,25 +1681,25 @@
         let modoEdicao = false;
 
         // 📧 Mapeamento de Emails para Setores (igual ao backend)
-        // 📧 MAPEAMENTO: email → SEMPRE vai para aba E-mail
-        // Nota: TI, Manutenção, Multimídia são APENAS para QR Code com categoria específica!
+        // 📧 MAPEAMENTO: email → CÓDIGO de setor (manutencao, naem, ti, ou email)
         const EMAIL_SETOR_MAPPING = {
+            'manutencao': 'manutencao',  // → vai para aba Manutenção
+            'dti': 'ti',                  // → vai para aba TI
+            'naem': 'naem',               // → vai para aba Multimídia
+            'multimedia': 'naem',         // → vai para aba Multimídia
+            // Todos os outros setores → vão para aba E-mail
             'almoxarifado': 'email',
             'biblioteca': 'email',
             'coordenacao': 'email',
             'clinica': 'email',
             'colegio': 'email',
-            'dti': 'email',               // DTI de email → aba E-mail
             'matricula': 'email',
             'coordenacao_lab': 'email',
             'laboratorio': 'email',
-            'manutencao': 'email',        // Manutenção de email → aba E-mail
             'cpa': 'email',
             'neu': 'email',
             'marketing': 'email',
             'nape': 'email',
-            'naem': 'email',              // NAEM de email → aba E-mail
-            'multimedia': 'email',        // Multimídia de email → aba E-mail
             'npj': 'email',               // Núcleo Práticas Jurídicas → aba E-mail
             'financeiro': 'email',
             'pradm': 'email',
@@ -2102,13 +2102,14 @@
         // Controle de paginação e sort para Concluídos
         let concluidosSortAtual = { field: 'id', asc: true };
         let concluidosPaginaAtual = 1;
-        const concluidosItensPorPagina = 10;
+        const concluidosItensPorPagina = 20;  // ← Aumentado de 10 para 20
 
         function getCategoriaLabelConcluidos(cat) {
+            if (!cat) return 'Outra';
             if (cat.includes('Projetor')) return '📽️ Projetor';
             if (cat.includes('Fechadura')) return '🔐 Fechadura';
             if (cat.includes('Ar')) return '❄️ Ar Condicionado';
-            return 'Outra';
+            return cat;  // ← Retorna a categoria REAL, não 'Outra'
         }
 
         function getCategoriaCssConcluidos(cat) {
