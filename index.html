@@ -1680,6 +1680,42 @@
         let chamadoSelecionado = null;
         let modoEdicao = false;
 
+        // 📧 Mapeamento de Emails para Setores (igual ao backend)
+        const EMAIL_SETOR_MAPPING = {
+            'almoxarifado': 'Almoxarifado',
+            'biblioteca': 'Biblioteca',
+            'coordenacao': 'Coordenação de Professores',
+            'clinica': 'Clínica Odontológica',
+            'colegio': 'Colégio FEB',
+            'dti': 'Departamento de Tecnologia',
+            'matricula': 'Matrícula',
+            'coordenacao_lab': 'Coordenação Laboratórios',
+            'laboratorio': 'Coordenação Laboratórios',
+            'manutencao': 'Manutenção',
+            'cpa': 'Comissão Própria de Avaliação (CPA)',
+            'neu': 'NEU',
+            'marketing': 'Marketing',
+            'nape': 'NAPE',
+            'npj': 'Núcleo Práticas Jurídicas',
+            'financeiro': 'Atendimento Financeiro',
+            'pradm': 'PRADM',
+            'dejur': 'Departamento Jurídico - DEJUR',
+            'prealuno': 'Pró Aluno',
+            'reitoria': 'Reitoria',
+            'rh': 'RH',
+            'secretaria': 'Secretaria',
+            'conselho': 'Conselho Curador',
+            'clivet': 'Clínica Medicina Veterinária',
+            'sala_professor': 'Sala Atendimento Professor ao Aluno',
+            'cartorio': 'Cartório - Núcleo Práticas Jurídicas',
+            'sala_professores': 'Sala dos Professores',
+            'ouvidoria': 'Ouvidoria',
+            'sustentabilidade': 'Núcleo de Sustentabilidade',
+            'labinfo': 'Laboratórios de Informática',
+            'fisio': 'Clínica de Fisioterapia',
+            'nac': 'NAC',
+        };
+
         function setElementText(elementId, text) {
             const el = document.getElementById(elementId);
             if (el) el.textContent = text;
@@ -1728,21 +1764,40 @@
                 const graficos = resultados[2].status === 'fulfilled' ? resultados[2].value : {};
 
                 const normalizarChamados = (chamados) => {
-                    return (chamados || []).map(c => ({
-                        ...c,
-                        // Normalizar campos do backup: usar dataAbertura, setorAtendimento, origem
-                        dataAbertura: c.dataAbertura || c.data_criacao || c.data_abertura,
-                        dataConclusao: c.dataConclusao || c.data_conclusao,
-                        setorAtendimento: c.setorAtendimento || c.setor_atendimento || c.SetordeAtendimento || '',
-                        origem: c.origem || 'Dashboard',
-                        prioridade: c.prioridade || c.Prioridade || 'Média',
-                        // Campo mapeado para compatibilidade
-                        setor_mapeado: obterSetorDoSetor(c.setorAtendimento || c.setor_atendimento || c.SetordeAtendimento) ||
-                                       obterCategoriaGrupo(c.categoria) ||
-                                       'email',
-                        // Alias para data (como no backup)
-                        data: c.dataAbertura || c.data_criacao || c.data_abertura
-                    }));
+                    return (chamados || []).map(c => {
+                        const origem = c.origem || '';
+                        const isEmail = !origem || origem.toLowerCase() !== 'qr code';
+
+                        // Se for EMAIL: usa setor do email + categoria "E-mail Suporte"
+                        // Se for QR CODE: usa SetordeAtendimento + categoria original
+                        let setor_mapeado = 'email';
+                        let categoria_final = c.categoria || 'Outra';
+
+                        if (isEmail) {
+                            // EMAIL: tenta obter setor do email do remetente
+                            const setorDoEmail = obterSetorDoEmail(c.email || c.Email);
+                            setor_mapeado = setorDoEmail ? obterSetorDoSetor(setorDoEmail) : 'email';
+                            categoria_final = '✉️ E-mail Suporte'; // ← NOVA CATEGORIA!
+                        } else {
+                            // QR CODE: usa SetordeAtendimento normal
+                            setor_mapeado = obterSetorDoSetor(c.setorAtendimento || c.setor_atendimento || c.SetordeAtendimento) ||
+                                          obterCategoriaGrupo(c.categoria) ||
+                                          'email';
+                            categoria_final = c.categoria || 'Outra';
+                        }
+
+                        return {
+                            ...c,
+                            dataAbertura: c.dataAbertura || c.data_criacao || c.data_abertura,
+                            dataConclusao: c.dataConclusao || c.data_conclusao,
+                            setorAtendimento: c.setorAtendimento || c.setor_atendimento || c.SetordeAtendimento || '',
+                            origem: origem || 'E-mail',
+                            prioridade: c.prioridade || c.Prioridade || 'Média',
+                            setor_mapeado: setor_mapeado,
+                            categoria: categoria_final,
+                            data: c.dataAbertura || c.data_criacao || c.data_abertura
+                        };
+                    });
                 };
 
                 dadosGlobais.ativos = normalizarChamados(ativos);
@@ -1850,6 +1905,22 @@
             } catch (error) {
                 console.error('❌ Erro ao carregar pesquisas:', error.message);
                 dadosGlobais.pesquisas = [];
+            }
+        }
+
+        // 📧 Extrai setor baseado no EMAIL do remetente
+        function obterSetorDoEmail(email) {
+            if (!email) return null;
+            try {
+                // Extrai a parte antes do @ (ex: paula.rh@feb.br → paula.rh)
+                const emailPrefix = email.split('@')[0].toLowerCase();
+                // Extrai o código do setor (ex: paula.rh → rh)
+                const parts = emailPrefix.split('.');
+                const codigoSetor = parts[parts.length - 1]; // último parte após o ponto
+                // Procura no mapeamento
+                return EMAIL_SETOR_MAPPING[codigoSetor] || null;
+            } catch (e) {
+                return null;
             }
         }
 
