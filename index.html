@@ -97,17 +97,17 @@
 
         .header-left { display: flex; align-items: center; gap: 25px; }
         .logo-container {
-            width: 180px; height: 140px;
-            background: transparent;
-            border: none;
-            border-radius: 0;
+            width: 120px; height: 90px;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.15), rgba(255, 165, 0, 0.08));
+            border: 2.5px solid var(--border-gold);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: visible;
-            box-shadow: none;
+            overflow: hidden;
+            box-shadow: 0 6px 16px rgba(255, 165, 0, 0.2);
         }
-        .logo { width: 180px; height: 140px; object-fit: contain; }
+        .logo { width: 110px; height: 80px; object-fit: contain; }
         .header-title h1 { font-size: 24px; font-weight: 700; }
         .header-title p { font-size: 11px; color: var(--border-gold); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
         .status-badge {
@@ -1680,42 +1680,6 @@
         let chamadoSelecionado = null;
         let modoEdicao = false;
 
-        // 📧 Mapeamento de Emails para Setores (igual ao backend)
-        const EMAIL_SETOR_MAPPING = {
-            'almoxarifado': 'Almoxarifado',
-            'biblioteca': 'Biblioteca',
-            'coordenacao': 'Coordenação de Professores',
-            'clinica': 'Clínica Odontológica',
-            'colegio': 'Colégio FEB',
-            'dti': 'Departamento de Tecnologia',
-            'matricula': 'Matrícula',
-            'coordenacao_lab': 'Coordenação Laboratórios',
-            'laboratorio': 'Coordenação Laboratórios',
-            'manutencao': 'Manutenção',
-            'cpa': 'Comissão Própria de Avaliação (CPA)',
-            'neu': 'NEU',
-            'marketing': 'Marketing',
-            'nape': 'NAPE',
-            'npj': 'Núcleo Práticas Jurídicas',
-            'financeiro': 'Atendimento Financeiro',
-            'pradm': 'PRADM',
-            'dejur': 'Departamento Jurídico - DEJUR',
-            'prealuno': 'Pró Aluno',
-            'reitoria': 'Reitoria',
-            'rh': 'RH',
-            'secretaria': 'Secretaria',
-            'conselho': 'Conselho Curador',
-            'clivet': 'Clínica Medicina Veterinária',
-            'sala_professor': 'Sala Atendimento Professor ao Aluno',
-            'cartorio': 'Cartório - Núcleo Práticas Jurídicas',
-            'sala_professores': 'Sala dos Professores',
-            'ouvidoria': 'Ouvidoria',
-            'sustentabilidade': 'Núcleo de Sustentabilidade',
-            'labinfo': 'Laboratórios de Informática',
-            'fisio': 'Clínica de Fisioterapia',
-            'nac': 'NAC',
-        };
-
         function setElementText(elementId, text) {
             const el = document.getElementById(elementId);
             if (el) el.textContent = text;
@@ -1765,36 +1729,35 @@
 
                 const normalizarChamados = (chamados) => {
                     return (chamados || []).map(c => {
-                        const origem = c.origem || '';
-                        const isEmail = !origem || origem.toLowerCase() !== 'qr code';
+                        const origem = c.origem || c.Origem || '';
+                        const email = c.email || c.Email || '';
+                        const setorAtendimento = c.setorAtendimento || c.setor_atendimento || c.SetordeAtendimento || '';
 
-                        // Se for EMAIL: usa setor do email + categoria "E-mail Suporte"
-                        // Se for QR CODE: usa SetordeAtendimento + categoria original
-                        let setor_mapeado = 'email';
-                        let categoria_final = c.categoria || 'Outra';
-
-                        if (isEmail) {
-                            // EMAIL: tenta obter setor do email do remetente
-                            const setorDoEmail = obterSetorDoEmail(c.email || c.Email);
-                            setor_mapeado = setorDoEmail ? obterSetorDoSetor(setorDoEmail) : 'email';
-                            categoria_final = '✉️ E-mail Suporte'; // ← NOVA CATEGORIA!
+                        // 🎯 LÓGICA DE CATEGORIZAÇÃO:
+                        // SE Origem é vazio ou NÃO é "QR Code" → é EMAIL → usa setor do email
+                        // SE Origem é "QR Code" → usa SetordeAtendimento do QR Code
+                        let setor_mapeado;
+                        if (!origem || origem !== 'QR Code') {
+                            // ✉️ É EMAIL → extrai setor do email
+                            setor_mapeado = obterSetorDoEmail(email) || 'email';
                         } else {
-                            // QR CODE: usa SetordeAtendimento normal
-                            setor_mapeado = obterSetorDoSetor(c.setorAtendimento || c.setor_atendimento || c.SetordeAtendimento) ||
-                                          obterCategoriaGrupo(c.categoria) ||
-                                          'email';
-                            categoria_final = c.categoria || 'Outra';
+                            // 🎫 É QR CODE → usa SetordeAtendimento
+                            setor_mapeado = obterSetorDoSetor(setorAtendimento) ||
+                                           obterCategoriaGrupo(c.categoria) ||
+                                           'email';
                         }
 
                         return {
                             ...c,
+                            // Normalizar campos do backup: usar dataAbertura, setorAtendimento, origem
                             dataAbertura: c.dataAbertura || c.data_criacao || c.data_abertura,
                             dataConclusao: c.dataConclusao || c.data_conclusao,
-                            setorAtendimento: c.setorAtendimento || c.setor_atendimento || c.SetordeAtendimento || '',
-                            origem: origem || 'E-mail',
+                            setorAtendimento: setorAtendimento,
+                            origem: origem || 'Dashboard',
                             prioridade: c.prioridade || c.Prioridade || 'Média',
+                            // Campo mapeado para compatibilidade
                             setor_mapeado: setor_mapeado,
-                            categoria: categoria_final,
+                            // Alias para data (como no backup)
                             data: c.dataAbertura || c.data_criacao || c.data_abertura
                         };
                     });
@@ -1908,22 +1871,6 @@
             }
         }
 
-        // 📧 Extrai setor baseado no EMAIL do remetente
-        function obterSetorDoEmail(email) {
-            if (!email) return null;
-            try {
-                // Extrai a parte antes do @ (ex: paula.rh@feb.br → paula.rh)
-                const emailPrefix = email.split('@')[0].toLowerCase();
-                // Extrai o código do setor (ex: paula.rh → rh)
-                const parts = emailPrefix.split('.');
-                const codigoSetor = parts[parts.length - 1]; // último parte após o ponto
-                // Procura no mapeamento
-                return EMAIL_SETOR_MAPPING[codigoSetor] || null;
-            } catch (e) {
-                return null;
-            }
-        }
-
         function obterSetorDoSetor(setor) {
             if (!setor) return null;
             const s = setor.toLowerCase().trim();
@@ -1952,6 +1899,59 @@
             return 'email';
         }
 
+        // 📧 MAPEAMENTO DE EMAIL PARA SETOR
+        const EMAIL_SETOR_MAPPING = {
+            'almoxarifado': 'Almoxarifado',
+            'biblioteca': 'Biblioteca',
+            'coordenacao': 'Coordenação de Professores',
+            'clinica': 'Clínica Odontológica',
+            'colegio': 'Colégio FEB',
+            'dti': 'Departamento de Tecnologia',
+            'matricula': 'Matrícula',
+            'coordenacao_lab': 'Coordenação Laboratórios',
+            'laboratorio': 'Coordenação Laboratórios',
+            'manutencao': 'Manutenção',
+            'cpa': 'Comissão Própria de Avaliação (CPA)',
+            'neu': 'NEU',
+            'marketing': 'Marketing',
+            'nape': 'NAPE',
+            'npj': 'Núcleo Práticas Jurídicas',
+            'financeiro': 'Atendimento Financeiro',
+            'pradm': 'PRADM',
+            'dejur': 'Departamento Jurídico - DEJUR',
+            'proaluno': 'Pró Aluno',
+            'reitoria': 'Reitoria',
+            'rh': 'RH',
+            'secretaria': 'Secretaria',
+            'conselho': 'Conselho Curador',
+            'clivet': 'Clínica Medicina Veterinária',
+            'sala_professor': 'Sala Atendimento Professor ao Aluno',
+            'cartorio': 'Cartório - Núcleo Práticas Jurídicas',
+            'sala_professores': 'Sala dos Professores',
+            'ouvidoria': 'Ouvidoria',
+            'sustentabilidade': 'Núcleo de Sustentabilidade',
+            'labinfo': 'Laboratórios de Informática',
+            'fisio': 'Clínica de Fisioterapia',
+            'nac': 'NAC'
+        };
+
+        // 📧 EXTRAI SETOR DO EMAIL (ex: nivea.npj@unifeb.edu.br → npj → Núcleo Práticas Jurídicas)
+        function obterSetorDoEmail(email) {
+            if (!email) return null;
+
+            // Extrai a parte antes do @ e divide por pontos
+            const partes = email.split('@')[0].split('.');
+
+            // Procura por qualquer parte que exista no mapeamento
+            for (let parte of partes) {
+                const chave = parte.toLowerCase();
+                if (EMAIL_SETOR_MAPPING[chave]) {
+                    return EMAIL_SETOR_MAPPING[chave];
+                }
+            }
+            return null;
+        }
+
         // ⏰ Formata data COM HORA (DD/MM/YYYY HH:MM) - FUNÇÃO GLOBAL
         function formatarDataComHora(data) {
             if (!data) return '-';
@@ -1963,9 +1963,10 @@
 
                 let d;
 
-                // Tenta parse como DD/MM/YYYY (sem hora)
+                // Tenta parse como DD/MM/YYYY (sem hora) ou DD/MM/YYYY HH:MM
                 if (data.includes('/') && !data.includes('T')) {
-                    const [dia, mes, ano] = data.split('/');
+                    const dataParte = data.split(' ')[0]; // Extrai "DD/MM/YYYY"
+                    const [dia, mes, ano] = dataParte.split('/');
                     if (dia && mes && ano) {
                         d = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
                     }
@@ -2007,21 +2008,9 @@
                 try {
                     let d;
                     if (dataStr.includes('/')) {
-                        // Extrair apenas a parte da data (antes do espaço ou dois pontos)
-                        const dataParte = dataStr.split(' ')[0]; // Pega "DD/MM/YYYY"
-                        const [dia, mes, ano] = dataParte.split('/');
+                        const [dia, mes, ano] = dataStr.split('/');
                         if (dia && mes && ano) {
-                            // Extrair hora se houver
-                            let horas = 0, minutos = 0;
-                            if (dataStr.includes(':')) {
-                                const horaParte = dataStr.split(' ')[1]; // Pega "HH:MM"
-                                if (horaParte) {
-                                    const [h, m] = horaParte.split(':');
-                                    horas = parseInt(h) || 0;
-                                    minutos = parseInt(m) || 0;
-                                }
-                            }
-                            d = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia), horas, minutos);
+                            d = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
                         }
                     }
                     if (!d || isNaN(d.getTime())) {
@@ -2512,22 +2501,8 @@
                 try {
                     let data;
                     if (dataAbertura.includes('/')) {
-                        // Extrair data e hora se existir
-                        const dataParte = dataAbertura.split(' ')[0]; // "DD/MM/YYYY"
-                        const [dia, mes, ano] = dataParte.split('/');
-                        let horas = 9, minutos = 0; // Padrão: 09:00
-
-                        // Se tem hora, extrair
-                        if (dataAbertura.includes(':')) {
-                            const horaParte = dataAbertura.split(' ')[1]; // "HH:MM"
-                            if (horaParte) {
-                                const [h, m] = horaParte.split(':');
-                                horas = parseInt(h) || 9;
-                                minutos = parseInt(m) || 0;
-                            }
-                        }
-
-                        data = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia), horas, minutos, 0);
+                        const [dia, mes, ano] = dataAbertura.split('/');
+                        data = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia), 9, 0, 0);
                     } else {
                         data = new Date(dataAbertura);
                         if (data.getHours() === 0) data.setHours(9, 0, 0);
