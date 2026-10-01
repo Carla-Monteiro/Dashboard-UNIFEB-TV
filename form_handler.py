@@ -1069,11 +1069,11 @@ def formatar_data_iso(data_str):
 
         # Se for ISO format
         if 'T' in data_str:
-            # SharePoint retorna em UTC, converter para São Paulo (UTC-3)
-            dt_utc = datetime.fromisoformat(data_str.replace('Z', '+00:00'))
-            tz_sp = timezone(timedelta(hours=-3))
-            dt_br = dt_utc.astimezone(tz_sp)
-            return dt_br.strftime('%d/%m/%Y %H:%M')
+            # SharePoint retorna com timezone -03:00 (São Paulo)
+            # Extrair apenas data/hora, ignorar timezone
+            data_limpa = data_str.split('+')[0].split('Z')[0]  # Remove +03:00 ou Z
+            dt = datetime.fromisoformat(data_limpa)
+            return dt.strftime('%d/%m/%Y %H:%M')
 
         return data_str
     except Exception as e:
