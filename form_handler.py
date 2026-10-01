@@ -1062,21 +1062,24 @@ def normalizar_prioridade(prioridade):
 
 
 def formatar_data_iso(data_str):
-    """Converte data ISO do SharePoint para São Paulo (UTC-3)"""
+    """Usa timezone de São Paulo (UTC-3) para formatar datas"""
     try:
         if not data_str:
-            return datetime.now().strftime('%d/%m/%Y %H:%M')
+            tz_sp = timezone(timedelta(hours=-3))
+            return datetime.now(tz_sp).strftime('%d/%m/%Y %H:%M')
 
         if 'T' in data_str:
-            # SharePoint retorna em UTC (com Z) - converter para São Paulo UTC-3
-            dt_utc = datetime.fromisoformat(data_str.replace('Z', '+00:00'))
-            dt_sp = dt_utc.astimezone(timezone(timedelta(hours=-3)))
+            # Pega a data do SharePoint e formata com timezone de São Paulo
+            dt = datetime.fromisoformat(data_str.replace('Z', '+00:00'))
+            tz_sp = timezone(timedelta(hours=-3))
+            dt_sp = dt.astimezone(tz_sp)
             return dt_sp.strftime('%d/%m/%Y %H:%M')
 
         return data_str
     except Exception as e:
         logger.error(f"❌ Erro ao formatar data '{data_str}': {e}")
-        return datetime.now().strftime('%d/%m/%Y %H:%M')
+        tz_sp = timezone(timedelta(hours=-3))
+        return datetime.now(tz_sp).strftime('%d/%m/%Y %H:%M')
 
 
 @app.route('/api/chamados/ativos', methods=['GET', 'OPTIONS'])
