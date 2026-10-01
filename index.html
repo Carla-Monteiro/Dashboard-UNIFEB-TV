@@ -87,91 +87,51 @@
 
         .header {
             grid-column: 1 / -1;
-            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #242d3d 100%);
-            border-bottom: 3px solid var(--border-gold);
-            padding: 20px 40px;
+            background: linear-gradient(90deg, #1a1f2e 0%, #242d3d 50%, #1a1f2e 100%);
+            border-bottom: 2px solid var(--border-gold);
+            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 8px 24px rgba(255, 165, 0, 0.15);
         }
 
-        .header-left { display: flex; align-items: center; gap: 35px; }
+        .header-left { display: flex; align-items: center; gap: 25px; }
         .logo-container {
-            width: 160px; height: 120px;
-            background: linear-gradient(135deg, rgba(80, 100, 140, 0.35), rgba(100, 120, 160, 0.4));
-            border: 3px solid var(--border-gold);
-            border-radius: 16px;
+            width: 120px; height: 90px;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.15), rgba(255, 165, 0, 0.08));
+            border: 2.5px solid var(--border-gold);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            box-shadow:
-                0 0 20px rgba(255, 165, 0, 0.25),
-                0 8px 20px rgba(255, 165, 0, 0.15),
-                inset 0 0 15px rgba(255, 165, 0, 0.05);
-            transition: all 0.3s ease;
-            position: relative;
+            box-shadow: 0 6px 16px rgba(255, 165, 0, 0.2);
         }
-        .logo-container::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 180%;
-            height: 180%;
-            background: radial-gradient(ellipse at center, rgba(255, 165, 0, 0.12) 0%, rgba(255, 165, 0, 0.04) 40%, transparent 70%);
-            filter: blur(20px);
-            animation: glow 3s ease-in-out infinite;
-            pointer-events: none;
-            z-index: 0;
-        }
-        @keyframes glow {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.6; }
-        }
-        .logo-container:hover {
-            box-shadow:
-                0 0 25px rgba(255, 165, 0, 0.3),
-                0 10px 25px rgba(255, 165, 0, 0.2),
-                inset 0 0 15px rgba(255, 165, 0, 0.07);
-            transform: translateY(-2px);
-            border-color: #ffa500;
-        }
-        .logo { width: 145px; height: 105px; object-fit: contain; position: relative; z-index: 1; }
-        .header-title { display: flex; flex-direction: column; gap: 4px; }
-        .header-title h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; color: var(--text-primary); }
-        .header-title p { font-size: 12px; color: var(--border-gold); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+        .logo { width: 110px; height: 80px; object-fit: contain; }
+        .header-title h1 { font-size: 24px; font-weight: 700; }
+        .header-title p { font-size: 11px; color: var(--border-gold); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
         .status-badge {
             display: flex;
             align-items: center;
-            gap: 14px;
-            background: linear-gradient(135deg, rgba(255, 165, 0, 0.15), rgba(255, 165, 0, 0.08));
-            border: 2px solid var(--border-gold);
-            border-radius: 25px;
-            padding: 12px 22px;
-            font-size: 13px;
-            box-shadow: 0 4px 12px rgba(255, 165, 0, 0.15);
+            gap: 12px;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.1), rgba(255, 165, 0, 0.05));
+            border: 1.5px solid var(--border-gold);
+            border-radius: 20px;
+            padding: 10px 18px;
+            font-size: 12px;
         }
-        .user-badge { color: var(--gold); font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        .user-badge { color: var(--gold); font-weight: 600; }
         .logout-btn {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, var(--red), #c74660);
+            padding: 8px 14px;
+            background: var(--red);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 13px;
-            font-weight: 700;
-            box-shadow: 0 4px 12px rgba(212, 114, 107, 0.3);
-            transition: all 0.2s ease;
+            font-size: 12px;
+            font-weight: 600;
         }
-        .logout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(212, 114, 107, 0.4);
-        }
-        .logout-btn:active { transform: translateY(0); }
+        .logout-btn:hover { opacity: 0.9; }
 
         .sidebar {
             background: var(--bg-secondary);
@@ -265,7 +225,7 @@
         .badge-concluido { background: rgba(34, 197, 94, 0.7) !important; color: #bbf7d0 !important; font-weight: 700 !important; border-radius: 6px; padding: 6px 12px; border: 1px solid #15803d !important; }
         .badge-vencido { background: rgba(239, 68, 68, 0.9) !important; color: #fecaca !important; font-weight: 700 !important; border-radius: 6px; padding: 6px 12px; border: 1px solid #dc2626 !important; }
         .badge-alta { background: rgba(239, 68, 68, 0.8) !important; color: #fecaca !important; font-weight: 700 !important; border-radius: 6px; padding: 6px 12px; border: 1px solid #dc2626 !important; }
-        .badge-media { background: rgba(234, 179, 8, 0.7) !important; color: #fef3c7 !important; font-weight: 700 !important; border-radius: 6px; padding: 6px 12px; border: 1px solid #b45309 !important; }
+        .badge-média { background: rgba(234, 179, 8, 0.7) !important; color: #fef3c7 !important; font-weight: 700 !important; border-radius: 6px; padding: 6px 12px; border: 1px solid #b45309 !important; }
         .badge-media { background: rgba(234, 179, 8, 0.7) !important; color: #fef3c7 !important; font-weight: 700 !important; border-radius: 6px; padding: 6px 12px; border: 1px solid #b45309 !important; }
         .badge-baixa { background: rgba(34, 197, 94, 0.7) !important; color: #bbf7d0 !important; font-weight: 700 !important; border-radius: 6px; padding: 6px 12px; border: 1px solid #15803d !important; }
 
@@ -367,7 +327,7 @@
         .chart-title { font-size: 14px; font-weight: 600; color: var(--gold); margin-bottom: 15px; text-transform: uppercase; }
         .chart-wrapper { position: relative; height: 300px; }
 
-        /* ===== SATISFACAO - Design Melhorado ===== */
+        /* ===== SATISFAÇÃO - Design Melhorado ===== */
         .satisfacao-header { margin-bottom: 30px; }
 
         .satisfacao-title {
@@ -522,7 +482,7 @@
         }
 
         .card-comment:empty::before {
-            content: "Sem comentario";
+            content: "Sem comentário";
             color: #666;
             font-style: normal;
         }
@@ -642,7 +602,7 @@
         }
 
         .satisfacao-item-comentario:empty::before {
-            content: "Sem comentario";
+            content: "Sem comentário";
             color: #666;
             font-style: normal;
         }
@@ -652,7 +612,7 @@
             color: #999;
         }
 
-        /* ===== GRAFICOS - Dashboard Melhorado ===== */
+        /* ===== GRÁFICOS - Dashboard Melhorado ===== */
         .dashboard-header {
             display: flex;
             justify-content: space-between;
@@ -895,7 +855,7 @@
             color: #d4a574;
         }
 
-        /* GRAFICOS MELHORADOS */
+        /* GRÁFICOS MELHORADOS */
         .graficos-header { margin-bottom: 30px; }
         .graficos-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .graficos-stat-card {
@@ -1058,7 +1018,7 @@
         }
         .modal-btn-save:hover { background: var(--orange); }
 
-        /* MODO EDICAO */
+        /* MODO EDIÇÃO */
         .modal-content.editing .modal-value { display: none; }
         .modal-content.editing .modal-input,
         .modal-content.editing .modal-select { display: block; }
@@ -1205,7 +1165,7 @@
             white-space: nowrap;
         }
 
-        /* PAGINACAO */
+        /* PAGINAÇÃO */
         .pagination-section {
             display: flex;
             justify-content: space-between;
@@ -1358,14 +1318,14 @@
                 <div class="sidebar-item" onclick="filtrarPorCategoria(this, 'email')">📧 E-mail</div>
                 <div class="sidebar-item" onclick="filtrarPorCategoria(this, 'ti')">💻 TI</div>
                 <div class="sidebar-item" onclick="filtrarPorCategoria(this, 'naem')">🏢 NAEM</div>
-                <div class="sidebar-item" onclick="filtrarPorCategoria(this, 'manutencao')">🔧 Manutencao</div>
+                <div class="sidebar-item" onclick="filtrarPorCategoria(this, 'manutencao')">🔧 Manutenção</div>
             </div>
 
             <div class="sidebar-section">
                 <div class="sidebar-title">📊 Visualizar</div>
                 <div class="sidebar-item" onclick="abrirPagina('concluidos')">✅ Concluídos</div>
-                <div class="sidebar-item" onclick="abrirPagina('graficos')">📊 Graficos</div>
-                <div class="sidebar-item" onclick="abrirPagina('satisfacao')">⭐ Satisfacao</div>
+                <div class="sidebar-item" onclick="abrirPagina('graficos')">📊 Gráficos</div>
+                <div class="sidebar-item" onclick="abrirPagina('satisfacao')">⭐ Satisfação</div>
             </div>
         </div>
 
@@ -1406,7 +1366,7 @@
                     <div class="filters-grid">
                         <div class="filter-group">
                             <label class="filter-label">Buscar por ID, Título ou Solicitante:</label>
-                            <input type="text" class="filter-input" id="filtro-busca" placeholder="Ex: 1142, Projetor, Joao..." />
+                            <input type="text" class="filter-input" id="filtro-busca" placeholder="Ex: 1142, Projetor, João..." />
                         </div>
                         <div class="filter-group">
                             <label class="filter-label">Status:</label>
@@ -1422,7 +1382,7 @@
                             <select class="filter-select" id="filtro-prioridade">
                                 <option value="">Todas</option>
                                 <option value="Alta">Alta</option>
-                                <option value="Media">Media</option>
+                                <option value="Média">Média</option>
                                 <option value="Baixa">Baixa</option>
                             </select>
                         </div>
@@ -1439,7 +1399,7 @@
 
             <div id="pagina-graficos" class="page-content page-hidden">
                 <div class="dashboard-header">
-                    <div class="dashboard-title">📊 Dashboard de Graficos</div>
+                    <div class="dashboard-title">📊 Dashboard de Gráficos</div>
                 </div>
 
                 <!-- Estatísticas Resumidas -->
@@ -1450,12 +1410,12 @@
                         <div class="stat-label" style="margin-top: 5px; color: #10b981;">↑ 12% vs mês</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Taxa Resolucao</div>
+                        <div class="stat-label">Taxa Resolução</div>
                         <div class="stat-value" id="graficos-resolucao">0%</div>
                         <div class="stat-label" style="margin-top: 5px; color: #10b981;">Excelente ✓</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Tempo Medio</div>
+                        <div class="stat-label">Tempo Médio</div>
                         <div class="stat-value" id="graficos-tempo">0h</div>
                         <div class="stat-label" style="margin-top: 5px; color: #ffa500;">Dentro do SLA</div>
                     </div>
@@ -1466,7 +1426,7 @@
                     </div>
                 </div>
 
-                <!-- Graficos Principais -->
+                <!-- Gráficos Principais -->
                 <div class="charts-container">
                     <!-- 1. Status dos Chamados -->
                     <div class="chart-card">
@@ -1476,7 +1436,7 @@
 
                     <!-- 2. Prioridade -->
                     <div class="chart-card">
-                        <div class="chart-title">🎯 Distribuicao de Prioridades</div>
+                        <div class="chart-title">🎯 Distribuição de Prioridades</div>
                         <div class="chart-wrapper"><canvas id="chartPriority"></canvas></div>
                     </div>
 
@@ -1495,7 +1455,7 @@
 
                     <!-- 6. Tendência -->
                     <div class="chart-card">
-                        <div class="chart-title">📈 Tendência (Ultimos 7 Dias)</div>
+                        <div class="chart-title">📈 Tendência (Últimos 7 Dias)</div>
                         <div class="chart-wrapper"><canvas id="chartTrend"></canvas></div>
                     </div>
                 </div>
@@ -1518,7 +1478,7 @@
                         <div class="satisfacao-card-stat-value" id="concluidos-mes">0</div>
                     </div>
                     <div class="satisfacao-card-stat">
-                        <div class="satisfacao-card-stat-label">Tempo Medio</div>
+                        <div class="satisfacao-card-stat-label">Tempo Médio</div>
                         <div class="satisfacao-card-stat-value" id="concluidos-tempo">--</div>
                     </div>
                 </div>
@@ -1556,7 +1516,7 @@
             </div>
 
             <div id="pagina-satisfacao" class="page-content page-hidden">
-                <div class="satisfacao-title">⭐ Pesquisas de Satisfacao</div>
+                <div class="satisfacao-title">⭐ Pesquisas de Satisfação</div>
 
                 <!-- Estatísticas -->
                 <div class="satisfacao-stats">
@@ -1565,16 +1525,16 @@
                         <div class="satisfacao-card-stat-value" id="satisfacao-total">0</div>
                     </div>
                     <div class="satisfacao-card-stat">
-                        <div class="satisfacao-card-stat-label">Avaliacao Media</div>
+                        <div class="satisfacao-card-stat-label">Avaliação Média</div>
                         <div class="satisfacao-card-stat-value" id="satisfacao-media">0.0</div>
                         <div class="satisfacao-card-stat-unit">/5.0</div>
                     </div>
                     <div class="satisfacao-card-stat">
-                        <div class="satisfacao-card-stat-label">Satisfacao Geral</div>
+                        <div class="satisfacao-card-stat-label">Satisfação Geral</div>
                         <div class="satisfacao-card-stat-value" id="satisfacao-satisfeitos">0%</div>
                     </div>
                     <div class="satisfacao-card-stat">
-                        <div class="satisfacao-card-stat-label">Ultimos 30 dias</div>
+                        <div class="satisfacao-card-stat-label">Últimos 30 dias</div>
                         <div class="satisfacao-card-stat-value" id="satisfacao-30d">0</div>
                     </div>
                 </div>
@@ -1582,7 +1542,7 @@
                 <!-- Filtros -->
                 <div class="satisfacao-filtros">
                     <button class="satisfacao-filtro-btn active" onclick="filtrarSatisfacao(null)">Todos <span id="count-todos">(0)</span></button>
-                    <button class="satisfacao-filtro-btn" onclick="filtrarSatisfacao(5)">Otimo <span id="count-otimo">(0)</span></button>
+                    <button class="satisfacao-filtro-btn" onclick="filtrarSatisfacao(5)">Ótimo <span id="count-otimo">(0)</span></button>
                     <button class="satisfacao-filtro-btn" onclick="filtrarSatisfacao(4)">Bom <span id="count-bom">(0)</span></button>
                     <button class="satisfacao-filtro-btn" onclick="filtrarSatisfacao(2)">Ruim <span id="count-ruim">(0)</span></button>
                 </div>
@@ -1592,13 +1552,13 @@
                     <div class="loading">⏳ Carregando...</div>
                 </div>
 
-                <!-- Grafico de Distribuicao -->
+                <!-- Gráfico de Distribuição -->
                 <div class="satisfacao-grafico-container" id="satisfacao-grafico-container" style="display: none;">
-                    <div class="chart-title">📊 Distribuicao de Avaliacoes</div>
+                    <div class="chart-title">📊 Distribuição de Avaliações</div>
                     <div class="satisfacao-grafico-wrapper">
                         <div class="satisfacao-chart-bars" id="satisfacao-chart-bars">
                             <div class="satisfacao-bar">
-                                <div class="satisfacao-bar-label">Otimo</div>
+                                <div class="satisfacao-bar-label">Ótimo</div>
                                 <div class="satisfacao-bar-fill" style="height: 0%; background: linear-gradient(180deg, #10b981, #059669);"></div>
                                 <div class="satisfacao-bar-value" id="satisfacao-count-5">0</div>
                             </div>
@@ -1632,14 +1592,14 @@
                     <span id="modalSubtitulo" style="color: var(--orange); font-weight: 700; font-size: 1.1em; white-space: nowrap; margin-left: 15px;">ID: 0000</span>
                 </div>
                 <div style="background: linear-gradient(135deg, rgba(212, 165, 116, 0.2), rgba(255, 165, 0, 0.08)); padding: 15px; border-radius: 6px; border-left: 4px solid var(--gold); margin-bottom: 15px; border-bottom: 2px solid var(--border-gold);">
-                    <div style="color: var(--text-secondary); font-size: 0.85em; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">📝 Descricao do Problema</div>
+                    <div style="color: var(--text-secondary); font-size: 0.85em; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">📝 Descrição do Problema</div>
                     <p id="modalDescricao" style="color: var(--text-primary); line-height: 1.6; font-size: 0.95em; margin: 0;">-</p>
                 </div>
             </div>
 
-            <!-- INFORMACOES GERAIS -->
+            <!-- INFORMAÇÕES GERAIS -->
             <div class="modal-section">
-                <div class="modal-section-title">Informacoes Gerais</div>
+                <div class="modal-section-title">Informações Gerais</div>
                 <div class="modal-grid">
                     <div class="modal-field">
                         <div class="modal-label">ID:</div>
@@ -1683,12 +1643,12 @@
                         <div class="modal-value" id="modalPrioridade">-</div>
                         <select class="modal-select" id="modalPrioridadeInput">
                             <option>Baixa</option>
-                            <option>Media</option>
+                            <option>Média</option>
                             <option>Alta</option>
                         </select>
                     </div>
                     <div class="modal-field">
-                        <div class="modal-label">Data Criacao:</div>
+                        <div class="modal-label">Data Criação:</div>
                         <div class="modal-value" id="modalDataCriacao">-</div>
                         <input type="text" class="modal-input" id="modalDataCriacaoInput" placeholder="dd/mm/aaaa">
                     </div>
@@ -1700,7 +1660,7 @@
                 </div>
             </div>
 
-            <!-- BOTOES -->
+            <!-- BOTÕES -->
             <div class="modal-buttons">
                 <button class="modal-btn modal-btn-close" onclick="fecharModal()">Fechar</button>
                 <button class="modal-btn modal-btn-save" id="btnEditar" onclick="toggleEditMode()">✏️ Editar</button>
@@ -1711,7 +1671,7 @@
     <script>
         const senhas = {
             'Daniel2304@': { nome: 'Carla (Admin)', role: 'admin' },
-            'Unifeb@62': { nome: 'Estagiario', role: 'estagiario' }
+            'Unifeb@62': { nome: 'Estagiário', role: 'estagiario' }
         };
 
         const API_BASE_URL = 'https://unifeb-backend.onrender.com/api';
@@ -1775,7 +1735,7 @@
                         dataConclusao: c.dataConclusao || c.data_conclusao,
                         setorAtendimento: c.setorAtendimento || c.setor_atendimento || c.SetordeAtendimento || '',
                         origem: c.origem || 'Dashboard',
-                        prioridade: c.prioridade || c.Prioridade || 'Media',
+                        prioridade: c.prioridade || c.Prioridade || 'Média',
                         // Campo mapeado para compatibilidade
                         setor_mapeado: obterSetorDoSetor(c.setorAtendimento || c.setor_atendimento || c.SetordeAtendimento) ||
                                        obterCategoriaGrupo(c.categoria) ||
@@ -1826,7 +1786,7 @@
 
                 // 🔍 DEBUG COMPLETO - VER TODOS OS DADOS
                 console.log('═════════════════════════════════════════');
-                console.log('📊 RELATORIO COMPLETO DE DADOS DO DASHBOARD');
+                console.log('📊 RELATÓRIO COMPLETO DE DADOS DO DASHBOARD');
                 console.log('═════════════════════════════════════════');
 
                 console.log('\n📌 RESUMO GERAL:');
@@ -1849,7 +1809,7 @@
                     console.log('  Dados:', dadosGlobais.concluidos[0]);
                 }
 
-                console.log('\n📧 SEPARACAO POR SETOR/ORIGEM:');
+                console.log('\n📧 SEPARAÇÃO POR SETOR/ORIGEM:');
                 const setores = {};
                 (dadosGlobais.ativos || []).forEach(c => {
                     const setor = c.setorAtendimento || c.setor_atendimento || c.origem || 'Sem Setor';
@@ -1859,14 +1819,14 @@
                     console.log(`  ${setor}: ${count} chamados`);
                 });
 
-                console.log('\n🔐 TODOS OS SETORES UNICOS:');
+                console.log('\n🔐 TODOS OS SETORES ÚNICOS:');
                 const setoresUnicos = new Set([
                     ...(dadosGlobais.ativos || []).map(c => c.setorAtendimento || c.setor_atendimento),
                     ...(dadosGlobais.ativos || []).map(c => c.origem)
                 ]);
                 console.log('  ', Array.from(setoresUnicos));
 
-                console.log('\n📊 GRAFICOS DISPONÍVEIS:');
+                console.log('\n📊 GRÁFICOS DISPONÍVEIS:');
                 if (dadosGlobais.graficos) {
                     console.log('  Chaves:', Object.keys(dadosGlobais.graficos));
                 }
@@ -1882,7 +1842,7 @@
                 const response = await fetch(`${API_BASE_URL}/pesquisas`);
                 if (response.ok) {
                     dadosGlobais.pesquisas = await response.json();
-                    console.log(`✅ ${dadosGlobais.pesquisas.length} pesquisas de satisfacao carregadas`);
+                    console.log(`✅ ${dadosGlobais.pesquisas.length} pesquisas de satisfação carregadas`);
                 } else {
                     console.warn(`⚠️ Erro ao carregar pesquisas (status ${response.status})`);
                     dadosGlobais.pesquisas = [];
@@ -1896,7 +1856,7 @@
         function obterSetorDoSetor(setor) {
             if (!setor) return null;
             const s = setor.toLowerCase().trim();
-            if (s.includes('manutencao') || s.includes('manutencao')) return 'manutencao';
+            if (s.includes('manutenção') || s.includes('manutencao')) return 'manutencao';
             if (s.includes('multimídia') || s.includes('multimedia') || s.includes('naem')) return 'naem';
             if (s.includes('ti') || s.includes('internet') || s.includes('dti') || s.includes('suporte')) return 'ti';
             if (s.includes('geral') || s === 'suporte dti') return 'email';
@@ -1921,13 +1881,13 @@
             return 'email';
         }
 
-        // ⏰ Formata data COM HORA (DD/MM/YYYY HH:MM) - FUNCAO GLOBAL
+        // ⏰ Formata data COM HORA (DD/MM/YYYY HH:MM) - FUNÇÃO GLOBAL
         function formatarDataComHora(data) {
             if (!data) return '-';
             try {
-                // Se ja vem formatado como "DD/MM/YYYY HH:MM", retorna direto!
+                // Se já vem formatado como "DD/MM/YYYY HH:MM", retorna direto!
                 if (data.includes('/') && data.includes(':')) {
-                    return data;  // ✅ Ja tem hora, retorna como esta!
+                    return data;  // ✅ Já tem hora, retorna como está!
                 }
 
                 let d;
@@ -1943,12 +1903,12 @@
                 else if (data.includes('T')) {
                     d = new Date(data);
                 }
-                // Tenta como Date string generica
+                // Tenta como Date string genérica
                 else {
                     d = new Date(data);
                 }
 
-                // Se ainda nao conseguiu, retorna "-"
+                // Se ainda não conseguiu, retorna "-"
                 if (isNaN(d.getTime())) {
                     return '-';
                 }
@@ -1976,7 +1936,7 @@
                 try {
                     let d;
                     if (dataStr.includes('/')) {
-                        // Extrair apenas a parte da data (antes do espaco ou dois pontos)
+                        // Extrair apenas a parte da data (antes do espaço ou dois pontos)
                         const dataParte = dataStr.split(' ')[0]; // Pega "DD/MM/YYYY"
                         const [dia, mes, ano] = dataParte.split('/');
                         if (dia && mes && ano) {
@@ -2021,12 +1981,12 @@
                         }
                     }
 
-                    // Se nao conseguiu, tenta como ISO ou Date string
+                    // Se não conseguiu, tenta como ISO ou Date string
                     if (!d || isNaN(d.getTime())) {
                         d = new Date(data);
                     }
 
-                    // Se ainda nao conseguiu, retorna "-"
+                    // Se ainda não conseguiu, retorna "-"
                     if (isNaN(d.getTime())) {
                         return '-';
                     }
@@ -2043,7 +2003,7 @@
                     const titulo = c.titulo || c.title || c.assunto || '';
                     const solicitante = c.solicitante || c.Solicitante || '';
                     const status = c.status || 'Aberto';
-                    const prioridade = c.prioridade || c.Prioridade || 'Media';
+                    const prioridade = c.prioridade || c.Prioridade || 'Média';
                     const data = c.dataAbertura || c.data_criacao || c.data || '';
                     // Armazenar dados em atributo data-json para evitar problemas com caracteres especiais
                     let dataJson = '';
@@ -2064,7 +2024,7 @@
                 }).join('');
         }
 
-        // Controle de paginacao e sort para Concluídos
+        // Controle de paginação e sort para Concluídos
         let concluidosSortAtual = { field: 'id', asc: true };
         let concluidosPaginaAtual = 1;
         const concluidosItensPorPagina = 10;
@@ -2084,16 +2044,16 @@
         }
 
         function calcularTempoResolucao(chamado) {
-            // API retorna data_conclusao (com underscore!), nao dataConclusao
+            // API retorna data_conclusao (com underscore!), não dataConclusao
             const dataAberturaStr = chamado.dataAbertura || chamado.DataAbertura ||
                                    chamado.data_criacao || chamado.data_abertura ||
-                                   chamado.data || '01/01/2026'; // Padrao se nao tiver
+                                   chamado.data || '01/01/2026'; // Padrão se não tiver
 
             // IMPORTANTE: Priorizar data_conclusao (com underscore) que vem da API!
             const dataConclusaoStr = chamado.data_conclusao || chamado.dataConclusao ||
-                                    chamado.DataConclusao || chamado.data_conclusao;
+                                    chamado.DataConclusao || chamado.data_conclusão;
 
-            // Se nao tiver conclusao, retorna null (nao foi concluído)
+            // Se não tiver conclusão, retorna null (não foi concluído)
             if (!dataConclusaoStr) {
                 return null;
             }
@@ -2125,11 +2085,11 @@
 
                 // Validar datas
                 if (!dataAbertura || !dataConclusao || isNaN(dataAbertura.getTime()) || isNaN(dataConclusao.getTime())) {
-                    console.warn('Datas invalidas para chamado', chamado.id, ':', {dataAberturaStr, dataConclusaoStr});
+                    console.warn('Datas inválidas para chamado', chamado.id, ':', {dataAberturaStr, dataConclusaoStr});
                     return null;
                 }
 
-                // Calcular diferenca em dias
+                // Calcular diferença em dias
                 const diffMs = dataConclusao - dataAbertura;
                 const diffDias = diffMs / (1000 * 60 * 60 * 24);
                 return Math.max(0, diffDias);
@@ -2205,7 +2165,7 @@
                 return;
             }
 
-            // Adicionar tempo de resolucao aos dados
+            // Adicionar tempo de resolução aos dados
             filtrados.forEach(c => {
                 c.temoDias = calcularTempoResolucao(c);
                 c.tempoFormatado = c.temoDias !== null ? formatarTempoResolucao(c.temoDias) : '⏳ Pendente';
@@ -2234,9 +2194,9 @@
             tabelaEl.innerHTML = paginado.map(c => {
                 const tempoClass = c.temoDias !== null ? getClassTempoResolucao(c.temoDias) : 'tempo-lento';
                 // Usar estrutura do backup: dataConclusao
-                const dataConclusaoStr = c.dataConclusao || c.data_conclusao || c.data_conclusao || '-';
+                const dataConclusaoStr = c.dataConclusao || c.data_conclusao || c.data_conclusão || '-';
 
-                // Formatar data de conclusao - suporta DD/MM/YYYY e ISO
+                // Formatar data de conclusão - suporta DD/MM/YYYY e ISO
                 const formatarDataConclusao = (data) => {
                     if (!data || data === '-') return '-';
                     try {
@@ -2290,7 +2250,7 @@
             // Info
             getElement('concluidos-info').textContent = `Mostrando ${inicio + 1} a ${Math.min(fim, filtrados.length)} de ${filtrados.length} chamados`;
 
-            // Paginacao
+            // Paginação
             renderizarPaginacaoConcluidos(filtrados.length);
             console.log('✅ Tabela renderizada com', filtrados.length, 'chamados');
         }
@@ -2303,7 +2263,7 @@
                 return;
             }
 
-            // Calcula apenas dos chamados que têm data de conclusao
+            // Calcula apenas dos chamados que têm data de conclusão
             const temposValidos = dados.map(d => d.temoDias).filter(t => t !== null && t !== undefined);
             const tempoMedio = temposValidos.length > 0 ? temposValidos.reduce((a, b) => a + b, 0) / temposValidos.length : 0;
 
@@ -2323,12 +2283,12 @@
             const paginationEl = getElement('concluidos-pagination');
             let html = '';
             for (let i = 1; i <= maxPages; i++) {
-                html += `<button class="${i === concluidosPaginaAtual ? 'active' : ''}" onclick="concluidosPaginaAtual = ${i}; renderizarTabelaConcluidos();">Pagina ${i}</button>`;
+                html += `<button class="${i === concluidosPaginaAtual ? 'active' : ''}" onclick="concluidosPaginaAtual = ${i}; renderizarTabelaConcluidos();">Página ${i}</button>`;
             }
             paginationEl.innerHTML = html;
         }
 
-        // Funcoes para separar por setor (como no backup)
+        // Funções para separar por setor (como no backup)
         function obterChamadosPorSetor(setor) {
             return (dadosGlobais.concluidos || []).filter(c => {
                 const s = c.setorAtendimento || c.setor_atendimento || '';
@@ -2345,7 +2305,7 @@
 
         function obterResumoSetores() {
             const resumo = {
-                manutencao: obterChamadosPorSetor('Manutencao Predial').length,
+                manutencao: obterChamadosPorSetor('Manutenção Predial').length,
                 naem: obterChamadosPorSetor('Multimídia (NAEM)').length,
                 ti: obterChamadosPorSetor('TI / Internet').length,
                 email: obterChamadosEmail().length,
@@ -2368,7 +2328,7 @@
             });
         }
 
-        // Funcao para encodar UTF-8 em Base64
+        // Função para encodar UTF-8 em Base64
         function encodeBase64UTF8(str) {
             try {
                 return btoa(unescape(encodeURIComponent(str)));
@@ -2378,7 +2338,7 @@
             }
         }
 
-        // Funcao para decodificar Base64 UTF-8
+        // Função para decodificar Base64 UTF-8
         function decodeBase64UTF8(str) {
             try {
                 return decodeURIComponent(escape(atob(str)));
@@ -2406,7 +2366,7 @@
             if (modalContent) modalContent.classList.remove('editing');
             setElementText('modalTitulo', chamado.titulo || 'Sem título');
             setElementText('modalSubtitulo', `ID: ${chamado.id}`);
-            // Limpar descricao removendo tags HTML extras do SharePoint
+            // Limpar descrição removendo tags HTML extras do SharePoint
             let descricao = chamado.descricao || chamado.Descricao || '-';
             descricao = descricao.replace(/<div[^>]*class="ExternalClass[^"]*"[^>]*>/g, '')
                                  .replace(/<\/div>/g, '')
@@ -2475,7 +2435,7 @@
             const modalDataCriacaoInput = getElement('modalDataCriacaoInput');
             if (modalDataCriacaoInput) modalDataCriacaoInput.value = chamado.data_criacao || '';
 
-            // CALCULAR PRAZO SLA (APENAS HORARIO COMERCIAL: SEG-SEX 08:00-18:00)
+            // CALCULAR PRAZO SLA (APENAS HORÁRIO COMERCIAL: SEG-SEX 08:00-18:00)
             const calcularPrazoSLA = (dataAbertura, prioridade) => {
                 if (!dataAbertura) return '-';
                 try {
@@ -2484,7 +2444,9 @@
                         // Extrair data e hora se existir
                         const dataParte = dataAbertura.split(' ')[0]; // "DD/MM/YYYY"
                         const [dia, mes, ano] = dataParte.split('/');
-                        let horas = 9, minutos = 0;
+                        let horas = 9, minutos = 0; // Padrão: 09:00
+
+                        // Se tem hora, extrair
                         if (dataAbertura.includes(':')) {
                             const horaParte = dataAbertura.split(' ')[1]; // "HH:MM"
                             if (horaParte) {
@@ -2493,6 +2455,7 @@
                                 minutos = parseInt(m) || 0;
                             }
                         }
+
                         data = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia), horas, minutos, 0);
                     } else {
                         data = new Date(dataAbertura);
@@ -2526,7 +2489,7 @@
                     const ano = data.getFullYear();
                     const hora = String(data.getHours()).padStart(2, '0');
                     const minuto = String(data.getMinutes()).padStart(2, '0');
-                    return `ate ${dia}/${mes}/${ano} as ${hora}:${minuto}`;
+                    return `até ${dia}/${mes}/${ano} às ${hora}:${minuto}`;
                 } catch (e) {
                     return dataAbertura;
                 }
@@ -2540,8 +2503,8 @@
             const modalHistorico = getElement('modalHistorico');
             if (modalHistorico) {
                 modalHistorico.innerHTML = historico.length === 0
-                    ? '<div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-action">Sem historico</div></div></div>'
-                    : historico.map(h => `<div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-action">${h.acao || 'Acao'}</div><div class="timeline-time">${h.tempo || '-'}</div></div></div>`).join('');
+                    ? '<div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-action">Sem histórico</div></div></div>'
+                    : historico.map(h => `<div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-action">${h.acao || 'Ação'}</div><div class="timeline-time">${h.tempo || '-'}</div></div></div>`).join('');
             }
             setElementText('btnEditar', '✏️ Editar');
             const modalOverlay = getElement('modalOverlay');
@@ -2651,7 +2614,7 @@
             }
 
             const prioridadeData = graficos.prioridade || {};
-            const prioridadeLabels = ['Alta', 'Media', 'Baixa'];
+            const prioridadeLabels = ['Alta', 'Média', 'Baixa'];
             const prioridadeValues = prioridadeLabels.map(label => prioridadeData[label] || 0);
 
             const chartPriorityEl = getElement('chartPriority');
@@ -2691,18 +2654,18 @@
             }
 
             const tendenciaData = graficos.tendencia_semana || [];
-            const diasPT = ['Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta', 'Sabado', 'Domingo'];
+            const diasPT = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
             const traduzirDia = (dia) => {
                 if (!dia) return dia;
                 const diaStr = String(dia).toLowerCase();
                 const traducoes = {
                     'monday': 'Segunda', 'mon': 'Segunda',
-                    'tuesday': 'Terca', 'tue': 'Terca',
+                    'tuesday': 'Terça', 'tue': 'Terça',
                     'wednesday': 'Quarta', 'wed': 'Quarta',
                     'thursday': 'Quinta', 'thu': 'Quinta',
                     'friday': 'Sexta', 'fri': 'Sexta',
-                    'saturday': 'Sabado', 'sat': 'Sabado',
+                    'saturday': 'Sábado', 'sat': 'Sábado',
                     'sunday': 'Domingo', 'sun': 'Domingo'
                 };
                 return traducoes[diaStr] || dia;
@@ -2795,7 +2758,7 @@
                 });
             }
 
-            // Calcular satisfacao por setor a partir das pesquisas
+            // Calcular satisfação por setor a partir das pesquisas
             let satisfacaoData = graficos.satisfacao_setores || {};
             if (Object.keys(satisfacaoData).length === 0) {
                 const pesquisas = dadosGlobais.pesquisas || [];
@@ -2809,7 +2772,7 @@
                     setoresSat[setor].soma += nota;
                     setoresSat[setor].count += 1;
                 });
-                // Calcular media por setor
+                // Calcular média por setor
                 Object.keys(setoresSat).forEach(setor => {
                     satisfacaoData[setor] = setoresSat[setor].count > 0
                         ? (setoresSat[setor].soma / setoresSat[setor].count).toFixed(1)
@@ -2831,7 +2794,7 @@
                     type: 'bar',
                     data: {
                         labels: setoresSatLabels,
-                        datasets: [{ label: 'Nota Media', data: setoresSatValues, backgroundColor: '#10b981', borderRadius: 6 }]
+                        datasets: [{ label: 'Nota Média', data: setoresSatValues, backgroundColor: '#10b981', borderRadius: 6 }]
                     },
                     options: {
                         responsive: true,
@@ -2857,11 +2820,11 @@
             if (typeof valor === 'number') return valor;
 
             const texto = String(valor).toLowerCase().trim();
-            if (texto === 'otimo' || texto === 'otimo') return 5;
+            if (texto === 'ótimo' || texto === 'otimo') return 5;
             if (texto === 'bom') return 4;
             if (texto === 'regular') return 3;
             if (texto === 'ruim') return 2;
-            if (texto === 'pessimo' || texto === 'pessimo') return 1;
+            if (texto === 'péssimo' || texto === 'pessimo') return 1;
 
             const num = parseInt(valor);
             return isNaN(num) ? 0 : num;
@@ -2899,13 +2862,13 @@
             setElementText('satisfacao-satisfeitos', satisfeitosPct + '%');
             setElementText('satisfacao-30d', ultimos30d);
 
-            // Atualizar numeros nos botoes de filtro
+            // Atualizar números nos botões de filtro
             setElementText('count-todos', `(${total})`);
             setElementText('count-otimo', `(${distribuicao[5]})`);
             setElementText('count-bom', `(${distribuicao[4]})`);
             setElementText('count-ruim', `(${distribuicao[2]})`);
 
-            // Mostrar/esconder grafico baseado na variacao
+            // Mostrar/esconder gráfico baseado na variação
             const categoriasCom = Object.values(distribuicao).filter(v => v > 0).length;
             const graficoContainer = getElement('satisfacao-grafico-container');
             if (graficoContainer) {
@@ -2955,7 +2918,7 @@
             };
 
             const obterLabelAvaliacao = (nota) => {
-                if (nota === 5) return 'Otimo';
+                if (nota === 5) return 'Ótimo';
                 if (nota === 4) return 'Bom';
                 if (nota >= 2) return 'Regular';
                 return 'N/A';
@@ -3010,7 +2973,7 @@
             // Mostrar tabela com chamados filtrados
             const tbody = document.querySelector('#tabelaChamados');
             if (!tbody) {
-                console.error('❌ Tabela nao encontrada!');
+                console.error('❌ Tabela não encontrada!');
                 return;
             }
 
@@ -3044,7 +3007,7 @@
                     btn.classList.remove('active');
                     if (nota === null && idx === 0) btn.classList.add('active');
                     else if (nota !== null && (
-                        (nota === 5 && btn.textContent.includes('Otimo')) ||
+                        (nota === 5 && btn.textContent.includes('Ótimo')) ||
                         (nota === 4 && btn.textContent.includes('Bom')) ||
                         (nota === 2 && btn.textContent.includes('Ruim'))
                     )) {
@@ -3081,7 +3044,7 @@
                 'email': '📧 E-mail',
                 'ti': '💻 TI',
                 'naem': '🏢 NAEM',
-                'manutencao': '🔧 Manutencao'
+                'manutencao': '🔧 Manutenção'
             };
             setElementText('categoriaTitulo', titulos[categoria]);
             renderizarTabelaChamados();
@@ -3090,7 +3053,7 @@
 
         console.log('✅ Dashboard integrado carregado com sucesso!');
         console.log('🔗 API Base URL:', API_BASE_URL);
-        console.log('📊 Sistema completo: Sidebar + Abas + Graficos + Satisfacao');
+        console.log('📊 Sistema completo: Sidebar + Abas + Gráficos + Satisfação');
     </script>
 </body>
 </html>
