@@ -1675,6 +1675,7 @@
         };
 
         const API_BASE_URL = 'https://unifeb-backend.onrender.com/api';
+        let tokenAutenticacao = null;  // ← Armazena token do login
         let dadosGlobais = { ativos: [], concluidos: [], pesquisas: [], graficos: {} };
         let categoriaAtual = 'detalhado';
         let chamadoSelecionado = null;
@@ -1738,21 +1739,38 @@
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const senha = document.getElementById('senhaInput').value;
-            if (senhas[senha]) {
-                setElementText('userDisplay', senhas[senha].nome);
-                const overlay = getElement('loginOverlay');
-                const dashboard = getElement('dashboard');
-                if (overlay) overlay.classList.add('hidden');
-                if (dashboard) dashboard.classList.remove('hidden');
-                await carregarTodosDados();
-                setInterval(carregarTodosDados, 30000);
-            } else {
+            try {
+                const loginResponse = await fetch(`${API_BASE_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senha })
+                });
+                const loginData = await loginResponse.json();
+                if (loginData.status === 'sucesso' && loginData.token) {
+                    tokenAutenticacao = loginData.token;
+                    const userData = senhas[senha] || { nome: 'Usuário', role: loginData.papel };
+                    setElementText('userDisplay', userData.nome);
+                    const overlay = getElement('loginOverlay');
+                    const dashboard = getElement('dashboard');
+                    if (overlay) overlay.classList.add('hidden');
+                    if (dashboard) dashboard.classList.remove('hidden');
+                    await carregarTodosDados();
+                    setInterval(carregarTodosDados, 30000);
+                } else {
+                    const errorEl = getElement('loginError');
+                    if (errorEl) {
+                        errorEl.classList.add('show');
+                        setTimeout(() => errorEl.classList.remove('show'), 3000);
+                    }
+                    document.getElementById('senhaInput').value = '';
+                }
+            } catch (error) {
+                console.error('❌ Erro ao fazer login:', error);
                 const errorEl = getElement('loginError');
                 if (errorEl) {
                     errorEl.classList.add('show');
                     setTimeout(() => errorEl.classList.remove('show'), 3000);
                 }
-                document.getElementById('senhaInput').value = '';
             }
         });
 
@@ -2620,7 +2638,10 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/editar-chamado/${chamadoSelecionado.id}`, {
                     method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${tokenAutenticacao}`
+                    },
                     body: JSON.stringify(dados)
                 });
                 if (response.ok) {
