@@ -1062,17 +1062,18 @@ def normalizar_prioridade(prioridade):
 
 
 def formatar_data_iso(data_str):
-    """Converte data ISO para formato DD/MM/YYYY HH:MM (com hora) - Brasília UTC-3"""
+    """Retorna data/hora exatamente como vem do SharePoint (já em São Paulo)"""
     try:
         if not data_str:
             return datetime.now().strftime('%d/%m/%Y %H:%M')
 
         # Se for ISO format
         if 'T' in data_str:
+            # SharePoint retorna em UTC, converter para São Paulo (UTC-3)
             dt_utc = datetime.fromisoformat(data_str.replace('Z', '+00:00'))
-            # Converter para timezone de Brasília (UTC-3 - horário padrão)
-            dt_br = dt_utc - timedelta(hours=3)
-            return dt_br.strftime('%d/%m/%Y %H:%M')  # ✅ Agora com hora correta!
+            tz_sp = timezone(timedelta(hours=-3))
+            dt_br = dt_utc.astimezone(tz_sp)
+            return dt_br.strftime('%d/%m/%Y %H:%M')
 
         return data_str
     except Exception as e:
