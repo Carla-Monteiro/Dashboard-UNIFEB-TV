@@ -1070,7 +1070,7 @@ def formatar_data_iso(data_str):
         # Se for ISO format
         if 'T' in data_str:
             dt_utc = datetime.fromisoformat(data_str.replace('Z', '+00:00'))
-            # Converter para timezone de Brasília (UTC-4 em horário de verão)
+            # Converter para timezone de Brasília (UTC-5 em horário de verão)
             dt_br = dt_utc - timedelta(hours=5)
             return dt_br.strftime('%d/%m/%Y %H:%M')  # ✅ Agora com hora correta!
 
