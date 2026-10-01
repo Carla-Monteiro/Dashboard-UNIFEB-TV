@@ -1062,18 +1062,17 @@ def normalizar_prioridade(prioridade):
 
 
 def formatar_data_iso(data_str):
-    """Converte data ISO para formato DD/MM/YYYY HH:MM (com hora)"""
+    """Converte data ISO para formato DD/MM/YYYY HH:MM (com hora) - Brasília UTC-4"""
     try:
         if not data_str:
             return datetime.now().strftime('%d/%m/%Y %H:%M')
 
         # Se for ISO format
         if 'T' in data_str:
-            dt = datetime.fromisoformat(data_str.replace('Z', '+00:00'))
-            # Converter para timezone de São Paulo
-            tz_sp = ZoneInfo('America/Sao_Paulo')
-            dt_sp = dt.astimezone(tz_sp)
-            return dt_sp.strftime('%d/%m/%Y %H:%M')  # ✅ Agora com hora!
+            dt_utc = datetime.fromisoformat(data_str.replace('Z', '+00:00'))
+            # Converter para timezone de Brasília (UTC-4 em horário de verão)
+            dt_br = dt_utc - timedelta(hours=4)
+            return dt_br.strftime('%d/%m/%Y %H:%M')  # ✅ Agora com hora correta!
 
         return data_str
     except Exception as e:
