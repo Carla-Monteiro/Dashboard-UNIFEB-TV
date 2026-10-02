@@ -1071,7 +1071,7 @@ def formatar_data_iso(data_str):
         if 'T' in data_str:
             # SharePoint retorna em UTC, converter para São Paulo (UTC-3)
             dt_utc = datetime.fromisoformat(data_str.replace('Z', '+00:00'))
-            tz_sp = timezone(timedelta(hours=-3))
+            tz_sp = timezone(timedelta(hours=-7))
             dt_br = dt_utc.astimezone(tz_sp)
             return dt_br.strftime('%d/%m/%Y %H:%M')
 
