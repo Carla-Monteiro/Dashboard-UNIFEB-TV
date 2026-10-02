@@ -1062,24 +1062,23 @@ def normalizar_prioridade(prioridade):
 
 
 def formatar_data_iso(data_str):
-    """Usa timezone de São Paulo (UTC-3) para formatar datas"""
+    """Retorna data/hora exatamente como vem do SharePoint (já em São Paulo)"""
     try:
         if not data_str:
-            tz_sp = timezone(timedelta(hours=-3))
-            return datetime.now(tz_sp).strftime('%d/%m/%Y %H:%M')
+            return datetime.now().strftime('%d/%m/%Y %H:%M')
 
+        # Se for ISO format
         if 'T' in data_str:
-            # Pega a data do SharePoint e formata com timezone de São Paulo
-            dt = datetime.fromisoformat(data_str.replace('Z', '+00:00'))
+            # SharePoint retorna em UTC, converter para São Paulo (UTC-3)
+            dt_utc = datetime.fromisoformat(data_str.replace('Z', '+00:00'))
             tz_sp = timezone(timedelta(hours=-3))
-            dt_sp = dt.astimezone(tz_sp)
-            return dt_sp.strftime('%d/%m/%Y %H:%M')
+            dt_br = dt_utc.astimezone(tz_sp)
+            return dt_br.strftime('%d/%m/%Y %H:%M')
 
         return data_str
     except Exception as e:
-        logger.error(f"❌ Erro ao formatar data '{data_str}': {e}")
-        tz_sp = timezone(timedelta(hours=-3))
-        return datetime.now(tz_sp).strftime('%d/%m/%Y %H:%M')
+        logger.error(f"Erro ao formatar data {data_str}: {e}")
+        return datetime.now().strftime('%d/%m/%Y %H:%M')
 
 
 @app.route('/api/chamados/ativos', methods=['GET', 'OPTIONS'])
@@ -1189,14 +1188,13 @@ def obter_chamados_concluidos():
                 'titulo': fields.get('Title', ''),
                 'solicitante': fields.get('Solicitante', ''),
                 'email': fields.get('Email', ''),
-                'descricao': fields.get('Descricao', ''),  # ← NOVO
                 'categoria': fields.get('Categoria', 'Outra'),
-                'status': status,  # ← NOVO: adiciona status 'Concluído'
-                'prioridade': fields.get('Prioridade', 'Média'),  # ← NOVO
                 'data_criacao': formatar_data_iso(fields.get('DataAbertura', datetime.now().isoformat())),
                 'data_conclusao': formatar_data_iso(fields.get('DataConclusao', datetime.now().isoformat())),
                 'origem': fields.get('Origem', ''),
                 'setor_atendimento': fields.get('SetordeAtendimento', ''),
+                'status': fields.get('Status', 'Concluído'),
+                'descricao': fields.get('Description', fields.get('Descricao', '')),
                 'avaliacao': '⭐⭐⭐⭐'  # Padrão - pode ser alterado se houver campo no SharePoint
             }
             chamados.append(chamado)
