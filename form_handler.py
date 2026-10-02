@@ -1062,17 +1062,16 @@ def normalizar_prioridade(prioridade):
 
 
 def formatar_data_iso(data_str):
-    """Converte horário para São Paulo - SharePoint retorna com offset errado (+4h)"""
+    """Retorna data/hora exatamente como vem do SharePoint (já em São Paulo)"""
     try:
         if not data_str:
             return datetime.now().strftime('%d/%m/%Y %H:%M')
 
         # Se for ISO format
         if 'T' in data_str:
-            # SharePoint retorna em UTC, mas 4h adiantado
-            # Usar -7 para corrigir: UTC - 7 = hora correta de São Paulo (UTC-3)
+            # SharePoint retorna em UTC, converter para São Paulo (UTC-3)
             dt_utc = datetime.fromisoformat(data_str.replace('Z', '+00:00'))
-            tz_sp = timezone(timedelta(hours=-7))
+            tz_sp = timezone(timedelta(hours=-3))
             dt_br = dt_utc.astimezone(tz_sp)
             return dt_br.strftime('%d/%m/%Y %H:%M')
 
@@ -1194,8 +1193,6 @@ def obter_chamados_concluidos():
                 'data_conclusao': formatar_data_iso(fields.get('DataConclusao', datetime.now().isoformat())),
                 'origem': fields.get('Origem', ''),
                 'setor_atendimento': fields.get('SetordeAtendimento', ''),
-                'status': fields.get('Status', 'Concluído'),
-                'descricao': fields.get('Description', fields.get('Descricao', '')),
                 'avaliacao': '⭐⭐⭐⭐'  # Padrão - pode ser alterado se houver campo no SharePoint
             }
             chamados.append(chamado)
@@ -1459,122 +1456,6 @@ def obter_graficos():
             'tendencia_semana': [],
             'satisfacao_setores': {}
         }), 200
-
-
-@app.route('/api/corrigir-horarios-emails', methods=['POST', 'OPTIONS'])
-def corrigir_horarios_emails():
-    """Corrige horários de chamados baseado nos e-mails recebidos no Exchange"""
-    if request.method == 'OPTIONS':
-        return '', 200
-
-    try:
-        token = get_access_token()
-        if not token:
-            return jsonify({'erro': 'Sem autenticação', 'corrigidos': 0}), 401
-
-        headers = {'Authorization': f'Bearer {token}'}
-        site_id, list_id = obter_site_e_lista(headers)
-        if not site_id or not list_id:
-            return jsonify({'erro': 'Não conseguiu conectar ao SharePoint', 'corrigidos': 0}), 400
-
-        # ===== BUSCAR CHAMADOS COM ORIGEM = "E-mail Suporte" =====
-        filter_query = "fields/Origem eq 'E-mail Suporte'"
-        items_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items?$expand=fields&$filter={filter_query}"
-        items_response = requests.get(items_url, headers=headers, timeout=10)
-
-        if items_response.status_code != 200:
-            return jsonify({'erro': 'Erro ao buscar chamados', 'corrigidos': 0}), 400
-
-        items = items_response.json().get('value', [])
-        logger.info(f"📋 {len(items)} chamados de e-mail encontrados")
-
-        corrigidos = 0
-        ja_corretos = 0
-        nao_encontrados = 0
-
-        for item in items:
-            try:
-                fields = item.get('fields', {})
-                item_id = item.get('id')
-                titulo = fields.get('Title', '')
-                email_solicitante = fields.get('Email', '')
-                data_abertura_atual = fields.get('DataAbertura', '')
-
-                logger.info(f"🔍 Processando: {titulo} (ID: {item_id})")
-
-                # ===== BUSCAR E-MAIL NO EXCHANGE =====
-                # Busca e-mail pelo email + assunto
-                filter_email = f"from/emailAddress/address eq '{email_solicitante}' and subject eq '{titulo}'"
-                mail_url = f"{GRAPH_API}/me/messages?$filter={filter_email}&$orderby=receivedDateTime desc&$top=1"
-
-                try:
-                    mail_response = requests.get(mail_url, headers=headers, timeout=10)
-                    emails = mail_response.json().get('value', [])
-                except:
-                    emails = []
-
-                if not emails:
-                    logger.warning(f"❌ E-mail não encontrado: {titulo}")
-                    nao_encontrados += 1
-                    continue
-
-                # ===== EXTRAIR HORÁRIO DO E-MAIL =====
-                email_data = emails[0]
-                received_time_str = email_data.get('receivedDateTime', '')
-
-                if not received_time_str:
-                    logger.warning(f"⚠️ E-mail sem receivedDateTime")
-                    continue
-
-                # Converter para formato DD/MM/YYYY HH:MM (São Paulo - UTC-3)
-                try:
-                    dt = datetime.fromisoformat(received_time_str.replace('Z', '+00:00'))
-                    tz_sp = timezone(timedelta(hours=-7))  # Usando -7 pra corrigir offset
-                    dt_sp = dt.astimezone(tz_sp)
-                    hora_correta = dt_sp.strftime('%d/%m/%Y %H:%M')
-                except Exception as e:
-                    logger.error(f"❌ Erro ao converter horário: {e}")
-                    continue
-
-                # ===== COMPARAR HORÁRIOS =====
-                if data_abertura_atual == hora_correta:
-                    logger.info(f"✓ Horário já correto: {hora_correta}")
-                    ja_corretos += 1
-                    continue
-
-                # ===== ATUALIZAR CHAMADO =====
-                logger.warning(f"🔧 Atualizando: {data_abertura_atual} → {hora_correta}")
-
-                update_url = f"{GRAPH_API}/sites/{site_id}/lists/{list_id}/items/{item_id}/fields"
-                update_data = {"DataAbertura": hora_correta}
-
-                update_response = requests.patch(update_url, headers=headers, json=update_data, timeout=10)
-
-                if update_response.status_code in [200, 204]:
-                    logger.info(f"✅ Chamado {item_id} atualizado!")
-                    corrigidos += 1
-                else:
-                    logger.error(f"❌ Erro ao atualizar: {update_response.text}")
-
-            except Exception as e:
-                logger.error(f"❌ Erro processando chamado: {e}")
-                continue
-
-        # ===== RESUMO =====
-        resumo = {
-            'total_processado': len(items),
-            'corrigidos': corrigidos,
-            'ja_corretos': ja_corretos,
-            'nao_encontrados': nao_encontrados,
-            'mensagem': f'✅ {corrigidos} corrigidos, {ja_corretos} já corretos, {nao_encontrados} e-mails não encontrados'
-        }
-
-        logger.info(f"📊 RESUMO: {resumo}")
-        return jsonify(resumo), 200
-
-    except Exception as e:
-        logger.error(f"❌ ERRO em corrigir_horarios_emails: {e}")
-        return jsonify({'erro': str(e), 'corrigidos': 0}), 500
 
 
 if __name__ == '__main__':
