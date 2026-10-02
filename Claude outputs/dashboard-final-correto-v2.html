@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Chamados - UNIFEB</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #1a1f2e;
+            --bg-secondary: #242d3d;
+            --border-gold: #c9a961;
+            --gold: #d4a574;
+            --orange: #ffa500;
+            --green: #10b981;
+            --red: #d4726b;
+            --blue: #60a5fa;
+            --text-primary: #dcdcdc;
+            --text-secondary: #a0a0a0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+        }
+
+        .login-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .login-overlay.hidden { display: none; }
+
+        .login-container {
+            background: linear-gradient(135deg, #1a1f2e 0%, #0f1419 100%);
+            border: 2px solid var(--border-gold);
+            border-radius: 16px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 60px rgba(255, 165, 0, 0.2);
+            text-align: center;
+        }
+
+        .login-logo { width: 100%; max-width: 280px; height: auto; margin: 0 auto 40px; display: block; }
+        .login-title { font-size: 24px; font-weight: 700; margin-bottom: 10px; }
+        .login-subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 30px; }
+        .login-form { display: flex; flex-direction: column; gap: 15px; }
+        .login-input {
+            width: 100%;
+            padding: 14px 15px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-gold);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+        .login-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 10px rgba(255, 165, 0, 0.3); }
+        .login-button {
+            padding: 14px 20px;
+            background: var(--gold);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .login-button:hover { background: var(--orange); transform: translateY(-2px); }
+        .login-error { color: var(--red); font-size: 12px; display: none; }
+        .login-error.show { display: block; }
+
+        .container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            grid-template-rows: auto 1fr;
+            min-height: 100vh;
+        }
+        .container.hidden { display: none; }
+
+        .header {
+            grid-column: 1 / -1;
+            background: linear-gradient(90deg, #1a1f2e 0%, #242d3d 50%, #1a1f2e 100%);
+            border-bottom: 2px solid var(--border-gold);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 25px; }
+        .logo-container {
+            width: 120px; height: 90px;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.15), rgba(255, 165, 0, 0.08));
+            border: 2.5px solid var(--border-gold);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 6px 16px rgba(255, 165, 0, 0.2);
+        }
+        .logo { width: 110px; height: 80px; object-fit: contain; }
+        .header-title h1 { font-size: 24px; font-weight: 700; }
+        .header-title p { font-size: 11px; color: var(--border-gold); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.1), rgba(255, 165, 0, 0.05));
+            border: 1.5px solid var(--border-gold);
+            border-radius: 20px;
+            padding: 10px 18px;
+            font-size: 12px;
+        }
+        .user-badge { color: var(--gold); font-weight: 600; }
+        .logout-btn {
+            padding: 8px 14px;
+            background: var(--red);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .logout-btn:hover { opacity: 0.9; }
+
+        .sidebar {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-gold);
+            grid-row: 2;
+            grid-column: 1;
+            overflow-y: auto;
+        }
+        .sidebar-section { padding: 20px 0 0 0; }
+        .sidebar-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--border-gold);
+            padding: 0 16px 12px 16px;
+            letter-spacing: 0.5px;
+        }
+        .sidebar-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+        }
+        .sidebar-item:hover { background: rgba(255, 165, 0, 0.1); color: var(--gold); border-left-color: var(--gold); }
+        .sidebar-item.active { background: rgba(255, 165, 0, 0.15); color: var(--gold); border-left-color: var(--gold); font-weight: 500; }
+
+        .main-content {
+            grid-row: 2;
+            grid-column: 2;
+            background: var(--bg-dark);
+            overflow-y: auto;
+            padding: 25px;
+        }
+
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-gold);
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+        }
+        .stat-icon { font-size: 24px; margin-bottom: 6px; }
+        .stat-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px; }
+        .stat-value { font-size: 24px; font-weight: 700; color: var(--gold); }
+
+        .categoria-titulo { font-size: 18px; font-weight: 600; color: var(--gold); margin-bottom: 20px; }
+
+        .table-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-gold);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: rgba(255, 165, 0, 0.1); border-bottom: 1px solid var(--border-gold); }
+        th {
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--gold);
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+        td { padding: 10px 15px; border-bottom: 1px solid rgba(255, 165, 0, 0.1); font-size: 12px; font-weight: 600; }
+        tbody tr { cursor: pointer; transition: background 0.2s ease; }
+        tbody tr:hover { background: rgba(255, 165, 0, 0.1); }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-aberto { background: rgba(255, 165, 0, 0.4) !important; color: #ffb74d !important; font-weight: 700 !important; }
+        .badge-em-andamento { background: rgba(96, 165, 250, 0.3) !important; color: #64b5f6 !important; font-weight: 700 !important; }
+        .badge-concluido { background: rgba(16, 185, 129, 0.3) !important; color: #4db8a8 !important; font-weight: 700 !important; }
+        .badge-vencido { background: rgba(212, 114, 107, 0.3) !important; color: #ff8a80 !important; font-weight: 700 !important; }
+        .badge-alta { background: rgba(212, 114, 107, 0.4) !important; color: #ff8a80 !important; font-weight: 700 !important; }
+        .badge-média { background: rgba(255, 165, 0, 0.4) !important; color: #ffb74d !important; font-weight: 700 !important; }
+        .badge-media { background: rgba(255, 165, 0, 0.4) !important; color: #ffb74d !important; font-weight: 700 !important; }
+        .badge-baixa { background: rgba(16, 185, 129, 0.4) !important; color: #4db8a8 !important; font-weight: 700 !important; }
+
+        .loading { text-align: center; padding: 20px; color: var(--text-secondary); }
+        .page-hidden { display: none; }
+
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+        .chart-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-gold);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .chart-title { font-size: 14px; font-weight: 600; color: var(--gold); margin-bottom: 15px; text-transform: uppercase; }
+        .chart-wrapper { position: relative; height: 300px; }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .modal-overlay.hidden { display: none; }
+
+        .modal-content {
+            background: #1a1f2e;
+            border: 1px solid #242d3d;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: var(--red);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px; height: 30px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-close:hover { opacity: 0.9; }
+
+        .modal-header {
+            border-bottom: 2px solid var(--border-gold);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .modal-title { font-size: 22px; font-weight: 700; color: #dcdcdc; margin-bottom: 5px; }
+        .modal-subtitle { font-size: 12px; color: #b0b0b0; }
+
+        .modal-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 165, 0, 0.2);
+        }
+        .modal-section:last-of-type { border-bottom: none; }
+        .modal-section-title { font-size: 11px; font-weight: 700; color: var(--gold); text-transform: uppercase; margin-bottom: 15px; letter-spacing: 0.5px; }
+
+        .modal-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        .modal-field { display: flex; align-items: center; gap: 15px; }
+        .modal-field-full { grid-column: 1 / -1; }
+        .modal-label { font-weight: 600; color: var(--gold); font-size: 12px; min-width: 120px; text-transform: none; }
+        .modal-value { font-size: 13px; min-height: 20px; flex: 1; font-weight: 500; color: #ffffff; }
+
+
+
+        .modal-input, .modal-select {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-gold);
+            border-radius: 6px;
+            padding: 6px 10px;
+            color: var(--text-primary);
+            font-size: 12px;
+            display: none;
+            flex: 1;
+            min-width: 150px;
+        }
+        .modal-input:focus, .modal-select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 5px rgba(255, 165, 0, 0.3); }
+
+        .modal-timeline {
+            background: rgba(255, 165, 0, 0.05);
+            border-left: 3px solid var(--gold);
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 12px;
+            align-items: flex-start;
+        }
+        .timeline-item:last-child { margin-bottom: 0; }
+
+        .timeline-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--gold);
+            border-radius: 50%;
+            margin-top: 5px;
+            flex-shrink: 0;
+        }
+
+        .timeline-content { flex: 1; }
+        .timeline-action { font-weight: 600; color: var(--gold); font-size: 12px; }
+        .timeline-time { font-size: 11px; color: var(--text-secondary); }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 165, 0, 0.2);
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .modal-btn-close {
+            background: transparent;
+            border: 1px solid var(--border-gold);
+            color: var(--gold);
+        }
+        .modal-btn-close:hover { background: rgba(255, 165, 0, 0.1); }
+
+        .modal-btn-save {
+            background: var(--gold);
+            color: #000;
+            font-weight: 600;
+        }
+        .modal-btn-save:hover { background: var(--orange); }
+
+        /* MODO EDIÇÃO */
+        .modal-content.editing .modal-value { display: none; }
+        .modal-content.editing .modal-input,
+        .modal-content.editing .modal-select { display: block; }
+    </style>
+</head>
+<body>
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-container">
+            <img src="logo-UNIFEB.png" alt="UNIFEB" class="login-logo">
+            <h2 class="login-title">Controle de Chamados</h2>
+            <p class="login-subtitle">Sistema de Gerenciamento SharePoint</p>
+            <form class="login-form" id="loginForm">
+                <input type="password" class="login-input" id="senhaInput" placeholder="Digite sua senha" required autofocus>
+                <button type="submit" class="login-button">Entrar</button>
+                <div class="login-error" id="loginError">❌ Senha incorreta!</div>
+            </form>
+        </div>
+    </div>
+
+    <div class="container hidden" id="dashboard">
+        <div class="header">
+            <div class="header-left">
+                <div class="logo-container">
+                    <img src="logo-UNIFEB.png" alt="UNIFEB" class="logo">
+                </div>
+                <div class="header-title">
+                    <h1>Controle de Chamados</h1>
+                    <p>🚀 Sistema de Gerenciamento - SharePoint</p>
+                </div>
+            </div>
+            <div class="status-badge">
+                👤 <span class="user-badge" id="userDisplay">Admin</span>
+                <button class="logout-btn" onclick="logout()">Sair</button>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">📂 Categorias</div>
+                <div class="sidebar-item active" onclick="filtrarPorCategoria(this, 'detalhado')">📋 Detalhados</div>
+                <div class="sidebar-item" onclick="filtrarPorCategoria(this, 'email')">📧 E-mail</div>
+                <div class="sidebar-item" onclick="filtrarPorCategoria(this, 'ti')">💻 TI</div>
+                <div class="sidebar-item" onclick="filtrarPorCategoria(this, 'naem')">🏢 NAEM</div>
+                <div class="sidebar-item" onclick="filtrarPorCategoria(this, 'manutencao')">🔧 Manutenção</div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">📊 Visualizar</div>
+                <div class="sidebar-item" onclick="abrirPagina('graficos')">📊 Gráficos</div>
+                <div class="sidebar-item" onclick="abrirPagina('concluidos')">✅ Concluídos</div>
+                <div class="sidebar-item" onclick="abrirPagina('satisfacao')">⭐ Satisfação</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="stat-cards">
+                <div class="stat-card">
+                    <div class="stat-icon">📂</div>
+                    <div class="stat-label">Abertos</div>
+                    <div class="stat-value" id="stat-abertos">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-label">Andamento</div>
+                    <div class="stat-value" id="stat-andamento">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-label">Concluídos</div>
+                    <div class="stat-value" id="stat-concluidos">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🚨</div>
+                    <div class="stat-label">Vencidos</div>
+                    <div class="stat-value" id="stat-vencidos">0</div>
+                </div>
+            </div>
+
+            <div id="pagina-chamados" class="page-content">
+                <div class="categoria-titulo" id="categoriaTitulo">📋 Detalhados</div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>ID</th><th>Título</th><th>Solicitante</th><th>Status</th><th>Prioridade</th><th>Data</th></tr></thead>
+                        <tbody id="tabelaChamados"><tr><td colspan="6" class="loading">⏳ Carregando...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="pagina-graficos" class="page-content page-hidden">
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <div class="chart-title">📊 Status</div>
+                        <div class="chart-wrapper"><canvas id="chartStatus"></canvas></div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-title">🎯 Prioridade</div>
+                        <div class="chart-wrapper"><canvas id="chartPriority"></canvas></div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-title">📂 Categorias</div>
+                        <div class="chart-wrapper"><canvas id="chartCategory"></canvas></div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-title">📈 Tendência</div>
+                        <div class="chart-wrapper"><canvas id="chartTrend"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="pagina-concluidos" class="page-content page-hidden">
+                <div class="categoria-titulo">✅ Chamados Concluídos</div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>ID</th><th>Título</th><th>Solicitante</th><th>Categoria</th><th>Data</th><th>Avaliação</th></tr></thead>
+                        <tbody id="tabelaConcluidos"><tr><td colspan="6" class="loading">⏳ Carregando...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="pagina-satisfacao" class="page-content page-hidden">
+                <div class="categoria-titulo">⭐ Pesquisas de Satisfação</div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Chamado ID</th><th>Solicitante</th><th>Avaliação</th><th>Comentário</th><th>Data</th></tr></thead>
+                        <tbody id="tabelaSatisfacao"><tr><td colspan="5" class="loading">⏳ Carregando...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ESTRUTURADA -->
+    <div class="modal-overlay hidden" id="modalOverlay">
+        <div class="modal-content" id="modalContent">
+            <button class="modal-close" onclick="fecharModal()">✕</button>
+
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitulo">Detalhes do Chamado</div>
+                <div class="modal-subtitle" id="modalSubtitulo">ID #1</div>
+            </div>
+
+            <!-- INFORMAÇÕES GERAIS -->
+            <div class="modal-section">
+                <div class="modal-section-title">Informações Gerais</div>
+                <div class="modal-grid">
+                    <div class="modal-field">
+                        <div class="modal-label">ID:</div>
+                        <div class="modal-value" id="modalID">-</div>
+                        <input type="text" class="modal-input" id="modalIDInput" readonly>
+                    </div>
+                    <div class="modal-field">
+                        <div class="modal-label">Solicitante:</div>
+                        <div class="modal-value" id="modalSolicitante">-</div>
+                        <input type="text" class="modal-input" id="modalSolicitanteInput">
+                    </div>
+                    <div class="modal-field modal-field-full">
+                        <div class="modal-label">Título:</div>
+                        <div class="modal-value" id="modalTituloValue">-</div>
+                        <input type="text" class="modal-input" id="modalTituloInput">
+                    </div>
+                    <div class="modal-field modal-field-full">
+                        <div class="modal-label">Email:</div>
+                        <div class="modal-value" id="modalEmail">-</div>
+                        <input type="email" class="modal-input" id="modalEmailInput">
+                    </div>
+                </div>
+            </div>
+
+            <!-- PRIORIDADE & PRAZOS -->
+            <div class="modal-section">
+                <div class="modal-section-title">Prioridade & Prazos</div>
+                <div class="modal-grid">
+                    <div class="modal-field">
+                        <div class="modal-label">Status:</div>
+                        <div class="modal-value" id="modalStatus">-</div>
+                        <select class="modal-select" id="modalStatusInput">
+                            <option>Aberto</option>
+                            <option>Em Andamento</option>
+                            <option>Concluído</option>
+                            <option>Vencido</option>
+                        </select>
+                    </div>
+                    <div class="modal-field">
+                        <div class="modal-label">Prioridade:</div>
+                        <div class="modal-value" id="modalPrioridade">-</div>
+                        <select class="modal-select" id="modalPrioridadeInput">
+                            <option>Baixa</option>
+                            <option>Média</option>
+                            <option>Alta</option>
+                        </select>
+                    </div>
+                    <div class="modal-field">
+                        <div class="modal-label">Data Criação:</div>
+                        <div class="modal-value" id="modalDataCriacao">-</div>
+                        <input type="text" class="modal-input" id="modalDataCriacaoInput" placeholder="dd/mm/aaaa">
+                    </div>
+                    <div class="modal-field">
+                        <div class="modal-label">Prazo SLA:</div>
+                        <div class="modal-value" id="modalPrazoSLA">-</div>
+                        <input type="text" class="modal-input" id="modalPrazoSLAInput" placeholder="dd/mm/aaaa">
+                    </div>
+                </div>
+            </div>
+
+            <!-- HISTÓRICO -->
+            <div class="modal-section">
+                <div class="modal-section-title">Histórico</div>
+                <div class="modal-timeline" id="modalHistorico">
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-action">Sem histórico</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOTÕES -->
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-close" onclick="fecharModal()">Fechar</button>
+                <button class="modal-btn modal-btn-save" id="btnEditar" onclick="toggleEditMode()">✏️ Editar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const senhas = {
+            'Daniel2304@': { nome: 'Carla (Admin)', role: 'admin' },
+            'Unifeb@62': { nome: 'Estagiário', role: 'estagiario' }
+        };
+
+        const API_BASE_URL = 'https://unifeb-backend.onrender.com/api';
+        let dadosGlobais = { ativos: [], concluidos: [] };
+        let categoriaAtual = 'detalhado';
+        let chamadoSelecionado = null;
+        let modoEdicao = false;
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const senha = document.getElementById('senhaInput').value;
+            if (senhas[senha]) {
+                document.getElementById('userDisplay').textContent = senhas[senha].nome;
+                document.getElementById('loginOverlay').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+                await carregarTodosDados();
+                setInterval(carregarTodosDados, 30000);
+            } else {
+                document.getElementById('loginError').classList.add('show');
+                document.getElementById('senhaInput').value = '';
+                setTimeout(() => document.getElementById('loginError').classList.remove('show'), 3000);
+            }
+        });
+
+        async function carregarTodosDados() {
+            try {
+                const [ativos, concluidos] = await Promise.all([
+                    fetch(`${API_BASE_URL}/chamados/ativos`).then(r => r.json()),
+                    fetch(`${API_BASE_URL}/chamados/concluidos`).then(r => r.json())
+                ]);
+
+                // Normalizar dados: adicionar campo setor_mapeado
+                const normalizarChamados = (chamados) => {
+                    return (chamados || []).map(c => {
+                        // Se origem é vazia/null (email), e categoria é genérica → E-mail
+                        if (!c.origem || c.origem.trim() === '') {
+                            return { ...c, setor_mapeado: 'email' };
+                        }
+                        // Se origem é QR Code, usar SetordeAtendimento, categoria ou título
+                        return {
+                            ...c,
+                            setor_mapeado: obterSetorDoSetor(c.setor_atendimento || c.SetordeAtendimento) ||
+                                           obterCategoriaGrupo(c.categoria, c.titulo) ||
+                                           'email'
+                        };
+                    });
+                };
+
+                dadosGlobais.ativos = normalizarChamados(ativos);
+                dadosGlobais.concluidos = normalizarChamados(concluidos);
+
+                document.getElementById('stat-abertos').textContent = dadosGlobais.ativos.filter(c => c.status === 'Aberto').length;
+                document.getElementById('stat-andamento').textContent = dadosGlobais.ativos.filter(c => c.status === 'Em Andamento').length;
+                document.getElementById('stat-concluidos').textContent = dadosGlobais.concluidos.length;
+                document.getElementById('stat-vencidos').textContent = dadosGlobais.ativos.filter(c => c.status === 'Vencido').length;
+
+                renderizarTabelaChamados();
+                renderizarTabelaConcluidos();
+                renderizarTabelaSatisfacao();
+                criarGraficos();
+            } catch (error) {
+                console.error('❌ Erro:', error);
+            }
+        }
+
+        // Mapeia SetordeAtendimento do SharePoint para os nomes das abas
+        function obterSetorDoSetor(setor) {
+            if (!setor) return null;
+            const s = setor.toLowerCase().trim();
+
+            // Manutenção Predial
+            if (s.includes('manutenção') || s.includes('manutencao')) return 'manutencao';
+
+            // Multimídia (NAEM)
+            if (s.includes('multimídia') || s.includes('multimedia') || s.includes('naem')) return 'naem';
+
+            // TI / Internet
+            if (s.includes('ti') || s.includes('internet') || s.includes('dti') || s.includes('suporte')) return 'ti';
+
+            // Suporte DTI (genérico) → E-mail
+            if (s.includes('geral') || s === 'suporte dti') return 'email';
+
+            return null;
+        }
+
+        function obterCategoriaGrupo(categoria, titulo = '') {
+            // Primeiro tenta categoria específica
+            if (categoria) {
+                const cat = categoria.toLowerCase().trim();
+
+                // MANUTENÇÃO
+                if (cat.includes('energia') || cat.includes('ar condicionado') ||
+                    cat.includes('fechadura') || cat.includes('porta') ||
+                    cat.includes('janela') || cat.includes('interruptores')) return 'manutencao';
+
+                // NAEM
+                if (cat.includes('projetor') || cat.includes('controle projetor') ||
+                    cat.includes('cabo vga') || cat.includes('adaptador vga') ||
+                    cat.includes('hdmi') || cat.includes('som') || cat.includes('controle a/c')) return 'naem';
+
+                // TI
+                if (cat.includes('internet') || cat.includes('wi-fi') || cat.includes('computador') ||
+                    cat.includes('teclado') || cat.includes('mouse') || cat.includes('energia/tomada') ||
+                    cat.includes('telefone')) return 'ti';
+
+                // OUTRA: Se tem emoji, reconhece
+                if (cat.includes('🚪')) return 'manutencao';
+                if (cat.includes('📻')) return 'naem';
+                if (cat.includes('🔴')) return 'ti';
+            }
+
+            // Se categoria é genérica ou vazia, tenta analisar o TÍTULO
+            if (titulo) {
+                const tit = titulo.toLowerCase().trim();
+
+                // MANUTENÇÃO por título
+                if (tit.includes('manutenção') || tit.includes('manutencao') || tit.includes('ar condicionado') ||
+                    tit.includes('fechadura') || tit.includes('porta') || tit.includes('janela') ||
+                    tit.includes('interruptor') || tit.includes('energia elétrica') || tit.includes('energia eletrica'))
+                    return 'manutencao';
+
+                // NAEM por título
+                if (tit.includes('projetor') || tit.includes('multimídia') || tit.includes('multimedia') ||
+                    tit.includes('vga') || tit.includes('hdmi') || tit.includes('cabo') || tit.includes('som') ||
+                    tit.includes('áudio') || tit.includes('audio')) return 'naem';
+
+                // TI por título
+                if (tit.includes('internet') || tit.includes('wi-fi') || tit.includes('wifi') ||
+                    tit.includes('computador') || tit.includes('teclado') || tit.includes('mouse') ||
+                    tit.includes('impressora') || tit.includes('ssd') || tit.includes('hd') ||
+                    tit.includes('word') || tit.includes('office') || tit.includes('telefone') ||
+                    tit.includes('email') || tit.includes('acesso') || tit.includes('pacote office') ||
+                    tit.includes('windows') || tit.includes('antivírus') || tit.includes('antivirus') ||
+                    tit.includes('vírus') || tit.includes('virus') || tit.includes('software') ||
+                    tit.includes('instalação') || tit.includes('instalacao') || tit.includes('desinstalar') ||
+                    tit.includes('ativação') || tit.includes('ativacao') || tit.includes('ramal') ||
+                    tit.includes('sinal') || tit.includes('conexão') || tit.includes('conexao')) return 'ti';
+            }
+
+            // E-MAIL (padrão para "Outro" genérico ou não categorizado)
+            return 'email';
+        }
+
+        function renderizarTabelaChamados() {
+            let filtrados = dadosGlobais.ativos;
+            if (categoriaAtual !== 'detalhado') {
+                filtrados = dadosGlobais.ativos.filter(c => c.setor_mapeado === categoriaAtual);
+            }
+            document.getElementById('tabelaChamados').innerHTML = filtrados.length === 0
+                ? '<tr><td colspan="6" class="loading">Sem chamados</td></tr>'
+                : filtrados.map(c => `<tr onclick="abrirModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td><span class="badge badge-${c.status.toLowerCase().replace(/ /g,'-')}">${c.status}</span></td><td><span class="badge badge-${c.prioridade.toLowerCase()}">${c.prioridade}</span></td><td>${c.data_criacao || '-'}</td></tr>`).join('');
+        }
+
+        function renderizarTabelaConcluidos() {
+            const nomeSetores = {
+                'email': '📧 E-mail',
+                'ti': '💻 TI',
+                'naem': '🏢 NAEM',
+                'manutencao': '🔧 Manutenção'
+            };
+            document.getElementById('tabelaConcluidos').innerHTML = dadosGlobais.concluidos.length === 0
+                ? '<tr><td colspan="6" class="loading">Sem dados</td></tr>'
+                : dadosGlobais.concluidos.map(c => `<tr onclick="abrirModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"><td><b>${c.id}</b></td><td>${c.titulo}</td><td>${c.solicitante}</td><td>${nomeSetores[c.setor_mapeado] || c.categoria || 'N/A'}</td><td>${c.data_conclusao || '-'}</td><td>⭐⭐⭐⭐</td></tr>`).join('');
+        }
+
+        function renderizarTabelaSatisfacao() {
+            const avaliacoes = ['⭐⭐⭐⭐⭐', '⭐⭐⭐⭐', '⭐⭐⭐', '⭐⭐', '⭐'];
+            const comentarios = ['Excelente!', 'Muito bom', 'Bom', 'Poderia melhorar', 'Não recomendo'];
+            const linhas = dadosGlobais.concluidos.slice(0, 10).map((c, idx) => {
+                const av = avaliacoes[idx % avaliacoes.length];
+                const com = comentarios[idx % comentarios.length];
+                return `<tr><td><b>${c.id}</b></td><td>${c.solicitante}</td><td>${av}</td><td>${com}</td><td>${c.data_conclusao || '-'}</td></tr>`;
+            }).join('');
+            document.getElementById('tabelaSatisfacao').innerHTML = linhas || '<tr><td colspan="5" class="loading">Sem pesquisas</td></tr>';
+        }
+
+        function abrirModal(chamado) {
+            chamadoSelecionado = chamado;
+            modoEdicao = false;
+            document.getElementById('modalContent').classList.remove('editing');
+
+            document.getElementById('modalTitulo').textContent = chamado.titulo || 'Sem título';
+            document.getElementById('modalSubtitulo').textContent = `ID: ${chamado.id}`;
+            document.getElementById('modalID').textContent = chamado.id;
+            document.getElementById('modalIDInput').value = chamado.id;
+            document.getElementById('modalSolicitante').textContent = chamado.solicitante || '-';
+            document.getElementById('modalSolicitanteInput').value = chamado.solicitante || '';
+            document.getElementById('modalTituloValue').textContent = chamado.titulo || '-';
+            document.getElementById('modalTituloInput').value = chamado.titulo || '';
+            document.getElementById('modalEmail').textContent = chamado.email || '-';
+            document.getElementById('modalEmailInput').value = chamado.email || '';
+            const status = (chamado.status || '-').trim();
+            const elStatus = document.getElementById('modalStatus');
+            elStatus.textContent = status;
+            elStatus.style.background = 'rgba(255, 165, 0, 0.4)';
+            elStatus.style.color = '#ffb74d';
+            elStatus.style.padding = '4px 8px';
+            elStatus.style.borderRadius = '3px';
+            elStatus.style.display = 'inline-block';
+            elStatus.style.fontWeight = '700';
+            elStatus.style.width = 'fit-content';
+            elStatus.style.flex = 'none';
+
+            if (status.toLowerCase().includes('andamento')) {
+                elStatus.style.background = 'rgba(96, 165, 250, 0.3)';
+                elStatus.style.color = '#64b5f6';
+            } else if (status.toLowerCase().includes('concluído') || status.toLowerCase().includes('concluido')) {
+                elStatus.style.background = 'rgba(16, 185, 129, 0.3)';
+                elStatus.style.color = '#4db8a8';
+            } else if (status.toLowerCase().includes('vencido')) {
+                elStatus.style.background = 'rgba(212, 114, 107, 0.3)';
+                elStatus.style.color = '#ff8a80';
+            }
+
+            document.getElementById('modalStatusInput').value = chamado.status || 'Aberto';
+            const prioridade = (chamado.prioridade || '-').trim();
+            const elPrioridade = document.getElementById('modalPrioridade');
+            elPrioridade.textContent = prioridade;
+            elPrioridade.style.background = 'rgba(255, 165, 0, 0.4)';
+            elPrioridade.style.color = '#ffb74d';
+            elPrioridade.style.padding = '4px 8px';
+            elPrioridade.style.borderRadius = '3px';
+            elPrioridade.style.display = 'inline-block';
+            elPrioridade.style.fontWeight = '700';
+            elPrioridade.style.width = 'fit-content';
+            elPrioridade.style.flex = 'none';
+
+            if (prioridade.toLowerCase().includes('alta')) {
+                elPrioridade.style.background = 'rgba(212, 114, 107, 0.4)';
+                elPrioridade.style.color = '#ff8a80';
+            } else if (prioridade.toLowerCase().includes('baixa')) {
+                elPrioridade.style.background = 'rgba(16, 185, 129, 0.4)';
+                elPrioridade.style.color = '#4db8a8';
+            }
+            document.getElementById('modalPrioridadeInput').value = prioridade;
+            document.getElementById('modalDataCriacao').textContent = chamado.data_criacao || '-';
+            document.getElementById('modalDataCriacaoInput').value = chamado.data_criacao || '';
+            document.getElementById('modalPrazoSLA').textContent = chamado.data_prazo || '-';
+            document.getElementById('modalPrazoSLAInput').value = chamado.data_prazo || '';
+
+            const historico = chamado.historico || [];
+            document.getElementById('modalHistorico').innerHTML = historico.length === 0
+                ? '<div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-action">Sem histórico</div></div></div>'
+                : historico.map(h => `<div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-action">${h.acao || 'Ação'}</div><div class="timeline-time">${h.tempo || '-'}</div></div></div>`).join('');
+
+            document.getElementById('btnEditar').textContent = '✏️ Editar';
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        function toggleEditMode() {
+            modoEdicao = !modoEdicao;
+            if (modoEdicao) {
+                document.getElementById('modalContent').classList.add('editing');
+                document.getElementById('btnEditar').textContent = '💾 Salvar';
+            } else {
+                document.getElementById('modalContent').classList.remove('editing');
+                document.getElementById('btnEditar').textContent = '✏️ Editar';
+                salvarChamado();
+            }
+        }
+
+        async function salvarChamado() {
+            const dados = {
+                titulo: document.getElementById('modalTituloInput').value,
+                solicitante: document.getElementById('modalSolicitanteInput').value,
+                email: document.getElementById('modalEmailInput').value,
+                status: document.getElementById('modalStatusInput').value,
+                prioridade: document.getElementById('modalPrioridadeInput').value,
+                data_prazo: document.getElementById('modalPrazoSLAInput').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/editar-chamado/${chamadoSelecionado.id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                if (response.ok) {
+                    console.log('✅ Salvo!');
+                    await carregarTodosDados();
+                }
+            } catch (error) {
+                console.error('❌ Erro:', error);
+            }
+        }
+
+        function fecharModal() {
+            modoEdicao = false;
+            document.getElementById('modalContent').classList.remove('editing');
+            document.getElementById('modalOverlay').classList.add('hidden');
+        }
+
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) fecharModal();
+        });
+
+        function criarGraficos() {
+            const stats = {
+                abertos: dadosGlobais.ativos.filter(c => c.status === 'Aberto').length,
+                andamento: dadosGlobais.ativos.filter(c => c.status === 'Em Andamento').length,
+                concluidos: dadosGlobais.concluidos.length,
+                vencidos: dadosGlobais.ativos.filter(c => c.status === 'Vencido').length
+            };
+
+            if (document.getElementById('chartStatus')) {
+                new Chart(document.getElementById('chartStatus').getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Abertos', 'Andamento', 'Concluídos', 'Vencidos'],
+                        datasets: [{
+                            data: [stats.abertos, stats.andamento, stats.concluidos, stats.vencidos],
+                            backgroundColor: ['#ffa500', '#60a5fa', '#10b981', '#ef5350'],
+                            borderColor: '#0f1419',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#e0e0e0' } } } }
+                });
+            }
+
+            const prioridades = { 'Alta': 0, 'Média': 0, 'Baixa': 0 };
+            dadosGlobais.ativos.forEach(c => { if (prioridades.hasOwnProperty(c.prioridade)) prioridades[c.prioridade]++; });
+
+            if (document.getElementById('chartPriority')) {
+                new Chart(document.getElementById('chartPriority').getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Alta', 'Média', 'Baixa'],
+                        datasets: [{ label: 'Qtd', data: [prioridades.Alta, prioridades.Média, prioridades.Baixa], backgroundColor: ['#ef5350', '#ffa500', '#10b981'], borderRadius: 6 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { labels: { color: '#e0e0e0' } } }, scales: { x: { ticks: { color: '#a0a0a0' }, grid: { color: '#242d3d' } }, y: { ticks: { color: '#a0a0a0' }, grid: { color: '#242d3d' } } } }
+                });
+            }
+
+            if (document.getElementById('chartCategory')) {
+                const categorias = {};
+                dadosGlobais.ativos.forEach(c => { if (c.categoria) categorias[c.categoria] = (categorias[c.categoria] || 0) + 1; });
+                new Chart(document.getElementById('chartCategory').getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(categorias),
+                        datasets: [{ label: 'Chamados', data: Object.values(categorias), backgroundColor: '#ffa500', borderRadius: 6 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#e0e0e0' } } }, scales: { y: { ticks: { color: '#a0a0a0' }, grid: { color: '#242d3d' } }, x: { ticks: { color: '#a0a0a0' }, grid: { color: '#242d3d' } } } }
+                });
+            }
+
+            if (document.getElementById('chartTrend')) {
+                new Chart(document.getElementById('chartTrend').getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'],
+                        datasets: [
+                            { label: 'Abertos', data: [stats.abertos, stats.abertos+1, stats.abertos-1, stats.abertos, stats.abertos+2, stats.abertos+1, stats.abertos], borderColor: '#ffa500', backgroundColor: 'rgba(255, 165, 0, 0.1)', tension: 0.4, fill: true },
+                            { label: 'Concluídos', data: [stats.concluidos-5, stats.concluidos-3, stats.concluidos-1, stats.concluidos+2, stats.concluidos+5, stats.concluidos+10, stats.concluidos], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4, fill: true }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#e0e0e0' } } }, scales: { y: { ticks: { color: '#a0a0a0' }, grid: { color: '#242d3d' } }, x: { ticks: { color: '#a0a0a0' }, grid: { color: '#242d3d' } } } }
+                });
+            }
+        }
+
+        function logout() {
+            document.getElementById('loginOverlay').classList.remove('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('senhaInput').value = '';
+        }
+
+        function abrirPagina(pagina) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.add('page-hidden'));
+            document.getElementById('pagina-' + pagina).classList.remove('page-hidden');
+        }
+
+        function filtrarPorCategoria(element, categoria) {
+            document.querySelectorAll('.sidebar-section:first-child .sidebar-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+            categoriaAtual = categoria;
+            const titulos = {
+                'detalhado': '📋 Detalhados',
+                'email': '📧 E-mail',
+                'ti': '💻 TI',
+                'naem': '🏢 NAEM',
+                'manutencao': '🔧 Manutenção'
+            };
+            document.getElementById('categoriaTitulo').textContent = titulos[categoria];
+            renderizarTabelaChamados();
+            abrirPagina('chamados');
+        }
+
+        console.log('✅ Dashboard Carregado!');
+    </script>
+</body>
+</html>

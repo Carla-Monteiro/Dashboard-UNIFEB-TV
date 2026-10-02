@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard UNIFEB - Preview de Melhorias</title>
+    <style>
+        :root {
+            --bg-dark: #1a1f2e;
+            --bg-secondary: #242d3d;
+            --border-gold: #c9a961;
+            --gold: #d4a574;
+            --orange: #ffa500;
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #eab308;
+            --blue: #60a5fa;
+            --text-primary: #dcdcdc;
+            --text-secondary: #a0a0a0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(90deg, var(--bg-dark), var(--bg-secondary));
+            border-bottom: 2px solid var(--border-gold);
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .header h1 {
+            color: var(--gold);
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: var(--gold);
+            border-bottom: 2px solid var(--orange);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* STATS CARDS SETOR */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--bg-secondary), #2d3d50);
+            border-left: 4px solid var(--gold);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(212, 165, 116, 0.1);
+        }
+
+        .stat-card-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--gold);
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(212, 165, 116, 0.2);
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .stat-percentage {
+            color: var(--orange);
+            font-weight: 700;
+        }
+
+        /* BADGES - NOVO E MELHORADO */
+        .badges-demo {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        .badge {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+
+        /* Status Badges */
+        .badge-aberto {
+            background: rgba(239, 68, 68, 0.7);
+            color: #fca5a5;
+            border: 1px solid #dc2626;
+        }
+
+        .badge-em-andamento {
+            background: rgba(234, 179, 8, 0.7);
+            color: #fef3c7;
+            border: 1px solid #b45309;
+        }
+
+        .badge-concluido {
+            background: rgba(34, 197, 94, 0.7);
+            color: #bbf7d0;
+            border: 1px solid #15803d;
+        }
+
+        .badge-vencido {
+            background: rgba(239, 68, 68, 0.9);
+            color: #fecaca;
+            border: 2px solid #dc2626;
+        }
+
+        /* Priority Badges */
+        .badge-alta {
+            background: rgba(239, 68, 68, 0.8);
+            color: #fecaca;
+            border: 1px solid #dc2626;
+        }
+
+        .badge-media {
+            background: rgba(234, 179, 8, 0.7);
+            color: #fef3c7;
+            border: 1px solid #b45309;
+        }
+
+        .badge-baixa {
+            background: rgba(34, 197, 94, 0.7);
+            color: #bbf7d0;
+            border: 1px solid #15803d;
+        }
+
+        /* TABLE */
+        .table-container {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: rgba(212, 165, 116, 0.1);
+            border-bottom: 2px solid var(--border-gold);
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            color: var(--gold);
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        th:hover {
+            background: rgba(212, 165, 116, 0.2);
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(212, 165, 116, 0.1);
+        }
+
+        tbody tr {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: rgba(212, 165, 116, 0.1);
+        }
+
+        .id-cell {
+            font-weight: 600;
+            color: var(--orange);
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 2px solid var(--gold);
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(255, 165, 0, 0.3);
+        }
+
+        .modal-header {
+            border-bottom: 2px solid var(--gold);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: var(--gold);
+            margin-bottom: 5px;
+        }
+
+        .modal-id {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .modal-field {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(212, 165, 116, 0.1);
+        }
+
+        .modal-field:last-child {
+            border-bottom: none;
+        }
+
+        .modal-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .modal-value {
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: var(--gold);
+            border: none;
+            background: none;
+            font-weight: bold;
+        }
+
+        .modal-close:hover {
+            color: var(--orange);
+        }
+
+        /* FILTERS */
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-group label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-gold);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 8px rgba(212, 165, 116, 0.3);
+        }
+
+        /* INFO TEXT */
+        .info-text {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .highlight {
+            background: rgba(212, 165, 116, 0.2);
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid var(--gold);
+            margin: 20px 0;
+            color: var(--text-primary);
+        }
+
+        .highlight strong {
+            color: var(--gold);
+        }
+
+        .emoji-icon {
+            font-size: 1.2em;
+            margin-right: 5px;
+        }
+
+        .approval-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.2s;
+        }
+
+        .btn-approve {
+            background: var(--green);
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background: #16a34a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn-decline {
+            background: var(--red);
+            color: white;
+        }
+
+        .btn-decline:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Dashboard UNIFEB - Preview de Melhorias</h1>
+            <p>Visualize as novas funcionalidades implementadas</p>
+        </div>
+
+        <!-- SEÇÃO 1: CARDS DE STATS POR SETOR -->
+        <div class="section">
+            <h2 class="section-title">1️⃣ Stats Cards por Setor</h2>
+            <div class="highlight">
+                <strong>✨ NOVO!</strong> Cards mostrando estatísticas detalhadas de cada setor com total de chamados e percentuais de status
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-title"><span class="emoji-icon">📧</span>Email</div>
+                    <div class="stat-row">
+                        <span class="stat-label">Total de Chamados</span>
+                        <span class="stat-value">24</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">% Abertos</span>
+                        <span class="stat-percentage">35%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">% Em Andamento</span>
+                        <span class="stat-percentage">40%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">% Concluídos</span>
+                        <span class="stat-percentage">25%</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-title"><span class="emoji-icon">💻</span>TI</div>
+                    <div class="stat-row">
+                        <span class="stat-label">Total de Chamados</span>
+                        <span class="stat-value">18</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">% Abertos</span>
+                        <span class="stat-percentage">28%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">% Em Andamento</span>
+                        <span class="stat-percentage">44%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">% Concluídos</span>
+                        <span class="stat-percentage">28%</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-title"><span class="emoji-icon">🔧</span>Manutenção</div>
+                    <div class="stat-row">
+                        <span class="stat-label">Total de Chamados</span>
+                        <span class="stat-value">31</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">% Abertos</span>
+                        <span class="stat-percentage">32%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">% Em Andamento</span>
+                        <span class="stat-percentage">39%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">% Concluídos</span>
+                        <span class="stat-percentage">29%</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-title"><span class="emoji-icon">🏢</span>NAEM</div>
+                    <div class="stat-row">
+                        <span class="stat-label">Total de Chamados</span>
+                        <span class="stat-value">12</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">% Abertos</span>
+                        <span class="stat-percentage">25%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">% Em Andamento</span>
+                        <span class="stat-percentage">42%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">% Concluídos</span>
+                        <span class="stat-percentage">33%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEÇÃO 2: BADGES MELHORADOS -->
+        <div class="section">
+            <h2 class="section-title">2️⃣ Status com Cores Mais Contrastantes</h2>
+            <div class="highlight">
+                <strong>🎨 MELHORADO!</strong> Cores muito mais claras e contrastantes para melhor legibilidade
+            </div>
+            <div class="badges-demo">
+                <div>
+                    <div style="color: var(--text-secondary); font-size: 0.85em; margin-bottom: 8px;">Status:</div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <span class="badge badge-aberto">🔴 Aberto</span>
+                        <span class="badge badge-em-andamento">🟡 Em Andamento</span>
+                        <span class="badge badge-concluido">🟢 Concluído</span>
+                        <span class="badge badge-vencido">⚠️ Vencido</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="badges-demo" style="margin-top: 20px;">
+                <div>
+                    <div style="color: var(--text-secondary); font-size: 0.85em; margin-bottom: 8px;">Prioridade:</div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <span class="badge badge-alta">🔥 Alta</span>
+                        <span class="badge badge-media">⚠️ Média</span>
+                        <span class="badge badge-baixa">✅ Baixa</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEÇÃO 3: FILTROS MELHORADOS -->
+        <div class="section">
+            <h2 class="section-title">3️⃣ Filtros Interativos</h2>
+            <div class="highlight">
+                <strong>🔍 NOVO!</strong> Filtros para Status, Setor e Busca por ID/Título
+            </div>
+            <div class="filters">
+                <div class="filter-group">
+                    <label>🔍 Buscar:</label>
+                    <input type="text" placeholder="ID, Título ou Solicitante..." />
+                </div>
+                <div class="filter-group">
+                    <label>📂 Setor:</label>
+                    <select>
+                        <option>Todos</option>
+                        <option>📧 Email</option>
+                        <option>💻 TI</option>
+                        <option>🔧 Manutenção</option>
+                        <option>🏢 NAEM</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>📊 Status:</label>
+                    <select>
+                        <option>Todos</option>
+                        <option>Aberto</option>
+                        <option>Em Andamento</option>
+                        <option>Concluído</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEÇÃO 4: TABELA COM DADOS EXEMPLO -->
+        <div class="section">
+            <h2 class="section-title">4️⃣ Tabela com Exemplos (Clique numa linha!)</h2>
+            <div class="highlight">
+                <strong>💡 DICA:</strong> Clique em qualquer linha para ver o modal com todos os detalhes do chamado
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Solicitante</th>
+                            <th>Status</th>
+                            <th>Prioridade</th>
+                            <th>Data</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr onclick="abrirModal({id: 1086, titulo: 'Projetor não conecta', solicitante: 'João Silva', email: 'joao@unifeb.br', status: 'Concluído', prioridade: 'Alta', dataAbertura: '06/08/2026', dataConclusao: '14/08/2026', setor: 'Email', tempo: '8 dias', descricao: 'Problema de conexão com projetor. Solução: reiniciou equipamento.'})">
+                            <td class="id-cell"><strong>1086</strong></td>
+                            <td>Projetor não conecta</td>
+                            <td>João Silva</td>
+                            <td><span class="badge badge-concluido">✅ Concluído</span></td>
+                            <td><span class="badge badge-alta">🔥 Alta</span></td>
+                            <td>14/08/2026</td>
+                        </tr>
+                        <tr onclick="abrirModal({id: 1087, titulo: 'Servidor fora do ar', solicitante: 'Maria Santos', email: 'maria@unifeb.br', status: 'Em Andamento', prioridade: 'Alta', dataAbertura: '28/09/2026', dataConclusao: '-', setor: 'TI', tempo: '-', descricao: 'Servidor de produção fora. Equipe trabalhando na recuperação.'})">
+                            <td class="id-cell"><strong>1087</strong></td>
+                            <td>Servidor fora do ar</td>
+                            <td>Maria Santos</td>
+                            <td><span class="badge badge-em-andamento">⏳ Em Andamento</span></td>
+                            <td><span class="badge badge-alta">🔥 Alta</span></td>
+                            <td>28/09/2026</td>
+                        </tr>
+                        <tr onclick="abrirModal({id: 1088, titulo: 'Ar condicionado não funciona', solicitante: 'Carlos Oliveira', email: 'carlos@unifeb.br', status: 'Aberto', prioridade: 'Média', dataAbertura: '27/09/2026', dataConclusao: '-', setor: 'Manutenção', tempo: '-', descricao: 'Ar condicionado da sala 205 não está refrigerando.'})">
+                            <td class="id-cell"><strong>1088</strong></td>
+                            <td>Ar condicionado não funciona</td>
+                            <td>Carlos Oliveira</td>
+                            <td><span class="badge badge-aberto">❌ Aberto</span></td>
+                            <td><span class="badge badge-media">⚠️ Média</span></td>
+                            <td>27/09/2026</td>
+                        </tr>
+                        <tr onclick="abrirModal({id: 1089, titulo: 'Email não sincroniza', solicitante: 'Ana Paula', email: 'ana@unifeb.br', status: 'Em Andamento', prioridade: 'Média', dataAbertura: '25/09/2026', dataConclusao: '-', setor: 'Email', tempo: '-', descricao: 'Cliente de email não está sincronizando mensagens.'})">
+                            <td class="id-cell"><strong>1089</strong></td>
+                            <td>Email não sincroniza</td>
+                            <td>Ana Paula</td>
+                            <td><span class="badge badge-em-andamento">⏳ Em Andamento</span></td>
+                            <td><span class="badge badge-media">⚠️ Média</span></td>
+                            <td>25/09/2026</td>
+                        </tr>
+                        <tr onclick="abrirModal({id: 1090, titulo: 'Pedir acesso à pasta compartilhada', solicitante: 'Roberto Lima', email: 'roberto@unifeb.br', status: 'Concluído', prioridade: 'Baixa', dataAbertura: '20/09/2026', dataConclusao: '21/09/2026', setor: 'TI', tempo: '1 dia', descricao: 'Usuário solicitou acesso a pasta de documentos.'})">
+                            <td class="id-cell"><strong>1090</strong></td>
+                            <td>Pedir acesso à pasta compartilhada</td>
+                            <td>Roberto Lima</td>
+                            <td><span class="badge badge-concluido">✅ Concluído</span></td>
+                            <td><span class="badge badge-baixa">✅ Baixa</span></td>
+                            <td>21/09/2026</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="info-text">
+                ℹ️ Mostrando 1 a 5 de 85 chamados | Total de páginas: 17
+            </div>
+        </div>
+
+        <!-- SEÇÃO 5: BOTÕES DE APROVAÇÃO -->
+        <div class="section" style="text-align: center; margin-top: 40px;">
+            <h2 class="section-title">Você aprova essas melhorias?</h2>
+            <div class="approval-buttons">
+                <button class="btn btn-approve" onclick="alert('✅ Melhorias APROVADAS! Vamos implementar tudo no dashboard agora!')">✅ Aprovar</button>
+                <button class="btn btn-decline" onclick="alert('Deixa a gente ajustar. Qual parte quer mudar?')">❌ Não, ajustar algo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE DETALHES -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="fecharModal()">&times;</button>
+            <div class="modal-header">
+                <h2 id="modalTitulo">Título do Chamado</h2>
+                <div class="modal-id">ID: <span id="modalId">0000</span></div>
+            </div>
+
+            <div class="modal-field">
+                <span class="modal-label">Solicitante:</span>
+                <span class="modal-value" id="modalSolicitante">-</span>
+            </div>
+
+            <div class="modal-field">
+                <span class="modal-label">Email:</span>
+                <span class="modal-value" id="modalEmail">-</span>
+            </div>
+
+            <div class="modal-field">
+                <span class="modal-label">Setor:</span>
+                <span class="modal-value" id="modalSetor">-</span>
+            </div>
+
+            <div class="modal-field">
+                <span class="modal-label">Status:</span>
+                <span class="modal-value" id="modalStatus">-</span>
+            </div>
+
+            <div class="modal-field">
+                <span class="modal-label">Prioridade:</span>
+                <span class="modal-value" id="modalPrioridade">-</span>
+            </div>
+
+            <div class="modal-field">
+                <span class="modal-label">Data de Abertura:</span>
+                <span class="modal-value" id="modalDataAbertura">-</span>
+            </div>
+
+            <div class="modal-field">
+                <span class="modal-label">Data de Conclusão:</span>
+                <span class="modal-value" id="modalDataConclusao">-</span>
+            </div>
+
+            <div class="modal-field">
+                <span class="modal-label">Tempo de Resolução:</span>
+                <span class="modal-value" id="modalTempo">-</span>
+            </div>
+
+            <div class="modal-field" style="display: block; padding-top: 15px;">
+                <span class="modal-label">Descrição:</span>
+                <div style="margin-top: 10px; padding: 10px; background: rgba(212, 165, 116, 0.1); border-radius: 6px; color: var(--text-primary);" id="modalDescricao">-</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function abrirModal(dados) {
+            document.getElementById('modalId').textContent = dados.id;
+            document.getElementById('modalTitulo').textContent = dados.titulo;
+            document.getElementById('modalSolicitante').textContent = dados.solicitante;
+            document.getElementById('modalEmail').textContent = dados.email;
+            document.getElementById('modalSetor').textContent = dados.setor;
+            document.getElementById('modalStatus').textContent = dados.status;
+            document.getElementById('modalPrioridade').textContent = dados.prioridade;
+            document.getElementById('modalDataAbertura').textContent = dados.dataAbertura;
+            document.getElementById('modalDataConclusao').textContent = dados.dataConclusao;
+            document.getElementById('modalTempo').textContent = dados.tempo;
+            document.getElementById('modalDescricao').textContent = dados.descricao;
+
+            document.getElementById('modal').classList.add('show');
+        }
+
+        function fecharModal() {
+            document.getElementById('modal').classList.remove('show');
+        }
+
+        document.getElementById('modal').onclick = (e) => {
+            if (e.target.id === 'modal') fecharModal();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aba Detalhados - Melhorada</title>
+    <style>
+        :root {
+            --bg-dark: #1a1f2e;
+            --bg-secondary: #242d3d;
+            --border-gold: #c9a961;
+            --gold: #d4a574;
+            --orange: #ffa500;
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #eab308;
+            --blue: #60a5fa;
+            --text-primary: #dcdcdc;
+            --text-secondary: #a0a0a0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(90deg, var(--bg-dark), var(--bg-secondary));
+            border-bottom: 2px solid var(--border-gold);
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .header h1 {
+            color: var(--gold);
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        /* STATS CARDS */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--bg-secondary), #2d3d50);
+            border-left: 4px solid var(--gold);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(212, 165, 116, 0.1);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .stat-percentage {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        /* FILTROS */
+        .filters-section {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(212, 165, 116, 0.2);
+        }
+
+        .filters-title {
+            color: var(--gold);
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        .filter-input,
+        .filter-select {
+            background: rgba(212, 165, 116, 0.1);
+            border: 1px solid var(--border-gold);
+            color: var(--text-primary);
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        .filter-input:focus,
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 8px rgba(212, 165, 116, 0.3);
+            background: rgba(212, 165, 116, 0.15);
+        }
+
+        /* BADGES */
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85em;
+            white-space: nowrap;
+        }
+
+        .badge-aberto {
+            background: rgba(239, 68, 68, 0.7);
+            color: #fca5a5;
+            border: 1px solid #dc2626;
+        }
+
+        .badge-em-andamento {
+            background: rgba(234, 179, 8, 0.7);
+            color: #fef3c7;
+            border: 1px solid #b45309;
+        }
+
+        .badge-concluido {
+            background: rgba(34, 197, 94, 0.7);
+            color: #bbf7d0;
+            border: 1px solid #15803d;
+        }
+
+        .badge-media {
+            background: rgba(234, 179, 8, 0.7);
+            color: #fef3c7;
+            border: 1px solid #b45309;
+        }
+
+        .badge-alta {
+            background: rgba(239, 68, 68, 0.8);
+            color: #fecaca;
+            border: 1px solid #dc2626;
+        }
+
+        .badge-baixa {
+            background: rgba(34, 197, 94, 0.7);
+            color: #bbf7d0;
+            border: 1px solid #15803d;
+        }
+
+        /* TABELA */
+        .table-wrapper {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: rgba(212, 165, 116, 0.15);
+            border-bottom: 2px solid var(--border-gold);
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            color: var(--gold);
+            font-weight: 600;
+            font-size: 0.95em;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        th:hover {
+            background: rgba(212, 165, 116, 0.25);
+        }
+
+        th::after {
+            content: " ↕️";
+            opacity: 0;
+            font-size: 0.8em;
+            transition: opacity 0.2s;
+        }
+
+        th:hover::after {
+            opacity: 1;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(212, 165, 116, 0.1);
+            font-size: 0.95em;
+        }
+
+        tbody tr {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: rgba(212, 165, 116, 0.1);
+        }
+
+        .id-cell {
+            font-weight: 700;
+            color: var(--orange);
+            min-width: 60px;
+        }
+
+        .titulo-cell {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* PAGINAÇÃO */
+        .pagination-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(212, 165, 116, 0.1);
+            border-radius: 6px;
+        }
+
+        .pagination-info {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .pagination-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pagination-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-gold);
+            color: var(--gold);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .pagination-btn:hover {
+            background: var(--gold);
+            color: #000;
+        }
+
+        .pagination-btn.active {
+            background: var(--gold);
+            color: #000;
+            border-color: var(--gold);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 2px solid var(--gold);
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(255, 165, 0, 0.3);
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 2em;
+            cursor: pointer;
+            color: var(--gold);
+            border: none;
+            background: none;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--orange);
+        }
+
+        .modal-header {
+            border-bottom: 2px solid var(--gold);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            clear: both;
+        }
+
+        .modal-header h2 {
+            color: var(--gold);
+            margin-bottom: 5px;
+            font-size: 1.5em;
+        }
+
+        .modal-id {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .modal-field {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(212, 165, 116, 0.1);
+        }
+
+        .modal-field:last-child {
+            border-bottom: none;
+        }
+
+        .modal-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .modal-value {
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: right;
+            flex: 1;
+            margin-left: 20px;
+        }
+
+        .highlight {
+            background: rgba(212, 165, 116, 0.2);
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid var(--gold);
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .highlight strong {
+            color: var(--gold);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>📋 Aba Detalhados - Versão Melhorada</h1>
+            <p>Com paginação, filtros, cores melhores e modal com detalhes completos</p>
+        </div>
+
+        <div class="highlight">
+            <strong>✨ NOVIDADES:</strong> Paginação (10 itens/página) • Filtros de Status e Prioridade • Cores contrastantes • Stats no topo • Modal com detalhes • Clique em qualquer linha!
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-label">📊 Total de Chamados</div>
+                <div class="stat-value">85</div>
+                <div class="stat-percentage">Página 1 de 9</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">🔴 Abertos</div>
+                <div class="stat-value">34</div>
+                <div class="stat-percentage">40% do total</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">🟡 Em Andamento</div>
+                <div class="stat-value">38</div>
+                <div class="stat-percentage">45% do total</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">🟢 Concluído</div>
+                <div class="stat-value">13</div>
+                <div class="stat-percentage">15% do total</div>
+            </div>
+        </div>
+
+        <!-- FILTROS -->
+        <div class="filters-section">
+            <div class="filters-title">🔍 Filtros</div>
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">Buscar por ID, Título ou Solicitante:</label>
+                    <input type="text" class="filter-input" placeholder="Ex: 1142, Projetor, João..." />
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Status:</label>
+                    <select class="filter-select">
+                        <option>Todos</option>
+                        <option>Aberto</option>
+                        <option>Em Andamento</option>
+                        <option>Concluído</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Prioridade:</label>
+                    <select class="filter-select">
+                        <option>Todas</option>
+                        <option>Alta</option>
+                        <option>Média</option>
+                        <option>Baixa</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABELA -->
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>TÍTULO</th>
+                        <th>SOLICITANTE</th>
+                        <th>STATUS</th>
+                        <th>PRIORIDADE</th>
+                        <th>DATA</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr onclick="abrirModal({id: 1142, titulo: 'Prof° Vicente - coordenador dos cursos de Engenharia', solicitante: 'Renata Pinheiro Miranda', email: 'renata@unifeb.br', status: 'Aberto', prioridade: 'Média', data: '09/01/2026', descricao: 'Solicitação de suporte técnico para coordenação.', setor: 'Detalhados'})">
+                        <td class="id-cell">1142</td>
+                        <td class="titulo-cell">Prof° Vicente - coordenador dos cursos de Engenharia</td>
+                        <td>Renata Pinheiro Miranda</td>
+                        <td><span class="badge badge-aberto">🔴 ABERTO</span></td>
+                        <td><span class="badge badge-media">⚠️ MÉDIA</span></td>
+                        <td>09/01/2026</td>
+                    </tr>
+                    <tr onclick="abrirModal({id: 1146, titulo: 'Impressora (Renata Pinheiro)', solicitante: 'Renata Pinheiro Miranda', email: 'renata@unifeb.br', status: 'Aberto', prioridade: 'Média', data: '09/02/2026', descricao: 'Problema com impressora na sala.', setor: 'Detalhados'})">
+                        <td class="id-cell">1146</td>
+                        <td class="titulo-cell">Impressora (Renata Pinheiro)</td>
+                        <td>Renata Pinheiro Miranda</td>
+                        <td><span class="badge badge-aberto">🔴 ABERTO</span></td>
+                        <td><span class="badge badge-media">⚠️ MÉDIA</span></td>
+                        <td>09/02/2026</td>
+                    </tr>
+                    <tr onclick="abrirModal({id: 1147, titulo: 'Troca de Monitor', solicitante: 'Maria Eduarda Pereira', email: 'maria@unifeb.br', status: 'Aberto', prioridade: 'Média', data: '09/02/2026', descricao: 'Monitor com defeito precisa ser substituído.', setor: 'Detalhados'})">
+                        <td class="id-cell">1147</td>
+                        <td class="titulo-cell">Troca de Monitor</td>
+                        <td>Maria Eduarda Pereira</td>
+                        <td><span class="badge badge-aberto">🔴 ABERTO</span></td>
+                        <td><span class="badge badge-media">⚠️ MÉDIA</span></td>
+                        <td>09/02/2026</td>
+                    </tr>
+                    <tr onclick="abrirModal({id: 1182, titulo: 'Ar Condicionado - Núcleo de Prática Jurídica/5', solicitante: 'Leticia Ferreira', email: 'leticia@unifeb.br', status: 'Em Andamento', prioridade: 'Média', data: '09/03/2026', descricao: 'Ar condicionado não está refrigerando. Técnico foi acionado.', setor: 'Detalhados'})">
+                        <td class="id-cell">1182</td>
+                        <td class="titulo-cell">Ar Condicionado - Núcleo de Prática Jurídica/5</td>
+                        <td>Leticia Ferreira</td>
+                        <td><span class="badge badge-em-andamento">🟡 EM ANDAMENTO</span></td>
+                        <td><span class="badge badge-media">⚠️ MÉDIA</span></td>
+                        <td>09/03/2026</td>
+                    </tr>
+                    <tr onclick="abrirModal({id: 1183, titulo: 'Outra - Laranjão/5', solicitante: 'Leticia Ferreira', email: 'leticia@unifeb.br', status: 'Aberto', prioridade: 'Média', data: '09/03/2026', descricao: 'Problema geral no local.', setor: 'Detalhados'})">
+                        <td class="id-cell">1183</td>
+                        <td class="titulo-cell">Outra - Laranjão/5</td>
+                        <td>Leticia Ferreira</td>
+                        <td><span class="badge badge-aberto">🔴 ABERTO</span></td>
+                        <td><span class="badge badge-media">⚠️ MÉDIA</span></td>
+                        <td>09/03/2026</td>
+                    </tr>
+                    <tr onclick="abrirModal({id: 1191, titulo: 'SUPOTE PACOTE OFFICE - ESTAGIÁRIO', solicitante: 'Sara Financeiro', email: 'sara@unifeb.br', status: 'Aberto', prioridade: 'Média', data: '09/09/2026', descricao: 'Necessário instalar Office para estagiário.', setor: 'Detalhados'})">
+                        <td class="id-cell">1191</td>
+                        <td class="titulo-cell">SUPORTE PACOTE OFFICE - ESTAGIÁRIO</td>
+                        <td>Sara Financeiro</td>
+                        <td><span class="badge badge-aberto">🔴 ABERTO</span></td>
+                        <td><span class="badge badge-media">⚠️ MÉDIA</span></td>
+                        <td>09/09/2026</td>
+                    </tr>
+                    <tr onclick="abrirModal({id: 1193, titulo: 'Assunto: Solicitação de Suporte Técnico', solicitante: 'nivea.npj@unifeb.edu.br', email: 'nivea.npj@unifeb.edu.br', status: 'Aberto', prioridade: 'Média', data: '09/12/2026', descricao: 'Suporte técnico indisponibilidade do Pacote Office.', setor: 'Detalhados'})">
+                        <td class="id-cell">1193</td>
+                        <td class="titulo-cell">Assunto: Solicitação de Suporte Técnico - Pacote Office</td>
+                        <td>nivea.npj@unifeb.edu.br</td>
+                        <td><span class="badge badge-aberto">🔴 ABERTO</span></td>
+                        <td><span class="badge badge-media">⚠️ MÉDIA</span></td>
+                        <td>09/12/2026</td>
+                    </tr>
+                    <tr onclick="abrirModal({id: 1194, titulo: 'Assunto: Solicitação de Reparo - Impressora', solicitante: 'nivea.npj@unifeb.edu.br', email: 'nivea.npj@unifeb.edu.br', status: 'Em Andamento', prioridade: 'Média', data: '09/13/2026', descricao: 'Impressora do Juizado Especial com problema.', setor: 'Detalhados'})">
+                        <td class="id-cell">1194</td>
+                        <td class="titulo-cell">Assunto: Solicitação de Reparo - Impressora Juizado</td>
+                        <td>nivea.npj@unifeb.edu.br</td>
+                        <td><span class="badge badge-em-andamento">🟡 EM ANDAMENTO</span></td>
+                        <td><span class="badge badge-media">⚠️ MÉDIA</span></td>
+                        <td>09/13/2026</td>
+                    </tr>
+                    <tr onclick="abrirModal({id: 1195, titulo: 'Solicitação de manutenção/limpeza - Computador', solicitante: 'jose.paranhos@colegiofeb.com.br', email: 'jose.paranhos@colegiofeb.com.br', status: 'Aberto', prioridade: 'Alta', data: '09/15/2026', descricao: 'Computador com barulho estranho - possível problema.', setor: 'Detalhados'})">
+                        <td class="id-cell">1195</td>
+                        <td class="titulo-cell">Solicitação de manutenção/limpeza - Computador</td>
+                        <td>jose.paranhos@colegiofeb.com.br</td>
+                        <td><span class="badge badge-aberto">🔴 ABERTO</span></td>
+                        <td><span class="badge badge-alta">🔥 ALTA</span></td>
+                        <td>09/15/2026</td>
+                    </tr>
+                    <tr onclick="abrirModal({id: 1196, titulo: 'Rede UNIFEB NEAD sem sinal de internet', solicitante: 'leandro.silva@unifeb.edu.br', email: 'leandro.silva@unifeb.edu.br', status: 'Em Andamento', prioridade: 'Alta', data: '09/20/2026', descricao: 'Rede sem internet. Técnico investigando.', setor: 'Detalhados'})">
+                        <td class="id-cell">1196</td>
+                        <td class="titulo-cell">Rede UNIFEB NEAD sem sinal de internet</td>
+                        <td>leandro.silva@unifeb.edu.br</td>
+                        <td><span class="badge badge-em-andamento">🟡 EM ANDAMENTO</span></td>
+                        <td><span class="badge badge-alta">🔥 ALTA</span></td>
+                        <td>09/20/2026</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINAÇÃO -->
+        <div class="pagination-section">
+            <div class="pagination-info">
+                📄 Mostrando <strong>1 a 10</strong> de <strong>85</strong> chamados | Página <strong>1</strong> de <strong>9</strong>
+            </div>
+            <div class="pagination-buttons">
+                <button class="pagination-btn" disabled>← Anterior</button>
+                <button class="pagination-btn active">1</button>
+                <button class="pagination-btn">2</button>
+                <button class="pagination-btn">3</button>
+                <button class="pagination-btn">...</button>
+                <button class="pagination-btn">9</button>
+                <button class="pagination-btn">Próxima →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="fecharModal()">&times;</button>
+
+            <!-- HEADER COM TÍTULO, ID E DESCRIÇÃO -->
+            <div class="modal-header">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <h2 id="modalTitulo" style="color: var(--text-primary); font-size: 1.4em; margin: 0; line-height: 1.3;">Título do Chamado</h2>
+                    </div>
+                    <span id="modalId" style="color: var(--orange); font-weight: 700; font-size: 1.1em; white-space: nowrap; margin-left: 15px;">ID: 0000</span>
+                </div>
+                <div style="background: linear-gradient(135deg, rgba(212, 165, 116, 0.2), rgba(255, 165, 0, 0.08)); padding: 15px; border-radius: 6px; border-left: 4px solid var(--gold); margin-bottom: 15px;">
+                    <div style="color: var(--text-secondary); font-size: 0.85em; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">📝 Descrição do Problema</div>
+                    <p id="modalDescricao" style="color: var(--text-primary); line-height: 1.6; font-size: 0.95em; margin: 0;">-</p>
+                </div>
+            </div>
+
+            <!-- SEÇÃO: INFORMAÇÕES GERAIS -->
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: var(--gold); font-size: 0.95em; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px;">Informações Gerais</h3>
+                <div class="modal-field">
+                    <span class="modal-label">ID:</span>
+                    <span class="modal-value" id="modalId2">-</span>
+                </div>
+                <div class="modal-field">
+                    <span class="modal-label">Solicitante:</span>
+                    <span class="modal-value" id="modalSolicitante">-</span>
+                </div>
+                <div class="modal-field">
+                    <span class="modal-label">Título:</span>
+                    <span class="modal-value" id="modalTitulo2">-</span>
+                </div>
+                <div class="modal-field">
+                    <span class="modal-label">Email:</span>
+                    <span class="modal-value" id="modalEmail">-</span>
+                </div>
+            </div>
+
+            <!-- SEÇÃO: PRIORIDADE & PRAZOS -->
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: var(--gold); font-size: 0.95em; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px;">Prioridade & Prazos</h3>
+                <div class="modal-field">
+                    <span class="modal-label">Status:</span>
+                    <span class="modal-value" id="modalStatus">-</span>
+                </div>
+                <div class="modal-field">
+                    <span class="modal-label">Prioridade:</span>
+                    <span class="modal-value" id="modalPrioridade">-</span>
+                </div>
+                <div class="modal-field">
+                    <span class="modal-label">Data Criação:</span>
+                    <span class="modal-value" id="modalData">-</span>
+                </div>
+                <div class="modal-field">
+                    <span class="modal-label">Prazo SLA:</span>
+                    <span class="modal-value" id="modalPrazoSLA">-</span>
+                </div>
+            </div>
+
+            <!-- SEÇÃO: HISTÓRICO -->
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: var(--gold); font-size: 0.95em; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px;">Histórico</h3>
+                <div id="modalHistorico" style="padding: 15px; background: rgba(212, 165, 116, 0.05); border-left: 3px solid var(--gold); border-radius: 6px; color: var(--text-secondary); min-height: 60px; display: flex; align-items: center;">
+                    Sem histórico
+                </div>
+            </div>
+
+            <!-- BOTÕES -->
+            <div style="display: flex; gap: 15px; margin-top: 30px;">
+                <button onclick="fecharModal()" style="flex: 1; padding: 14px; background: transparent; border: 2px solid var(--border-gold); color: var(--gold); border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 1em;">
+                    Fechar
+                </button>
+                <button style="flex: 1; padding: 14px; background: var(--gold); color: #000; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 1em;">
+                    ✏️ Editar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function abrirModal(dados) {
+            document.getElementById('modalId').textContent = `ID: ${dados.id}`;
+            document.getElementById('modalId2').textContent = dados.id;
+            document.getElementById('modalTitulo').textContent = dados.titulo;
+            document.getElementById('modalTitulo2').textContent = dados.titulo;
+            document.getElementById('modalDescricao').textContent = dados.descricao;
+            document.getElementById('modalSolicitante').textContent = dados.solicitante;
+            document.getElementById('modalEmail').textContent = dados.email;
+            document.getElementById('modalStatus').innerHTML = `<span class="badge badge-${dados.status.toLowerCase().replace(/ /g, '-')}">${dados.status}</span>`;
+            document.getElementById('modalPrioridade').innerHTML = `<span class="badge badge-${dados.prioridade.toLowerCase()}">${dados.prioridade}</span>`;
+            document.getElementById('modalData').textContent = dados.data;
+            document.getElementById('modalPrazoSLA').textContent = dados.data;
+            document.getElementById('modalHistorico').textContent = dados.descricao;
+
+            document.getElementById('modal').classList.add('show');
+        }
+
+        function fecharModal() {
+            document.getElementById('modal').classList.remove('show');
+        }
+
+        document.getElementById('modal').onclick = (e) => {
+            if (e.target.id === 'modal') fecharModal();
+        };
+    </script>
+</body>
+</html>

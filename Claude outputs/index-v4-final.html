@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Chamados - UNIFEB</title>
+    <style>
+        :root {
+            --bg-dark: #0f1419;
+            --bg-secondary: #1a1f2e;
+            --bg-tertiary: #242d3d;
+            --border-gold: #d4a574;
+            --gold: #ffa500;
+            --orange: #ff9800;
+            --green: #10b981;
+            --red: #ef5350;
+            --blue: #60a5fa;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            color-scheme: dark;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        /* TELA DE LOGIN */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+        }
+
+        .login-overlay.hidden {
+            display: none;
+        }
+
+        .login-container {
+            background: linear-gradient(135deg, #1a1f2e 0%, #0f1419 100%);
+            border: 2px solid var(--border-gold);
+            border-radius: 16px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 60px rgba(255, 165, 0, 0.2);
+            text-align: center;
+        }
+
+        .login-logo {
+            width: 100%;
+            max-width: 280px;
+            height: auto;
+            margin: 0 auto 40px;
+            display: block;
+            filter: drop-shadow(0 0 8px rgba(255, 165, 0, 0.3));
+        }
+
+        .login-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .login-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 14px 15px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-gold);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 10px rgba(255, 165, 0, 0.3);
+        }
+
+        .login-button {
+            padding: 14px 20px;
+            background: var(--gold);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .login-button:hover {
+            background: var(--orange);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 165, 0, 0.3);
+        }
+
+        .login-error {
+            color: var(--red);
+            font-size: 12px;
+            text-align: center;
+            display: none;
+        }
+
+        .login-error.show {
+            display: block;
+        }
+
+        /* DASHBOARD */
+        .container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            grid-template-rows: auto 1fr;
+            min-height: 100vh;
+            gap: 0;
+        }
+
+        .container.hidden {
+            display: none;
+        }
+
+        /* HEADER GRANDE COM LOGO DESTAQUE */
+        .header {
+            grid-column: 1 / -1;
+            grid-row: 1;
+            background: linear-gradient(90deg, #1a1f2e 0%, #242d3d 50%, #1a1f2e 100%);
+            border-bottom: 2px solid var(--border-gold);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(255, 165, 0, 0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        /* LOGO GRANDE */
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 120px;
+            height: 90px;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.15), rgba(255, 165, 0, 0.08));
+            border: 2.5px solid var(--border-gold);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 16px rgba(255, 165, 0, 0.2), inset 0 0 20px rgba(255, 165, 0, 0.15);
+            flex-shrink: 0;
+        }
+
+        .logo {
+            width: 110px;
+            height: 80px;
+            object-fit: contain;
+            filter: drop-shadow(0 3px 6px rgba(255, 165, 0, 0.3));
+        }
+
+        .header-title {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .header-title h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .header-title p {
+            font-size: 11px;
+            color: var(--border-gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.1), rgba(255, 165, 0, 0.05));
+            border: 1.5px solid var(--border-gold);
+            border-radius: 20px;
+            padding: 10px 18px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .user-badge {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            padding: 8px 14px;
+            background: var(--red);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .sidebar {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-gold);
+            grid-row: 2;
+            grid-column: 1;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            padding: 20px 0 0 0;
+        }
+
+        .sidebar-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--border-gold);
+            padding: 0 16px 12px 16px;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-item:hover {
+            background: rgba(255, 165, 0, 0.1);
+            color: var(--gold);
+            border-left-color: var(--gold);
+        }
+
+        .sidebar-item.active {
+            background: rgba(255, 165, 0, 0.15);
+            color: var(--gold);
+            border-left-color: var(--gold);
+            font-weight: 500;
+        }
+
+        .main-content {
+            grid-row: 2;
+            grid-column: 2;
+            background: var(--bg-dark);
+            overflow-y: auto;
+            padding: 25px;
+        }
+
+        /* CARDS MENORES */
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-gold);
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--gold);
+            background: rgba(255, 165, 0, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-gold);
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .tab:hover {
+            color: var(--gold);
+        }
+
+        .tab.active {
+            color: var(--gold);
+            border-bottom-color: var(--gold);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .table-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-gold);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: rgba(255, 165, 0, 0.1);
+            border-bottom: 1px solid var(--border-gold);
+        }
+
+        th {
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--gold);
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 10px 15px;
+            border-bottom: 1px solid rgba(255, 165, 0, 0.1);
+            font-size: 12px;
+        }
+
+        tr:hover {
+            background: rgba(255, 165, 0, 0.05);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-aberto {
+            background: rgba(255, 152, 0, 0.2);
+            color: var(--orange);
+        }
+
+        .badge-andamento {
+            background: rgba(96, 165, 250, 0.2);
+            color: var(--blue);
+        }
+
+        .badge-concluido {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--green);
+        }
+
+        .badge-vencido {
+            background: rgba(239, 83, 80, 0.2);
+            color: var(--red);
+        }
+
+        .badge-alta {
+            background: rgba(239, 83, 80, 0.2);
+            color: var(--red);
+        }
+
+        .badge-media {
+            background: rgba(255, 165, 0, 0.2);
+            color: var(--gold);
+        }
+
+        .badge-baixa {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--green);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-gold);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 30px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            color: var(--gold);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: var(--gold);
+            margin-bottom: 5px;
+        }
+
+        .modal-header p {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- TELA DE LOGIN -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-container">
+            <img src="logo-UNIFEB.png" alt="UNIFEB" class="login-logo">
+            <h2 class="login-title">Controle de Chamados</h2>
+            <p class="login-subtitle">Sistema de Gerenciamento SharePoint</p>
+            
+            <form class="login-form" id="loginForm">
+                <input type="password" class="login-input" id="senhaInput" placeholder="Digite sua senha" required autofocus>
+                <button type="submit" class="login-button">Entrar</button>
+                <div class="login-error" id="loginError">❌ Senha incorreta!</div>
+            </form>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="container hidden" id="dashboard">
+        <!-- HEADER COM LOGO GRANDE -->
+        <div class="header">
+            <div class="header-left">
+                <div class="logo-container">
+                    <img src="logo-UNIFEB.png" alt="UNIFEB" class="logo">
+                </div>
+                <div class="header-title">
+                    <h1>Controle de Chamados</h1>
+                    <p>🚀 Sistema de Gerenciamento - SharePoint</p>
+                </div>
+            </div>
+            
+            <div class="status-badge">
+                👤 <span class="user-badge" id="userDisplay">Admin</span>
+                <button class="logout-btn" onclick="logout()">Sair</button>
+            </div>
+        </div>
+
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">📂 Categorias</div>
+                <div class="sidebar-item active" onclick="selectCategory(this)">
+                    <span>📧</span>
+                    <span>Chamados via E-mail</span>
+                </div>
+                <div class="sidebar-item" onclick="selectCategory(this)">
+                    <span>📋</span>
+                    <span>Chamados Detalhados</span>
+                </div>
+                <div class="sidebar-item" onclick="selectCategory(this)">
+                    <span>💻</span>
+                    <span>TI</span>
+                </div>
+                <div class="sidebar-item" onclick="selectCategory(this)">
+                    <span>🏢</span>
+                    <span>NAEM</span>
+                </div>
+                <div class="sidebar-item" onclick="selectCategory(this)">
+                    <span>🔧</span>
+                    <span>Manutenção</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">🎯 Recursos</div>
+                <div class="sidebar-item" onclick="alert('📊 Gráficos em breve!')">
+                    <span>📊</span>
+                    <span>Gráficos</span>
+                </div>
+                <div class="sidebar-item" onclick="alert('⭐ Satisfação em breve!')">
+                    <span>⭐</span>
+                    <span>Satisfação</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- CARDS MENORES -->
+            <div class="stat-cards">
+                <div class="stat-card" onclick="switchTab(0)">
+                    <div class="stat-icon">📂</div>
+                    <div class="stat-label">Abertos</div>
+                    <div class="stat-value" id="stat-abertos">0</div>
+                </div>
+                <div class="stat-card" onclick="switchTab(0)">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-label">Andamento</div>
+                    <div class="stat-value" id="stat-andamento">0</div>
+                </div>
+                <div class="stat-card" onclick="switchTab(1)">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-label">Concluídos</div>
+                    <div class="stat-value" id="stat-concluidos">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🚨</div>
+                    <div class="stat-label">Vencidos</div>
+                    <div class="stat-value" id="stat-vencidos">0</div>
+                </div>
+            </div>
+
+            <!-- ABAS -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab(0)">📋 Ativos</button>
+                <button class="tab" onclick="switchTab(1)">✅ Concluídos</button>
+            </div>
+
+            <!-- TAB 1: ATIVOS -->
+            <div class="tab-content active">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Título</th>
+                                <th>Solicitante</th>
+                                <th>Status</th>
+                                <th>Prioridade</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-ativos">
+                            <tr>
+                                <td colspan="6" class="loading">⏳ Carregando dados...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 2: CONCLUÍDOS -->
+            <div class="tab-content">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Título</th>
+                                <th>Solicitante</th>
+                                <th>Categoria</th>
+                                <th>Conclusão</th>
+                                <th>Avaliação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-concluidos">
+                            <tr>
+                                <td colspan="6" class="loading">⏳ Carregando dados...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE DETALHES -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="fecharModal()">✕</button>
+            <div class="modal-header">
+                <h2 id="modal-titulo">Título do Chamado</h2>
+                <p id="modal-subtitulo">ID: #001</p>
+            </div>
+            
+            <div style="display: grid; gap: 15px;">
+                <div>
+                    <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 5px;">SOLICITANTE</p>
+                    <p id="modal-solicitante">—</p>
+                </div>
+                <div>
+                    <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 5px;">STATUS</p>
+                    <span class="badge badge-aberto" id="modal-status">Aberto</span>
+                </div>
+                <div>
+                    <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 5px;">PRIORIDADE</p>
+                    <span class="badge badge-media" id="modal-prioridade">Média</span>
+                </div>
+                <div>
+                    <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 5px;">DATA DE CRIAÇÃO</p>
+                    <p id="modal-data-criacao">—</p>
+                </div>
+                <div>
+                    <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 5px;">HISTÓRICO</p>
+                    <div id="modal-timeline" style="font-size: 12px; color: var(--text-secondary);">—</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="dashboard.js"></script>
+    <script>
+        // ========================================
+        // SISTEMA DE LOGIN
+        // ========================================
+
+        const senhas = {
+            'Daniel2304@': { nome: 'Carla (Admin)', role: 'admin' },
+            'Unifeb@62': { nome: 'Estagiário', role: 'estagiario' }
+        };
+
+        let usuarioLogado = null;
+
+        // Evento de submit do formulário de login
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const senha = document.getElementById('senhaInput').value;
+            
+            if (senhas[senha]) {
+                usuarioLogado = senhas[senha];
+                document.getElementById('userDisplay').textContent = usuarioLogado.nome;
+                
+                // Esconder login e mostrar dashboard
+                document.getElementById('loginOverlay').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+                
+                // Inicializar dashboard
+                console.log('✅ Login bem-sucedido como:', usuarioLogado.nome);
+                inicializar();
+            } else {
+                document.getElementById('loginError').classList.add('show');
+                document.getElementById('senhaInput').value = '';
+                
+                setTimeout(() => {
+                    document.getElementById('loginError').classList.remove('show');
+                }, 3000);
+            }
+        });
+
+        // Função de logout
+        function logout() {
+            usuarioLogado = null;
+            document.getElementById('loginOverlay').classList.remove('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('senhaInput').value = '';
+            document.getElementById('senhaInput').focus();
+        }
+
+        // Função para alternar abas (cria tab.active)
+        function switchTab(index) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.classList.remove('active'));
+            
+            tabs[index].classList.add('active');
+            contents[index].classList.add('active');
+            
+            // Renderizar tabelas
+            renderizarTabelas();
+        }
+
+        // Fechar modal ao clicar fora
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharModal();
+            }
+        });
+
+        console.log('✅ Login system carregado!');
+    </script>
+</body>
+</html>

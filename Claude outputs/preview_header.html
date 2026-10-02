@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview - Header Melhorado</title>
+    <style>
+        :root {
+            --bg-dark: #1a1f2e;
+            --bg-secondary: #242d3d;
+            --border-gold: #c9a961;
+            --gold: #d4a574;
+            --orange: #ffa500;
+            --red: #d4726b;
+            --text-primary: #dcdcdc;
+            --text-secondary: #a0a0a0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+        }
+
+        .container { width: 100%; }
+
+        /* HEADER ANTIGO */
+        .header-old {
+            background: linear-gradient(90deg, #1a1f2e 0%, #242d3d 50%, #1a1f2e 100%);
+            border-bottom: 2px solid var(--border-gold);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left-old { display: flex; align-items: center; gap: 25px; }
+        .logo-container-old {
+            width: 120px; height: 90px;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.15), rgba(255, 165, 0, 0.08));
+            border: 2.5px solid var(--border-gold);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 6px 16px rgba(255, 165, 0, 0.2);
+        }
+        .logo-old { width: 110px; height: 80px; }
+        .header-title-old h1 { font-size: 24px; font-weight: 700; }
+        .header-title-old p { font-size: 11px; color: var(--border-gold); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .status-badge-old {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.1), rgba(255, 165, 0, 0.05));
+            border: 1.5px solid var(--border-gold);
+            border-radius: 20px;
+            padding: 10px 18px;
+            font-size: 12px;
+        }
+
+        /* HEADER NOVO */
+        .header-new {
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #242d3d 100%);
+            border-bottom: 3px solid var(--border-gold);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 24px rgba(255, 165, 0, 0.15);
+        }
+
+        .header-left-new { display: flex; align-items: center; gap: 35px; }
+        .logo-container-new {
+            width: 140px; height: 100px;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.2), rgba(255, 165, 0, 0.1));
+            border: 3px solid var(--border-gold);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(255, 165, 0, 0.25), inset 0 0 20px rgba(255, 165, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        .logo-container-new:hover {
+            box-shadow: 0 12px 36px rgba(255, 165, 0, 0.35), inset 0 0 20px rgba(255, 165, 0, 0.08);
+            transform: translateY(-2px);
+        }
+        .logo-new { width: 125px; height: 90px; }
+        .header-title-new { display: flex; flex-direction: column; gap: 4px; }
+        .header-title-new h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; color: var(--text-primary); }
+        .header-title-new p { font-size: 12px; color: var(--border-gold); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+        .status-badge-new {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.15), rgba(255, 165, 0, 0.08));
+            border: 2px solid var(--border-gold);
+            border-radius: 25px;
+            padding: 12px 22px;
+            font-size: 13px;
+            box-shadow: 0 4px 12px rgba(255, 165, 0, 0.15);
+        }
+        .user-badge-new { color: var(--gold); font-weight: 700; }
+        .logout-btn-new {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--red), #c74660);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(212, 114, 107, 0.3);
+            transition: all 0.2s ease;
+        }
+        .logout-btn-new:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(212, 114, 107, 0.4);
+        }
+
+        .label {
+            padding: 20px 40px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(255, 165, 0, 0.05);
+            border-left: 3px solid var(--border-gold);
+        }
+
+        svg { display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
+    <div class="label">❌ ANTES (Versão Antiga)</div>
+    <div class="header-old">
+        <div class="header-left-old">
+            <div class="logo-container-old">
+                <svg class="logo-old" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="40" y="40" width="120" height="120" fill="none" stroke="#c9a961" stroke-width="8" rx="8"/>
+                    <text x="100" y="120" font-size="60" font-weight="bold" fill="#c9a961" text-anchor="middle">U</text>
+                </svg>
+            </div>
+            <div class="header-title-old">
+                <h1>Controle de Chamados</h1>
+                <p>🔧 SISTEMA DE GERENCIAMENTO - SHAREPOINT</p>
+            </div>
+        </div>
+        <div class="status-badge-old">
+            <span>👤 Carla (Admin)</span>
+            <button class="logout-btn-old" style="padding: 6px 12px; background: var(--red); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Sair</button>
+        </div>
+    </div>
+
+    <div class="label">✅ DEPOIS (Versão Melhorada)</div>
+    <div class="header-new">
+        <div class="header-left-new">
+            <div class="logo-container-new">
+                <svg class="logo-new" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="40" y="40" width="120" height="120" fill="none" stroke="#c9a961" stroke-width="8" rx="8"/>
+                    <text x="100" y="120" font-size="60" font-weight="bold" fill="#c9a961" text-anchor="middle">U</text>
+                </svg>
+            </div>
+            <div class="header-title-new">
+                <h1>Controle de Chamados</h1>
+                <p>🔧 SISTEMA DE GERENCIAMENTO - SHAREPOINT</p>
+            </div>
+        </div>
+        <div class="status-badge-new">
+            <span class="user-badge-new">👤 Carla (Admin)</span>
+            <button class="logout-btn-new">Sair</button>
+        </div>
+    </div>
+
+    <div style="padding: 40px; color: var(--text-secondary);">
+        <h2 style="color: var(--gold); margin-bottom: 20px;">🎨 Mudanças Implementadas:</h2>
+        <ul style="list-style: none; padding: 0; gap: 12px; display: flex; flex-direction: column;">
+            <li>✨ <strong>Logo maior</strong> - De 120x90 para 140x100px</li>
+            <li>✨ <strong>Gradiente melhor</strong> - De 90deg para 135deg com mais profundidade</li>
+            <li>✨ <strong>Sombra aprimorada</strong> - De 6px 16px para 10px 30px com inset</li>
+            <li>✨ <strong>Espaçamento aumentado</strong> - Padding de 15px para 20px, gap de 25px para 35px</li>
+            <li>✨ <strong>Título maior e bolder</strong> - De 24px 700 para 28px 800</li>
+            <li>✨ <strong>Border mais grossa</strong> - De 2px para 3px</li>
+            <li>✨ <strong>Botão com gradiente</strong> - Agora tem cor degradada e sombra</li>
+            <li>✨ <strong>Efeitos hover</strong> - Logo e botão sobem ao passar mouse</li>
+            <li>✨ <strong>User badge melhorado</strong> - Mais visível com ícone integrado</li>
+        </ul>
+    </div>
+</body>
+</html>

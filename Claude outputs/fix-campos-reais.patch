@@ -1,0 +1,69 @@
+From f63f92c1af1fa29155fdda49e7a5b9b4c8c2f7e0 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 29 Sep 2026 11:04:16 -0300
+Subject: [PATCH] =?UTF-8?q?fix:=20campos=20reais=20do=20SharePoint=20+=20c?=
+ =?UTF-8?q?oment=C3=A1rio=20s=C3=B3=20se=20tiver?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- form_handler.py: tenta múltiplos nomes de campos (Avaliacao, Rating, Author, etc)
+- index.html: comentário aparece só se tiver dados
+- Dashboard agora carrega dados REAIS com Solicitante e Avaliação
+
+Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>
+---
+ form_handler.py | 20 +++++++++++++++++---
+ index.html      |  3 ++-
+ 2 files changed, 19 insertions(+), 4 deletions(-)
+
+diff --git a/form_handler.py b/form_handler.py
+index cf61ada..2d00162 100644
+--- a/form_handler.py
++++ b/form_handler.py
+@@ -987,11 +987,25 @@ def obter_pesquisas():
+                 for chave, valor in fields.items():
+                     valor_resumido = str(valor)[:100] if valor else "(vazio)"
+                     logger.info(f"   '{chave}' = {valor_resumido}")
++            # Tentar múltiplos nomes de campos (case-insensitive)
++            avaliacao = (fields.get('Avaliacao') or fields.get('avaliacao') or
++                        fields.get('Rating') or fields.get('rating') or '')
++            comentario = (fields.get('Comentario') or fields.get('comentario') or
++                         fields.get('Comentários') or fields.get('comments') or
++                         fields.get('Comment') or fields.get('Feedback') or '')
++            solicitante = (fields.get('Solicitante') or fields.get('solicitante') or
++                          fields.get('Author') or fields.get('author') or
++                          fields.get('Nome') or fields.get('nome') or '')
++            numero_chamado = (fields.get('NumeroChamado') or fields.get('numeroChamado') or
++                             fields.get('TicketNumber') or fields.get('ticketNumber') or
++                             fields.get('ID') or '')
++
+             pesquisas.append({
+                 'id': item.get('id'),
+-                'avaliacao': fields.get('Avaliacao', ''),
+-                'comentario': fields.get('Comentario') or fields.get('comentario') or fields.get('Comentários') or '',
+-                'numeroChamado': fields.get('NumeroChamado', ''),
++                'avaliacao': avaliacao,
++                'comentario': comentario,
++                'solicitante': solicitante,
++                'numeroChamado': numero_chamado,
+                 'dataResposta': fields.get('Created', datetime.now().isoformat()),
+             })
+ 
+diff --git a/index.html b/index.html
+index fa88099..45d834e 100644
+--- a/index.html
++++ b/index.html
+@@ -768,7 +768,8 @@
+                     estrelas = num > 0 ? '⭐'.repeat(Math.min(num, 5)) : '-';
+                 }
+ 
+-                const comentario = p.comentario || '-';
++                // Comentário: só aparece se tiver
++                const comentario = p.comentario && p.comentario.trim() ? p.comentario : '';
+                 const data = p.dataResposta
+                     ? new Date(p.dataResposta).toLocaleDateString('pt-BR')
+                     : '-';
+-- 
+2.43.0
+

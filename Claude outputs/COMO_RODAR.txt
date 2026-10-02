@@ -1,0 +1,55 @@
+📊 DASHBOARD UNIFEB - COMO RODAR LOCALMENTE
+===========================================
+
+⚠️ IMPORTANTE: NÃO abra o arquivo direto (file:///)
+Isso causa erros de CORS e segurança!
+
+✅ OPÇÃO 1: Usar Python (Recomendado)
+=====================================
+1. Abra o PowerShell/CMD na pasta do dashboard
+2. Execute:
+   python run_server.py
+
+3. Abra no navegador:
+   http://localhost:8000
+
+4. Para parar: CTRL+C
+
+
+✅ OPÇÃO 2: Usar Node.js
+========================
+1. Abra o PowerShell/CMD na pasta do dashboard
+2. Execute:
+   npx http-server
+
+3. Abra no navegador:
+   http://localhost:8080
+
+
+✅ OPÇÃO 3: Usar Live Server (VS Code)
+======================================
+1. Instale a extensão "Live Server"
+2. Clique com botão direito no index.html
+3. Selecione "Open with Live Server"
+
+
+🐛 ERROS COMUNS:
+================
+❌ "ERR_FILE_NOT_FOUND" para logo
+   → Solução: Coloque logoUNIFEB.png na mesma pasta do index.html
+
+❌ "CORS errors"
+   → Solução: Use um servidor (não file:///)
+
+❌ "JSON parsing error"
+   → Solução: Verifique se o backend está respondendo corretamente
+
+
+📝 TESTE FINAL:
+===============
+1. Dashboard carrega?
+2. Tabela mostra chamados?
+3. Clica no chamado abre o modal?
+4. Modal mostra "Data Criação" com HORA?
+
+Tudo funcionando = ✅ Sucesso!

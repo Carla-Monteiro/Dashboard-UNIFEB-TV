@@ -926,7 +926,6 @@
         .modal-header {
             border-bottom: 2px solid var(--border-gold);
             padding-bottom: 15px;
-            padding-right: 50px;  /* ← Deixa espaço para o botão X */
             margin-bottom: 20px;
         }
         .modal-title { font-size: 22px; font-weight: 700; color: #dcdcdc; margin-bottom: 5px; }
@@ -1247,9 +1246,7 @@
         }
 
         .modal-close {
-            position: absolute;
-            top: 15px;
-            right: 15px;
+            float: right;
             font-size: 2em;
             cursor: pointer;
             color: var(--gold);
@@ -1257,7 +1254,6 @@
             background: none;
             font-weight: bold;
             line-height: 1;
-            z-index: 100;
         }
 
         .modal-close:hover {
@@ -2123,7 +2119,7 @@
         }
 
         // Controle de paginação e sort para Concluídos
-        let concluidosSortAtual = { field: 'data_criacao', asc: false }; // ✨ Ordenar por data mais recente primeiro
+        let concluidosSortAtual = { field: 'id', asc: true };
         let concluidosPaginaAtual = 1;
         const concluidosItensPorPagina = 20;  // ← Aumentado de 10 para 20
 
@@ -2641,10 +2637,6 @@
                 data_prazo: getPrazoSLA ? getPrazoSLA.value : ''
             };
             try {
-                console.log(`🔄 Enviando dados para: ${API_BASE_URL}/editar-chamado/${chamadoSelecionado.id}`);
-                console.log(`📦 Dados:`, dados);
-                console.log(`🔑 Token:`, tokenAutenticacao ? `Presente (${tokenAutenticacao.substring(0, 20)}...)` : 'FALTANDO!');
-
                 const response = await fetch(`${API_BASE_URL}/editar-chamado/${chamadoSelecionado.id}`, {
                     method: 'PATCH',
                     headers: {
@@ -2653,23 +2645,14 @@
                     },
                     body: JSON.stringify(dados)
                 });
-
-                const respText = await response.text();
-                console.log(`📊 Status:`, response.status);
-                console.log(`📄 Resposta:`, respText);
-
                 if (response.ok) {
                     console.log('✅ Chamado salvo com sucesso!');
-                    alert('✅ Chamado salvo com sucesso!'); // Mostra no alert
                     await carregarTodosDados();
-                    fecharModal(); // ✨ Fecha o modal automaticamente após sucesso
                 } else {
                     console.warn(`⚠️ Erro ao salvar (status ${response.status})`);
-                    alert(`❌ Erro ao salvar: ${response.status}`);
                 }
             } catch (error) {
                 console.error('❌ Erro ao salvar chamado:', error.message);
-                alert(`❌ Erro: ${error.message}`);
             }
         }
 

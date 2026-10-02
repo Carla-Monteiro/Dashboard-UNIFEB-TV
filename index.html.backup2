@@ -87,51 +87,91 @@
 
         .header {
             grid-column: 1 / -1;
-            background: linear-gradient(90deg, #1a1f2e 0%, #242d3d 50%, #1a1f2e 100%);
-            border-bottom: 2px solid var(--border-gold);
-            padding: 15px 30px;
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #242d3d 100%);
+            border-bottom: 3px solid var(--border-gold);
+            padding: 20px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 8px 24px rgba(255, 165, 0, 0.15);
         }
 
-        .header-left { display: flex; align-items: center; gap: 25px; }
+        .header-left { display: flex; align-items: center; gap: 35px; }
         .logo-container {
-            width: 180px; height: 140px;
-            background: transparent;
-            border: none;
-            border-radius: 0;
+            width: 160px; height: 120px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(20, 25, 35, 0.8));
+            border: 3px solid var(--border-gold);
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: visible;
-            box-shadow: none;
+            box-shadow:
+                0 0 30px rgba(255, 165, 0, 0.4),
+                0 0 60px rgba(255, 165, 0, 0.2),
+                0 15px 40px rgba(255, 165, 0, 0.3),
+                inset 0 0 30px rgba(255, 165, 0, 0.08);
+            transition: all 0.3s ease;
+            position: relative;
         }
-        .logo { width: 180px; height: 140px; object-fit: contain; }
-        .header-title h1 { font-size: 24px; font-weight: 700; }
-        .header-title p { font-size: 11px; color: var(--border-gold); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .logo-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 165, 0, 0.1) 0%, transparent 70%);
+            animation: glow 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes glow {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        .logo-container:hover {
+            box-shadow:
+                0 0 40px rgba(255, 165, 0, 0.6),
+                0 0 80px rgba(255, 165, 0, 0.3),
+                0 18px 50px rgba(255, 165, 0, 0.4),
+                inset 0 0 30px rgba(255, 165, 0, 0.12);
+            transform: translateY(-3px) scale(1.02);
+            border-color: #ffa500;
+        }
+        .logo { width: 145px; height: 105px; object-fit: contain; position: relative; z-index: 1; }
+        .header-title { display: flex; flex-direction: column; gap: 4px; }
+        .header-title h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; color: var(--text-primary); }
+        .header-title p { font-size: 12px; color: var(--border-gold); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
         .status-badge {
             display: flex;
             align-items: center;
-            gap: 12px;
-            background: linear-gradient(135deg, rgba(255, 165, 0, 0.1), rgba(255, 165, 0, 0.05));
-            border: 1.5px solid var(--border-gold);
-            border-radius: 20px;
-            padding: 10px 18px;
-            font-size: 12px;
+            gap: 14px;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.15), rgba(255, 165, 0, 0.08));
+            border: 2px solid var(--border-gold);
+            border-radius: 25px;
+            padding: 12px 22px;
+            font-size: 13px;
+            box-shadow: 0 4px 12px rgba(255, 165, 0, 0.15);
         }
-        .user-badge { color: var(--gold); font-weight: 600; }
+        .user-badge { color: var(--gold); font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        .user-badge::before { content: "👤"; }
         .logout-btn {
-            padding: 8px 14px;
-            background: var(--red);
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--red), #c74660);
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(212, 114, 107, 0.3);
+            transition: all 0.2s ease;
         }
-        .logout-btn:hover { opacity: 0.9; }
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(212, 114, 107, 0.4);
+        }
+        .logout-btn:active { transform: translateY(0); }
 
         .sidebar {
             background: var(--bg-secondary);
@@ -919,14 +959,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 100;  /* ← Garante que fique acima de outros elementos */
         }
         .modal-close:hover { opacity: 0.9; }
 
         .modal-header {
             border-bottom: 2px solid var(--border-gold);
             padding-bottom: 15px;
-            padding-right: 50px;  /* ← Deixa espaço para o botão X */
             margin-bottom: 20px;
         }
         .modal-title { font-size: 22px; font-weight: 700; color: #dcdcdc; margin-bottom: 5px; }
@@ -1247,9 +1285,7 @@
         }
 
         .modal-close {
-            position: absolute;
-            top: 15px;
-            right: 15px;
+            float: right;
             font-size: 2em;
             cursor: pointer;
             color: var(--gold);
@@ -1257,7 +1293,6 @@
             background: none;
             font-weight: bold;
             line-height: 1;
-            z-index: 100;
         }
 
         .modal-close:hover {
@@ -1680,52 +1715,10 @@
         };
 
         const API_BASE_URL = 'https://unifeb-backend.onrender.com/api';
-        let tokenAutenticacao = null;  // ← Armazena token do login
         let dadosGlobais = { ativos: [], concluidos: [], pesquisas: [], graficos: {} };
         let categoriaAtual = 'detalhado';
         let chamadoSelecionado = null;
         let modoEdicao = false;
-
-        // 📧 Mapeamento de Emails para Setores (igual ao backend)
-        // 📧 MAPEAMENTO: email → CÓDIGO de setor (manutencao, naem, ti, ou email)
-        const EMAIL_SETOR_MAPPING = {
-            'manutencao': 'manutencao',  // → vai para aba Manutenção
-            'dti': 'ti',                  // → vai para aba TI
-            'naem': 'naem',               // → vai para aba Multimídia
-            'multimedia': 'naem',         // → vai para aba Multimídia
-            // Todos os outros setores → vão para aba E-mail
-            'almoxarifado': 'email',
-            'biblioteca': 'email',
-            'coordenacao': 'email',
-            'clinica': 'email',
-            'colegio': 'email',
-            'matricula': 'email',
-            'coordenacao_lab': 'email',
-            'laboratorio': 'email',
-            'cpa': 'email',
-            'neu': 'email',
-            'marketing': 'email',
-            'nape': 'email',
-            'npj': 'email',               // Núcleo Práticas Jurídicas → aba E-mail
-            'financeiro': 'email',
-            'pradm': 'email',
-            'dejur': 'email',
-            'prealuno': 'email',
-            'proaluno': 'email',
-            'reitoria': 'email',
-            'rh': 'email',
-            'secretaria': 'email',
-            'conselho': 'email',
-            'clivet': 'email',
-            'sala_professor': 'email',
-            'cartorio': 'email',
-            'sala_professores': 'email',
-            'ouvidoria': 'email',
-            'sustentabilidade': 'email',
-            'labinfo': 'email',
-            'fisio': 'email',
-            'nac': 'email'
-        };
 
         function setElementText(elementId, text) {
             const el = document.getElementById(elementId);
@@ -1744,38 +1737,21 @@
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const senha = document.getElementById('senhaInput').value;
-            try {
-                const loginResponse = await fetch(`${API_BASE_URL}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ senha })
-                });
-                const loginData = await loginResponse.json();
-                if (loginData.status === 'sucesso' && loginData.token) {
-                    tokenAutenticacao = loginData.token;
-                    const userData = senhas[senha] || { nome: 'Usuário', role: loginData.papel };
-                    setElementText('userDisplay', userData.nome);
-                    const overlay = getElement('loginOverlay');
-                    const dashboard = getElement('dashboard');
-                    if (overlay) overlay.classList.add('hidden');
-                    if (dashboard) dashboard.classList.remove('hidden');
-                    await carregarTodosDados();
-                    setInterval(carregarTodosDados, 30000);
-                } else {
-                    const errorEl = getElement('loginError');
-                    if (errorEl) {
-                        errorEl.classList.add('show');
-                        setTimeout(() => errorEl.classList.remove('show'), 3000);
-                    }
-                    document.getElementById('senhaInput').value = '';
-                }
-            } catch (error) {
-                console.error('❌ Erro ao fazer login:', error);
+            if (senhas[senha]) {
+                setElementText('userDisplay', senhas[senha].nome);
+                const overlay = getElement('loginOverlay');
+                const dashboard = getElement('dashboard');
+                if (overlay) overlay.classList.add('hidden');
+                if (dashboard) dashboard.classList.remove('hidden');
+                await carregarTodosDados();
+                setInterval(carregarTodosDados, 30000);
+            } else {
                 const errorEl = getElement('loginError');
                 if (errorEl) {
                     errorEl.classList.add('show');
                     setTimeout(() => errorEl.classList.remove('show'), 3000);
                 }
+                document.getElementById('senhaInput').value = '';
             }
         });
 
@@ -1792,39 +1768,21 @@
                 const graficos = resultados[2].status === 'fulfilled' ? resultados[2].value : {};
 
                 const normalizarChamados = (chamados) => {
-                    return (chamados || []).map(c => {
-                        const origem = c.origem || '';
-                        const isEmail = !origem || origem.toLowerCase() !== 'qr code';
-
-                        // Se for EMAIL: usa setor do email + categoria "E-mail Suporte"
-                        // Se for QR CODE: usa SetordeAtendimento + categoria original
-                        let setor_mapeado = 'email';
-                        let categoria_final = c.categoria || 'Outra';
-
-                        if (isEmail) {
-                            // EMAIL: obtém DIRETAMENTE o código de setor do email (já mapeado!)
-                            setor_mapeado = obterSetorDoEmail(c.email || c.Email) || 'email';
-                            categoria_final = '✉️ E-mail Suporte'; // ← NOVA CATEGORIA!
-                        } else {
-                            // QR CODE: usa SetordeAtendimento normal
-                            setor_mapeado = obterSetorDoSetor(c.setorAtendimento || c.setor_atendimento || c.SetordeAtendimento) ||
-                                          obterCategoriaGrupo(c.categoria) ||
-                                          'email';
-                            categoria_final = c.categoria || 'Outra';
-                        }
-
-                        return {
-                            ...c,
-                            dataAbertura: c.dataAbertura || c.data_criacao || c.data_abertura,
-                            dataConclusao: c.dataConclusao || c.data_conclusao,
-                            setorAtendimento: c.setorAtendimento || c.setor_atendimento || c.SetordeAtendimento || '',
-                            origem: origem || 'E-mail',
-                            prioridade: c.prioridade || c.Prioridade || 'Média',
-                            setor_mapeado: setor_mapeado,
-                            categoria: categoria_final,
-                            data: c.dataAbertura || c.data_criacao || c.data_abertura
-                        };
-                    });
+                    return (chamados || []).map(c => ({
+                        ...c,
+                        // Normalizar campos do backup: usar dataAbertura, setorAtendimento, origem
+                        dataAbertura: c.dataAbertura || c.data_criacao || c.data_abertura,
+                        dataConclusao: c.dataConclusao || c.data_conclusao,
+                        setorAtendimento: c.setorAtendimento || c.setor_atendimento || c.SetordeAtendimento || '',
+                        origem: c.origem || 'Dashboard',
+                        prioridade: c.prioridade || c.Prioridade || 'Média',
+                        // Campo mapeado para compatibilidade
+                        setor_mapeado: obterSetorDoSetor(c.setorAtendimento || c.setor_atendimento || c.SetordeAtendimento) ||
+                                       obterCategoriaGrupo(c.categoria) ||
+                                       'email',
+                        // Alias para data (como no backup)
+                        data: c.dataAbertura || c.data_criacao || c.data_abertura
+                    }));
                 };
 
                 dadosGlobais.ativos = normalizarChamados(ativos);
@@ -1932,22 +1890,6 @@
             } catch (error) {
                 console.error('❌ Erro ao carregar pesquisas:', error.message);
                 dadosGlobais.pesquisas = [];
-            }
-        }
-
-        // 📧 Extrai setor baseado no EMAIL do remetente
-        function obterSetorDoEmail(email) {
-            if (!email) return null;
-            try {
-                // Extrai a parte antes do @ (ex: paula.rh@feb.br → paula.rh)
-                const emailPrefix = email.split('@')[0].toLowerCase();
-                // Extrai o código do setor (ex: paula.rh → rh)
-                const parts = emailPrefix.split('.');
-                const codigoSetor = parts[parts.length - 1]; // último parte após o ponto
-                // Procura no mapeamento
-                return EMAIL_SETOR_MAPPING[codigoSetor] || null;
-            } catch (e) {
-                return null;
             }
         }
 
@@ -2123,16 +2065,15 @@
         }
 
         // Controle de paginação e sort para Concluídos
-        let concluidosSortAtual = { field: 'data_criacao', asc: false }; // ✨ Ordenar por data mais recente primeiro
+        let concluidosSortAtual = { field: 'id', asc: true };
         let concluidosPaginaAtual = 1;
-        const concluidosItensPorPagina = 20;  // ← Aumentado de 10 para 20
+        const concluidosItensPorPagina = 10;
 
         function getCategoriaLabelConcluidos(cat) {
-            if (!cat) return 'Outra';
             if (cat.includes('Projetor')) return '📽️ Projetor';
             if (cat.includes('Fechadura')) return '🔐 Fechadura';
             if (cat.includes('Ar')) return '❄️ Ar Condicionado';
-            return cat;  // ← Retorna a categoria REAL, não 'Outra'
+            return 'Outra';
         }
 
         function getCategoriaCssConcluidos(cat) {
@@ -2543,9 +2484,7 @@
                         // Extrair data e hora se existir
                         const dataParte = dataAbertura.split(' ')[0]; // "DD/MM/YYYY"
                         const [dia, mes, ano] = dataParte.split('/');
-                        let horas = 9, minutos = 0; // Padrão: 09:00
-
-                        // Se tem hora, extrair
+                        let horas = 9, minutos = 0;
                         if (dataAbertura.includes(':')) {
                             const horaParte = dataAbertura.split(' ')[1]; // "HH:MM"
                             if (horaParte) {
@@ -2554,7 +2493,6 @@
                                 minutos = parseInt(m) || 0;
                             }
                         }
-
                         data = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia), horas, minutos, 0);
                     } else {
                         data = new Date(dataAbertura);
@@ -2641,35 +2579,19 @@
                 data_prazo: getPrazoSLA ? getPrazoSLA.value : ''
             };
             try {
-                console.log(`🔄 Enviando dados para: ${API_BASE_URL}/editar-chamado/${chamadoSelecionado.id}`);
-                console.log(`📦 Dados:`, dados);
-                console.log(`🔑 Token:`, tokenAutenticacao ? `Presente (${tokenAutenticacao.substring(0, 20)}...)` : 'FALTANDO!');
-
                 const response = await fetch(`${API_BASE_URL}/editar-chamado/${chamadoSelecionado.id}`, {
                     method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${tokenAutenticacao}`
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dados)
                 });
-
-                const respText = await response.text();
-                console.log(`📊 Status:`, response.status);
-                console.log(`📄 Resposta:`, respText);
-
                 if (response.ok) {
                     console.log('✅ Chamado salvo com sucesso!');
-                    alert('✅ Chamado salvo com sucesso!'); // Mostra no alert
                     await carregarTodosDados();
-                    fecharModal(); // ✨ Fecha o modal automaticamente após sucesso
                 } else {
                     console.warn(`⚠️ Erro ao salvar (status ${response.status})`);
-                    alert(`❌ Erro ao salvar: ${response.status}`);
                 }
             } catch (error) {
                 console.error('❌ Erro ao salvar chamado:', error.message);
-                alert(`❌ Erro: ${error.message}`);
             }
         }
 
