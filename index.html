@@ -2123,7 +2123,7 @@
         }
 
         // Controle de paginação e sort para Concluídos
-        let concluidosSortAtual = { field: 'id', asc: true };
+        let concluidosSortAtual = { field: 'data_conclusao', asc: false }; // ← Mais recentes no topo
         let concluidosPaginaAtual = 1;
         const concluidosItensPorPagina = 20;  // ← Aumentado de 10 para 20
 
