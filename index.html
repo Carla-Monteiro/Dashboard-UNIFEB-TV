@@ -1660,6 +1660,16 @@
                         </select>
                     </div>
                     <div class="modal-field">
+                        <div class="modal-label">Mover para:</div>
+                        <div class="modal-value" id="modalSetorAtual">-</div>
+                        <select class="modal-select" id="modalMoverInput">
+                            <option value="">Automático (pelo e-mail)</option>
+                            <option value="TI / Internet">TI / Internet</option>
+                            <option value="Multimídia (NAEM)">Multimídia (NAEM)</option>
+                            <option value="Manutenção Predial">Manutenção</option>
+                        </select>
+                    </div>
+                    <div class="modal-field">
                         <div class="modal-label">Data Criação:</div>
                         <div class="modal-value" id="modalDataCriacao">-</div>
                         <input type="text" class="modal-input" id="modalDataCriacaoInput" placeholder="dd/mm/aaaa">
@@ -1807,6 +1817,8 @@
                         // Se for QR CODE: usa SetordeAtendimento + categoria original
                         let setor_mapeado = 'email';
                         let categoria_final = c.categoria || 'Outra';
+                        // Setor escolhido manualmente (botão "Mover para") tem prioridade sobre o automático
+                        const setorManualCod = SETORES_MOVER[obterSetorManual(c.setorAtendimento || c.setor_atendimento || c.SetordeAtendimento)] || '';
 
                         if (isEmail) {
                             // EMAIL: obtém DIRETAMENTE o código de setor do email (já mapeado!)
@@ -1827,7 +1839,7 @@
                             setorAtendimento: c.setorAtendimento || c.setor_atendimento || c.SetordeAtendimento || '',
                             origem: origem || 'E-mail',
                             prioridade: c.prioridade || c.Prioridade || 'Média',
-                            setor_mapeado: setor_mapeado,
+                            setor_mapeado: setorManualCod || setor_mapeado,
                             categoria: categoria_final,
                             data: c.dataAbertura || c.data_criacao || c.data_abertura
                         };
@@ -1956,6 +1968,18 @@
             } catch (e) {
                 return null;
             }
+        }
+
+        // Setores que podem ser escolhidos no botão "Mover para" (valor gravado no SharePoint -> código da aba)
+        const SETORES_MOVER = {
+            'TI / Internet': 'ti',
+            'Multimídia (NAEM)': 'naem',
+            'Manutenção Predial': 'manutencao'
+        };
+
+        // Devolve o nome do setor escolhido manualmente, ou '' se o chamado segue o automático (e-mail)
+        function obterSetorManual(setor) {
+            return Object.prototype.hasOwnProperty.call(SETORES_MOVER, setor) ? setor : '';
         }
 
         function obterSetorDoSetor(setor) {
@@ -2537,6 +2561,10 @@
             }
             const modalPrioridadeInput = getElement('modalPrioridadeInput');
             if (modalPrioridadeInput) modalPrioridadeInput.value = prioridade;
+            const setorManualAtual = obterSetorManual(chamado.setorAtendimento || chamado.setor_atendimento || chamado.SetordeAtendimento);
+            setElementText('modalSetorAtual', setorManualAtual || 'Automático (pelo e-mail)');
+            const modalMoverInput = getElement('modalMoverInput');
+            if (modalMoverInput) modalMoverInput.value = setorManualAtual;
             setElementText('modalDataCriacao', formatarDataComHora(chamado.data_criacao));
             const modalDataCriacaoInput = getElement('modalDataCriacaoInput');
             if (modalDataCriacaoInput) modalDataCriacaoInput.value = chamado.data_criacao || '';
@@ -2639,13 +2667,15 @@
             const getStatus = getElement('modalStatusInput');
             const getPrioridade = getElement('modalPrioridadeInput');
             const getPrazoSLA = getElement('modalPrazoSLAInput');
+            const getMover = getElement('modalMoverInput');
             const dados = {
                 titulo: getTitulo ? getTitulo.value : '',
                 solicitante: getSolicitante ? getSolicitante.value : '',
                 email: getEmail ? getEmail.value : '',
                 status: getStatus ? getStatus.value : '',
                 prioridade: getPrioridade ? getPrioridade.value : '',
-                data_prazo: getPrazoSLA ? getPrazoSLA.value : ''
+                data_prazo: getPrazoSLA ? getPrazoSLA.value : '',
+                setor: getMover ? getMover.value : ''
             };
             try {
                 console.log(`🔄 Enviando dados para: ${API_BASE_URL}/editar-chamado/${chamadoSelecionado.id}`);
