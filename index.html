@@ -2,7 +2,14 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#d4a574">
+    <meta name="description" content="Sistema de gerenciamento de chamados de suporte UNIFEB">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Chamados UNIFEB">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%231a1f2e' width='180' height='180'/><circle cx='90' cy='90' r='65' fill='%23d4a574'/><text x='90' y='105' font-size='70' font-weight='bold' text-anchor='middle' fill='%231a1f2e' font-family='Arial'>📞</text></svg>">
     <title>Controle de Chamados - UNIFEB</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
@@ -3169,6 +3176,29 @@
         console.log('✅ Dashboard integrado carregado com sucesso!');
         console.log('🔗 API Base URL:', API_BASE_URL);
         console.log('📊 Sistema completo: Sidebar + Abas + Gráficos + Satisfação');
+    </script>
+
+    <!-- 📱 Service Worker para PWA (Progressive Web App) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registrado com sucesso!', registration);
+                    })
+                    .catch(error => {
+                        console.warn('⚠️ Erro ao registrar Service Worker:', error);
+                    });
+            });
+        }
+
+        // Mostrar prompt de instalação no celular
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            console.log('📱 App pode ser instalada!');
+        });
     </script>
 </body>
 </html>
