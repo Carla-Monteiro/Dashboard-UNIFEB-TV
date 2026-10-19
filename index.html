@@ -21,7 +21,7 @@
             flex-direction: column;
         }
 
-        /* ===== BARRA SUPERIOR (HEADER TOPBAR) DA IMAGEM ===== */
+        /* ===== BARRA SUPERIOR (HEADER TOPBAR) ===== */
         .topbar {
             width: 100%;
             height: 70px;
@@ -48,11 +48,6 @@
             object-fit: contain;
         }
 
-        .topbar-title {
-            display: flex;
-            flex-direction: column;
-        }
-
         .topbar-title h1 {
             font-size: 20px;
             font-weight: 700;
@@ -70,6 +65,17 @@
         .topbar-right {
             display: flex;
             align-items: center;
+            gap: 15px;
+        }
+
+        .status-badge {
+            padding: 6px 14px;
+            background: rgba(0, 200, 100, 0.15);
+            border: 1px solid #00c864;
+            border-radius: 20px;
+            color: #00c864;
+            font-size: 11px;
+            font-weight: 700;
         }
 
         .user-box {
@@ -137,9 +143,6 @@
             color: #d19a3f;
             text-transform: uppercase;
             letter-spacing: 0.8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .sidebar-item {
@@ -176,11 +179,11 @@
         }
 
         .container {
-            max-width: 1800px;
+            max-width: 1900px;
             margin: 0 auto;
         }
 
-        /* ===== BOTÕES DE AÇÃO ===== */
+        /* ===== BOTÕES ===== */
         .buttons-group {
             display: flex;
             gap: 10px;
@@ -206,12 +209,18 @@
         .btn:hover {
             background: rgba(255, 165, 0, 0.22);
             border-color: #ffa500;
+            transform: translateY(-1px);
         }
 
         .btn.primary {
             background: linear-gradient(135deg, #ff6b35, #ffa500);
             border: none;
             color: #fff;
+        }
+
+        .btn.primary:hover {
+            background: linear-gradient(135deg, #ff7a50, #ffb84d);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
         }
 
         /* ===== FILTROS ===== */
@@ -261,7 +270,13 @@
             border-radius: 10px;
             padding: 20px;
             text-align: center;
+            transition: all 0.2s;
             cursor: pointer;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(255, 165, 0, 0.5);
+            transform: translateY(-2px);
         }
 
         .stat-icon { font-size: 26px; margin-bottom: 6px; }
@@ -277,6 +292,7 @@
             border-radius: 10px;
             overflow: auto;
             max-height: 60vh;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         table {
@@ -306,6 +322,19 @@
 
         tbody tr:hover { background: rgba(255, 165, 0, 0.05); }
 
+        .table-select {
+            padding: 5px 8px;
+            background: rgba(255, 165, 0, 0.1);
+            border: 1px solid rgba(255, 165, 0, 0.4);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .table-select option { background: #121e30; color: #fff; }
+
+        /* BADGES */
         .badge {
             display: inline-block;
             padding: 4px 10px;
@@ -316,12 +345,46 @@
             border: 1px solid;
         }
 
-        .badge-aberto { background: rgba(100, 200, 255, 0.15); color: #64c8ff; border-color: #64c8ff; }
-        .badge-alta { background: rgba(255, 100, 100, 0.2); color: #ff6464; border-color: #ff6464; }
-        .sla-ok { background: rgba(0, 200, 100, 0.2); color: #00c864; border-color: #00c864; }
+        .badge-aberto { background: rgba(100, 200, 255, 0.2); color: #64c8ff; border-color: #64c8ff; }
+        .badge-andamento { background: rgba(179, 136, 255, 0.2); color: #b388ff; border-color: #b388ff; }
+        .badge-resolvido { background: rgba(0, 200, 100, 0.2); color: #00c864; border-color: #00c864; }
+        .badge-alta { background: rgba(255, 100, 100, 0.25); color: #ff6464; border-color: #ff6464; }
+        .badge-media { background: rgba(255, 213, 79, 0.25); color: #ffd54f; border-color: #ffd54f; }
+        .badge-baixa { background: rgba(100, 200, 100, 0.25); color: #64c864; border-color: #64c864; }
+        .sla-ok { background: rgba(0, 200, 100, 0.3); color: #00c864; border-color: #00c864; cursor: pointer; }
+        .sla-vencido { background: rgba(255, 100, 100, 0.3); color: #ff6464; border-color: #ff6464; cursor: pointer; }
+
+        /* MODAL SLA */
+        .sla-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sla-modal.active { display: flex; }
+
+        .sla-card-modal {
+            background: rgba(20, 40, 60, 0.98);
+            border: 2px solid rgba(255, 100, 100, 0.6);
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 450px;
+            width: 90%;
+            position: relative;
+        }
+
+        .sla-close {
+            position: absolute; top: 20px; right: 20px;
+            background: transparent; border: none; color: #aaa; font-size: 28px; cursor: pointer;
+        }
 
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+        .empty-state { text-align: center; padding: 40px 20px; color: #aaa; }
 
         .graficos-grid {
             display: grid;
@@ -335,11 +398,30 @@
             border-radius: 10px;
             padding: 20px;
         }
+
+        .chart-card h3 { color: #ffa500; font-size: 14px; margin-bottom: 15px; }
+
+        @media (max-width: 900px) {
+            .app-layout { flex-direction: column; }
+            .sidebar { width: 100%; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- BARRA SUPERIOR FIXA DA IMAGEM -->
+    <!-- TELA DE LOGIN -->
+    <div id="loginOverlay" style="display:none; position:fixed; inset:0; z-index:9999; background:#0a121d; align-items:center; justify-content:center; padding:20px;">
+        <form onsubmit="fazerLogin(event)" style="background:#121e30; border:1px solid rgba(255, 165, 0, 0.3); border-radius:16px; padding:40px; max-width:380px; width:100%; text-align:center;">
+            <img src="logo-UNIFEB.png" alt="UNIFEB" style="max-width:140px; margin-bottom:18px;" onerror="this.style.display='none'">
+            <h2 style="margin:0 0 6px; color:#fff;">Controle de Chamados</h2>
+            <p style="margin:0 0 20px; color:#8899a6; font-size:14px;">Área restrita</p>
+            <input type="password" id="loginSenha" placeholder="Senha" required style="width:100%; padding:12px; background:rgba(255,165,0,0.06); border:1px solid rgba(255,165,0,0.3); border-radius:8px; color:#fff; margin-bottom:12px;">
+            <button type="submit" class="btn primary" style="width:100%; justify-content:center; padding:12px;">Entrar</button>
+            <div id="loginErro" style="color:#ff6464; font-size:13px; margin-top:12px;"></div>
+        </form>
+    </div>
+
+    <!-- HEADER BARRA SUPERIOR -->
     <header class="topbar">
         <div class="topbar-left">
             <img src="logo-UNIFEB.png" alt="UNIFEB" class="topbar-logo" onerror="this.style.display='none'">
@@ -350,6 +432,7 @@
         </div>
 
         <div class="topbar-right">
+            <div class="status-badge" id="syncStatus">🟢 Sincronizado</div>
             <div class="user-box">
                 <div class="user-info">
                     <span>👤</span>
@@ -361,7 +444,7 @@
     </header>
 
     <div class="app-layout">
-        <!-- SIDEBAR DE NAVEGAÇÃO -->
+        <!-- SIDEBAR MENU -->
         <aside class="sidebar">
             <nav class="sidebar-menu">
                 <div class="sidebar-category">📁 CATEGORIAS</div>
@@ -378,7 +461,7 @@
             </nav>
         </aside>
 
-        <!-- ÁREA PRINCIPAL -->
+        <!-- ÁREA PRINCIPAL DA PÁGINA -->
         <main class="main-content">
             <div class="container">
                 
@@ -391,7 +474,7 @@
                     <button class="btn primary" onclick="novoChamado()">➕ Novo Chamado</button>
                 </div>
 
-                <!-- CARDS DE ESTATÍSTICA RÁPIDA -->
+                <!-- CARDS RESUMO -->
                 <div class="stats-section">
                     <div class="stat-card" id="cardAbertos" onclick="filtrarRapido('Aberto')">
                         <div class="stat-icon">📂</div>
@@ -415,7 +498,7 @@
                     </div>
                 </div>
 
-                <!-- FILTROS DE BUSCA -->
+                <!-- FILTROS -->
                 <div class="filters-section">
                     <div class="filter-item">
                         <label>Status</label>
@@ -448,19 +531,19 @@
                             <thead>
                                 <tr>
                                     <th style="width:36px;"><input type="checkbox" id="checkTodos" onclick="alternarTodosVisiveis()"></th>
-                                    <th>ID</th>
-                                    <th>Título</th>
-                                    <th>Solicitante</th>
-                                    <th>Prioridade</th>
-                                    <th>Status</th>
-                                    <th>Responsável</th>
-                                    <th>Setor</th>
-                                    <th>Abertura</th>
-                                    <th>SLA</th>
+                                    <th data-coluna="id" data-label="ID" onclick="ordenarPor('id')">ID</th>
+                                    <th data-coluna="titulo" data-label="Título" onclick="ordenarPor('titulo')">Título</th>
+                                    <th data-coluna="solicitante" data-label="Solicitante" onclick="ordenarPor('solicitante')">Solicitante</th>
+                                    <th data-coluna="prioridade" data-label="Prioridade" onclick="ordenarPor('prioridade')">Prioridade</th>
+                                    <th data-coluna="status" data-label="Status" onclick="ordenarPor('status')">Status</th>
+                                    <th data-coluna="responsavel" data-label="Responsável" onclick="ordenarPor('responsavel')">Responsável</th>
+                                    <th data-coluna="setor" data-label="Setor" onclick="ordenarPor('setor')">Setor</th>
+                                    <th data-coluna="abertura" data-label="Abertura" onclick="ordenarPor('abertura')">Abertura</th>
+                                    <th data-coluna="sla" data-label="SLA" onclick="ordenarPor('sla')">SLA</th>
                                 </tr>
                             </thead>
                             <tbody id="tbody">
-                                <tr><td colspan="10" style="text-align:center; padding: 20px;">Carregando chamados...</td></tr>
+                                <tr><td colspan="10" class="empty-state">Carregando chamados...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -498,76 +581,221 @@
                                 </tr>
                             </thead>
                             <tbody id="tbodySatisfacao">
-                                <tr><td colspan="5" style="text-align:center; padding: 20px;">Carregando respostas...</td></tr>
+                                <tr><td colspan="5" class="empty-state">Carregando respostas...</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- ABA: MANUTENÇÃO -->
-                <div id="manutencao" class="tab-content">
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th></tr>
-                            </thead>
-                            <tbody id="manutencaoBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- ABA: NAEM -->
-                <div id="naem" class="tab-content">
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th></tr>
-                            </thead>
-                            <tbody id="naemBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- ABA: TI -->
-                <div id="ti" class="tab-content">
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th></tr>
-                            </thead>
-                            <tbody id="tiBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- ABA: EMAIL -->
-                <div id="viaemail" class="tab-content">
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th></tr>
-                            </thead>
-                            <tbody id="emailBody"></tbody>
-                        </table>
-                    </div>
-                </div>
+                <!-- SEÇÕES DE SETORES -->
+                <div id="manutencao" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th><th>Ações</th></tr></thead><tbody id="manutencaoBody"></tbody></table></div></div>
+                <div id="naem" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th><th>Ações</th></tr></thead><tbody id="naemBody"></tbody></table></div></div>
+                <div id="ti" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th><th>Ações</th></tr></thead><tbody id="tiBody"></tbody></table></div></div>
+                <div id="viaemail" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th><th>Ações</th></tr></thead><tbody id="emailBody"></tbody></table></div></div>
 
             </div>
         </main>
     </div>
 
+    <!-- MODAL FORMULÁRIO -->
+    <div id="modalFormulario" class="modal-formulario" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 100; padding: 20px; display: none; flex-direction: column; justify-content: center; align-items: center;">
+        <div style="background: #121e30; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 16px; padding: 30px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px solid rgba(255, 165, 0, 0.2);">
+                <h2 id="modalTitulo" style="font-size: 24px; margin: 0; color: #fff;">➕ Novo Chamado</h2>
+                <button class="modal-close" onclick="fecharFormulario()" style="background: none; border: none; color: #aaa; font-size: 28px; cursor: pointer;">✕</button>
+            </div>
+            <form id="formChamado" onsubmit="salvarChamado(event)" style="display: flex; flex-direction: column; gap: 20px;">
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">TÍTULO *</label>
+                    <input type="text" id="titulo" required style="width: 100%; padding: 12px; background: rgba(255, 165, 0, 0.08); border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">DESCRIÇÃO *</label>
+                    <textarea id="descricao" required style="width: 100%; padding: 12px; background: rgba(255, 165, 0, 0.08); border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; min-height: 80px;"></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">SOLICITANTE *</label>
+                        <input type="text" id="solicitante" required style="width: 100%; padding: 12px; background: rgba(255, 165, 0, 0.08); border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">EMAIL *</label>
+                        <input type="email" id="email" required style="width: 100%; padding: 12px; background: rgba(255, 165, 0, 0.08); border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">SETOR *</label>
+                        <select id="setor" required style="width: 100%; padding: 12px; background: #17263c; border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
+                            <option value="">Selecione um setor</option>
+                            <option value="TI / Internet">TI / Internet</option>
+                            <option value="Multimídia (NAEM)">Multimídia (NAEM)</option>
+                            <option value="Manutenção Predial">Manutenção Predial</option>
+                            <option value="Geral">Geral</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">PRIORIDADE *</label>
+                        <select id="prioridade" required style="width: 100%; padding: 12px; background: #17263c; border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
+                            <option value="Alta">Alta</option>
+                            <option value="Média" selected>Média</option>
+                            <option value="Baixa">Baixa</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="statusEditar" style="display: none;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">STATUS</label>
+                    <select id="status" onchange="atualizarCampoResolucao()" style="width: 100%; padding: 12px; background: #17263c; border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
+                        <option value="Aberto">Aberto</option>
+                        <option value="Em andamento">Em andamento</option>
+                        <option value="Concluído">Concluído</option>
+                    </select>
+                </div>
+                <div id="resolucaoEditar" style="display: none;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">SOLUÇÃO *</label>
+                    <textarea id="resolucaoTexto" style="width: 100%; padding: 12px; background: rgba(255, 165, 0, 0.08); border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;"></textarea>
+                </div>
+                <div id="responsavelEditar" style="display: none;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">RESPONSÁVEL</label>
+                    <select id="responsavel" style="width: 100%; padding: 12px; background: #17263c; border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
+                        <option value="">Não atribuído</option>
+                        <option value="Carla Monteiro (NST)">Carla Monteiro (NST)</option>
+                        <option value="Felipe Sanches (NST)">Felipe Sanches (NST)</option>
+                        <option value="Mateus Henrique Neto (NAEM)">Mateus Henrique Neto (NAEM)</option>
+                        <option value="Jose Mendes Santana (Manutenção)">Jose Mendes Santana (Manutenção)</option>
+                        <option value="Susimar Cesar Borges (NDT)">Susimar Cesar Borges (NDT)</option>
+                        <option value="Lucas da Silva Paranhos Jacob (NDT)">Lucas da Silva Paranhos Jacob (NDT)</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" id="btnSubmit" class="btn primary" style="flex:2; justify-content:center;">Criar Chamado</button>
+                    <button type="button" onclick="fecharFormulario()" class="btn" style="flex:1; justify-content:center;">Cancelar</button>
+                    <button type="button" id="btnDeletar" style="display: none; background: rgba(255,100,100,0.2); border: 1px solid #ff6464; color: #ff6464; border-radius:8px; padding: 10px; cursor:pointer;" onclick="deletarChamadoAtual()">🗑️ Excluir</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL SLA DETALHES -->
+    <div id="slaModal" class="sla-modal" onclick="if(event.target === this) fecharSLA()">
+        <div class="sla-card-modal">
+            <button class="sla-close" onclick="fecharSLA()">✕</button>
+            <h3 style="color:#ff6464; margin-bottom:15px;" id="modalStatus">🔴 VENCIDO</h3>
+            <p><strong>Tempo Atraso:</strong> <span id="modalAtraso">0h</span></p>
+            <p style="margin-top:10px;"><strong>Aberto há:</strong> <span id="modalAberto">0h</span></p>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const BACKEND_URL = 'https://unifeb-backend.onrender.com';
+
         let DASHBOARD_TOKEN = sessionStorage.getItem('unifeb_dashboard_token') || null;
+        let PAPEL_USUARIO = sessionStorage.getItem('unifeb_dashboard_papel') || null;
+
+        function mostrarLogin(msg) {
+            document.getElementById('loginOverlay').style.display = 'flex';
+            if(msg) document.getElementById('loginErro').textContent = msg;
+        }
+
+        function esconderLogin() { document.getElementById('loginOverlay').style.display = 'none'; }
+
+        async function fazerLogin(e) {
+            e.preventDefault();
+            const senha = document.getElementById('loginSenha').value;
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senha })
+                });
+                const data = await res.json();
+                if (res.ok && data.token) {
+                    DASHBOARD_TOKEN = data.token;
+                    PAPEL_USUARIO = data.papel || 'admin';
+                    sessionStorage.setItem('unifeb_dashboard_token', DASHBOARD_TOKEN);
+                    sessionStorage.setItem('unifeb_dashboard_papel', PAPEL_USUARIO);
+                    esconderLogin();
+                    iniciarDashboard();
+                } else {
+                    mostrarLogin(data.mensagem || 'Senha incorreta');
+                }
+            } catch (err) {
+                mostrarLogin('Erro de conexão com servidor');
+            }
+        }
+
+        function sairDashboard() {
+            sessionStorage.clear();
+            location.reload();
+        }
+
+        async function authFetch(url, options = {}) {
+            options.headers = Object.assign({}, options.headers || {}, { 'Authorization': `Bearer ${DASHBOARD_TOKEN}` });
+            const res = await fetch(url, options);
+            if (res.status === 401) {
+                sairDashboard();
+                throw new Error('Não autorizado');
+            }
+            return res;
+        }
+
+        function iniciarDashboard() {
+            carregarDados();
+            setInterval(carregarDados, 5000);
+        }
+
+        let CHAMADOS = [];
+        let CHAMADOS_FILTRADOS = [];
+        let SELECIONADOS = new Set();
+        let EDICAO_ID = null;
+        let FILTRO_RAPIDO = null;
+
+        const PRAZOS_SLA = { 'Baixa': 24, 'Média': 8, 'Alta': 2 };
+
+        function calcularSLA(dataAbertura, prioridade, status) {
+            if (status === 'Concluído') return { slaVencido: false, slaAberto: '✅ CONCLUÍDO', slaAtraso: 'Concluído', porcentagem: 100 };
+            const decorrido = (new Date() - new Date(dataAbertura)) / (1000 * 60 * 60);
+            const prazo = PRAZOS_SLA[prioridade] || 8;
+            const vencido = decorrido > prazo;
+            return {
+                slaVencido: vencido,
+                slaAberto: `${Math.floor(decorrido)}h`,
+                slaAtraso: vencido ? `🔴 ATRASADO ${Math.round(decorrido - prazo)}h` : 'No prazo',
+                porcentagem: Math.min(100, Math.round((decorrido / prazo) * 100))
+            };
+        }
+
+        async function carregarDados() {
+            try {
+                const res = await authFetch(`${BACKEND_URL}/api/chamados`);
+                const dados = await res.json();
+                CHAMADOS = (Array.isArray(dados) ? dados : dados.chamados || []).map(c => {
+                    const sla = calcularSLA(c.dataAbertura, c.prioridade, c.status);
+                    return { ...c, ...sla, data: c.dataAbertura, setorAtendimento: c.setor };
+                });
+
+                document.getElementById('syncStatus').textContent = '🟢 Sincronizado';
+                atualizarCardsResumo();
+                filtrar();
+            } catch (e) {
+                document.getElementById('syncStatus').textContent = '🔴 Erro de Sincronização';
+            }
+        }
 
         function mostrarAba(abaName, el) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
 
             const target = document.getElementById(abaName);
-            if(target) target.classList.add('active');
-            if(el) el.classList.add('active');
+            if (target) target.classList.add('active');
+            if (el) el.classList.add('active');
+
+            if (abaName === 'graficos') desenharGraficos();
+            if (abaName === 'manutencao') renderizarAbaSetor('Manutenção Predial', 'manutencaoBody');
+            if (abaName === 'naem') renderizarAbaSetor('Multimídia (NAEM)', 'naemBody');
+            if (abaName === 'ti') renderizarAbaSetor('TI / Internet', 'tiBody');
+            if (abaName === 'viaemail') renderizarEmail();
         }
 
         function mostrarAbaConcluidos(el) {
@@ -576,31 +804,16 @@
             filtrar();
         }
 
-        function sairDashboard() {
-            sessionStorage.removeItem('unifeb_dashboard_token');
-            location.reload();
-        }
-
-        let CHAMADOS = [];
-        let CHAMADOS_FILTRADOS = [];
-
-        async function carregarDados() {
-            try {
-                const res = await fetch(`${BACKEND_URL}/api/chamados`, {
-                    headers: { 'Authorization': `Bearer ${DASHBOARD_TOKEN}` }
-                });
-                CHAMADOS = await res.json();
-                filtrar();
-            } catch (e) { console.error(e); }
-        }
-
         function filtrar() {
             const status = document.getElementById('filterStatus').value;
+            const prioridade = document.getElementById('filterPrioridade').value;
             const busca = document.getElementById('filterBusca').value.toLowerCase();
 
             CHAMADOS_FILTRADOS = CHAMADOS.filter(c => {
                 let ok = true;
                 if (status && c.status !== status) ok = false;
+                if (prioridade && c.prioridade !== prioridade) ok = false;
+                if (FILTRO_RAPIDO === '__vencidos__' && !c.slaVencido) ok = false;
                 if (busca && !`${c.id} ${c.titulo} ${c.solicitante}`.toLowerCase().includes(busca)) ok = false;
                 return ok;
             });
@@ -610,26 +823,153 @@
         function renderizar() {
             const tbody = document.getElementById('tbody');
             if (!CHAMADOS_FILTRADOS.length) {
-                tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;">Nenhum chamado encontrado</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="empty-state">📭 Nenhum chamado encontrado</td></tr>`;
                 return;
             }
+
             tbody.innerHTML = CHAMADOS_FILTRADOS.map(c => `
-                <tr>
-                    <td><input type="checkbox"></td>
+                <tr onclick="abrirFormularioEditar('${c.id}')">
+                    <td onclick="event.stopPropagation()"><input type="checkbox" ${SELECIONADOS.has(c.id) ? 'checked' : ''} onclick="alternarSelecao('${c.id}')"></td>
                     <td><strong>#${c.id}</strong></td>
                     <td>${c.titulo}</td>
                     <td>${c.solicitante}</td>
-                    <td><span class="badge badge-alta">${c.prioridade}</span></td>
+                    <td><span class="badge badge-${c.prioridade.toLowerCase()}">${c.prioridade}</span></td>
                     <td><span class="badge badge-aberto">${c.status}</span></td>
-                    <td>${c.responsavel || '-'}</td>
-                    <td>${c.setor || 'Geral'}</td>
-                    <td>${c.dataAbertura ? new Date(c.dataAbertura).toLocaleDateString() : '-'}</td>
-                    <td><span class="badge sla-ok">OK</span></td>
+                    <td>${c.responsavel || 'Não atribuído'}</td>
+                    <td>${c.setorAtendimento || 'Geral'}</td>
+                    <td>${c.data ? new Date(c.data).toLocaleDateString('pt-BR') : '-'}</td>
+                    <td onclick="event.stopPropagation(); abrirSLA('${c.id}')"><span class="badge ${c.slaVencido ? 'sla-vencido' : 'sla-ok'}">${c.slaVencido ? '🔴 VENCIDO' : '✅ OK'}</span></td>
                 </tr>
             `).join('');
         }
 
-        window.onload = () => carregarDados();
+        function renderizarAbaSetor(setor, elementId) {
+            const body = document.getElementById(elementId);
+            const dados = CHAMADOS.filter(c => c.setorAtendimento === setor);
+            body.innerHTML = dados.map(c => `
+                <tr onclick="abrirFormularioEditar('${c.id}')">
+                    <td>#${c.id}</td><td>${c.status}</td><td>${c.prioridade}</td><td>${c.titulo}</td><td>${c.solicitante}</td><td>${new Date(c.data).toLocaleDateString()}</td>
+                    <td><button class="btn" style="padding:4px 8px;">Editar</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderizarEmail() {
+            const body = document.getElementById('emailBody');
+            const dados = CHAMADOS.filter(c => c.origem === 'E-mail');
+            body.innerHTML = dados.map(c => `
+                <tr onclick="abrirFormularioEditar('${c.id}')">
+                    <td>#${c.id}</td><td>${c.status}</td><td>${c.prioridade}</td><td>${c.titulo}</td><td>${c.solicitante}</td><td>${new Date(c.data).toLocaleDateString()}</td>
+                    <td><button class="btn" style="padding:4px 8px;">Editar</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function atualizarCardsResumo() {
+            document.getElementById('quickAbertos').textContent = CHAMADOS.filter(c => c.status === 'Aberto').length;
+            document.getElementById('quickAndamento').textContent = CHAMADOS.filter(c => c.status === 'Em andamento').length;
+            document.getElementById('quickConcluidos').textContent = CHAMADOS.filter(c => c.status === 'Concluído').length;
+            document.getElementById('quickVencidos').textContent = CHAMADOS.filter(c => c.slaVencido).length;
+        }
+
+        function filtrarRapido(val) {
+            FILTRO_RAPIDO = (FILTRO_RAPIDO === val) ? null : val;
+            document.getElementById('filterStatus').value = (FILTRO_RAPIDO && FILTRO_RAPIDO !== '__vencidos__') ? FILTRO_RAPIDO : '';
+            filtrar();
+        }
+
+        function abrirSLA(id) {
+            const c = CHAMADOS.find(x => x.id === id);
+            if (!c) return;
+            document.getElementById('modalStatus').textContent = c.slaVencido ? '🔴 VENCIDO' : '✅ DENTRO DO PRAZO';
+            document.getElementById('modalAtraso').textContent = c.slaAtraso;
+            document.getElementById('modalAberto').textContent = c.slaAberto;
+            document.getElementById('slaModal').classList.add('active');
+        }
+
+        function fecharSLA() { document.getElementById('slaModal').classList.remove('active'); }
+
+        function novoChamado() {
+            EDICAO_ID = null;
+            document.getElementById('formChamado').reset();
+            document.getElementById('statusEditar').style.display = 'none';
+            document.getElementById('responsavelEditar').style.display = 'none';
+            document.getElementById('btnDeletar').style.display = 'none';
+            document.getElementById('modalTitulo').textContent = '➕ Novo Chamado';
+            document.getElementById('modalFormulario').style.display = 'flex';
+        }
+
+        function abrirFormularioEditar(id) {
+            const c = CHAMADOS.find(x => x.id === id);
+            if (!c) return;
+            EDICAO_ID = id;
+            document.getElementById('titulo').value = c.titulo;
+            document.getElementById('descricao').value = c.descricao || '';
+            document.getElementById('solicitante').value = c.solicitante;
+            document.getElementById('email').value = c.email || '';
+            document.getElementById('setor').value = c.setorAtendimento || '';
+            document.getElementById('prioridade').value = c.prioridade;
+            document.getElementById('status').value = c.status;
+            document.getElementById('responsavel').value = c.responsavel || '';
+            document.getElementById('statusEditar').style.display = 'block';
+            document.getElementById('responsavelEditar').style.display = 'block';
+            document.getElementById('btnDeletar').style.display = (PAPEL_USUARIO === 'admin') ? 'block' : 'none';
+            document.getElementById('modalTitulo').textContent = '✏️ Editar Chamado';
+            document.getElementById('modalFormulario').style.display = 'flex';
+        }
+
+        function fecharFormulario() { document.getElementById('modalFormulario').style.display = 'none'; }
+
+        async function salvarChamado(e) {
+            e.preventDefault();
+            const dados = {
+                titulo: document.getElementById('titulo').value,
+                descricao: document.getElementById('descricao').value,
+                solicitante: document.getElementById('solicitante').value,
+                email: document.getElementById('email').value,
+                setor: document.getElementById('setor').value,
+                prioridade: document.getElementById('prioridade').value
+            };
+
+            if (EDICAO_ID) {
+                dados.status = document.getElementById('status').value;
+                dados.responsavel = document.getElementById('responsavel').value;
+            }
+
+            const url = EDICAO_ID ? `${BACKEND_URL}/api/editar-chamado/${EDICAO_ID}` : `${BACKEND_URL}/api/criar-chamado`;
+            const method = EDICAO_ID ? 'PATCH' : 'POST';
+
+            try {
+                const res = await authFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dados) });
+                if (res.ok) {
+                    alert('Salvo com sucesso!');
+                    fecharFormulario();
+                    carregarDados();
+                }
+            } catch (err) { alert('Erro ao salvar'); }
+        }
+
+        async function deletarChamadoAtual() {
+            if (!EDICAO_ID || !confirm('Excluir este chamado permanentemente?')) return;
+            try {
+                const res = await authFetch(`${BACKEND_URL}/api/deletar-chamado/${EDICAO_ID}`, { method: 'DELETE' });
+                if (res.ok) {
+                    alert('Deletado!');
+                    fecharFormulario();
+                    carregarDados();
+                }
+            } catch (err) { alert('Erro ao deletar'); }
+        }
+
+        function sincronizar() { carregarDados(); alert('Dados sincronizados!'); }
+        function limparCache() { localStorage.clear(); location.reload(); }
+        function exportar() { alert('Função de exportação'); }
+        function imprimir() { window.print(); }
+
+        window.addEventListener('load', () => {
+            if (DASHBOARD_TOKEN) iniciarDashboard();
+            else mostrarLogin();
+        });
     </script>
 </body>
 </html>
