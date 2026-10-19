@@ -391,13 +391,12 @@
 <body>
 
     <!-- OVERLAY DE LOGIN COM SENHA -->
-    <div id="loginOverlay" style="display:flex; position:fixed; inset:0; z-index:9999; background:linear-gradient(135deg, #0a1628 0%, #1a2f4d 100%); align-items:center; justify-content:center; padding:20px;">
-        <form onsubmit="fazerLogin(event)" style="background:rgba(10, 22, 40, 0.95); border:2px solid rgba(255, 165, 0, 0.4); border-radius:16px; padding:44px 36px; max-width:400px; width:100%; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.6);">
-            <img src="logo-UNIFEB.png" alt="UNIFEB" style="max-width:160px; margin-bottom:18px;" onerror="this.style.display='none'">
-            <h2 style="margin:0 0 6px; color:#fff;">Controle de Chamados</h2>
-            <p style="margin:0 0 20px; color:#ffa500; font-size:13px; font-weight:bold; letter-spacing:1px;">🔒 ÁREA RESTRITA - UNIFEB</p>
-            <input type="password" id="loginSenha" placeholder="Digite sua senha de acesso" required style="width:100%; padding:14px; background:rgba(255,165,0,0.08); border:2px solid rgba(255,165,0,0.3); border-radius:8px; color:#fff; margin-bottom:16px; font-size:14px; outline:none;">
-            <button type="submit" style="width:100%; padding:14px; font-weight:bold; color:#fff; background:linear-gradient(135deg, #ff6b35, #ffa500); border:none; border-radius:8px; cursor:pointer; font-size:14px; text-transform:uppercase;">Entrar no Sistema</button>
+    <div id="loginOverlay" style="display:flex; position:fixed; inset:0; z-index:9999; background:rgba(10, 22, 40, 0.98); align-items:center; justify-content:center; padding:20px;">
+        <form onsubmit="fazerLogin(event)" style="background:#16283f; border:2px solid rgba(255, 165, 0, 0.5); border-radius:16px; padding:40px; max-width:400px; width:100%; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.8);">
+            <h2 style="margin:0 0 10px; color:#fff;">Controle de Chamados</h2>
+            <p style="margin:0 0 20px; color:#ffa500; font-size:12px; font-weight:bold;">🔒 AUTENTICAÇÃO REQUERIDA</p>
+            <input type="password" id="loginSenha" placeholder="Digite a senha" required style="width:100%; padding:14px; background:rgba(255,165,0,0.1); border:2px solid rgba(255,165,0,0.4); border-radius:8px; color:#fff; margin-bottom:16px; font-size:14px; outline:none;">
+            <button type="submit" style="width:100%; padding:14px; font-weight:bold; color:#fff; background:linear-gradient(135deg, #ff6b35, #ffa500); border:none; border-radius:8px; cursor:pointer; font-size:14px; text-transform:uppercase;">Entrar</button>
             <div id="loginErro" style="color:#ff6464; font-size:13px; margin-top:14px; font-weight:bold;"></div>
         </form>
     </div>
@@ -831,7 +830,9 @@
             if(msg) document.getElementById('loginErro').textContent = msg;
         }
 
-        function esconderLogin() { document.getElementById('loginOverlay').style.display = 'none'; }
+        function esconderLogin() { 
+            document.getElementById('loginOverlay').style.display = 'none'; 
+        }
 
         async function fazerLogin(e) {
             e.preventDefault();
@@ -860,7 +861,7 @@
 
         function sairDashboard() {
             sessionStorage.clear();
-            location.reload();
+            mostrarLogin();
         }
 
         async function authFetch(url, options = {}) {
@@ -962,9 +963,7 @@
             filtrar();
         }
 
-        // 🟢 GERADOR DE LINHAS (OCULTA CONCLUÍDOS POR PADRÃO)
         function gerarLinhasTabela(lista) {
-            // Filtra e oculta os chamados concluídos nas categorias
             const chamadosAtivos = lista.filter(c => !(c.status || '').toLowerCase().includes('conclu'));
 
             if (!chamadosAtivos.length) {
@@ -1150,17 +1149,19 @@
         }
 
         function sincronizar() { carregarDados(); alert('Dados sincronizados!'); }
-        function limparCache() { localStorage.clear(); location.reload(); }
+        function limparCache() { localStorage.clear(); sessionStorage.clear(); location.reload(); }
         function exportar() { alert('Função de exportação'); }
         function imprimir() { window.print(); }
 
+        // Inicialização garantida
         window.addEventListener('load', () => {
             popularSelectLocais();
-            if (DASHBOARD_TOKEN) {
+            // Sempre exibe a caixa de login ao carregar a página se não houver token válido
+            if (!DASHBOARD_TOKEN) {
+                mostrarLogin();
+            } else {
                 esconderLogin();
                 iniciarDashboard();
-            } else {
-                mostrarLogin();
             }
         });
     </script>
