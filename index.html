@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle de Chamados UNIFEB</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23003d7a' width='100' height='100'/><text x='50' y='65' font-size='70' font-weight='bold' fill='%23ffa500' text-anchor='middle'>U</text></svg>">
-    <!-- LINK DO CHART.JS CORRIGIDO (SEM PARENTESES RETOS) -->
+    <!-- CDN DO CHART.JS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         * {
@@ -308,7 +308,7 @@
 
         tbody tr:hover { background: rgba(255, 165, 0, 0.1); }
 
-        /* ===== BADGES DE STATUS E PRIORIDADE ===== */
+        /* BADGES */
         .badge {
             display: inline-block;
             padding: 6px 12px;
@@ -360,7 +360,6 @@
             color: #fff;
         }
 
-        /* ===== CAIXA DE DESCRIÇÃO ===== */
         .descricao-box {
             width: 100%;
             padding: 14px 16px;
@@ -484,7 +483,7 @@
                     <div class="filter-item">
                         <label>Status</label>
                         <select id="filterStatus" onchange="FILTRO_RAPIDO = null; filtrar()">
-                            <option value="">-- Todos os Status --</option>
+                            <option value="">-- Todos os Ativos --</option>
                             <option value="Aberto">Aberto</option>
                             <option value="Em andamento">Em andamento</option>
                             <option value="Concluído">Concluído</option>
@@ -641,7 +640,6 @@
     </div>
 
     <script>
-        // 🟢 URL DO BACKEND CORRIGIDA (SEM PARENTESES RETOS)
         const BACKEND_URL = 'https://unifeb-backend.onrender.com';
 
         let DASHBOARD_TOKEN = sessionStorage.getItem('unifeb_dashboard_token') || null;
@@ -735,7 +733,6 @@
             return limpo.replace(/\s+/g, ' ').trim();
         }
 
-        // 🟢 BADGES DE STATUS FORMATADAS
         function obterBadgeStatus(status) {
             const st = (status || 'Aberto').toString().toLowerCase();
             if (st.includes('conclu')) return `<span class="badge badge-concluido">Concluído</span>`;
@@ -743,7 +740,6 @@
             return `<span class="badge badge-aberto">Aberto</span>`;
         }
 
-        // 🟢 BADGES DE PRIORIDADE FORMATADAS
         function obterBadgePrioridade(prioridade) {
             const pr = (prioridade || 'Média').toString().toLowerCase();
             if (pr.includes('alta')) return `<span class="badge badge-alta">Alta</span>`;
@@ -861,6 +857,12 @@
             if (target) target.classList.add('active');
             if (el && el.classList.contains('sidebar-item')) el.classList.add('active');
 
+            // Se voltar para 'Detalhados', limpa o filtro de status se estiver em "Concluído" para mostrar apenas ativos
+            if (abaName === 'chamados') {
+                document.getElementById('filterStatus').value = '';
+                filtrar();
+            }
+
             if (abaName === 'manutencao') renderizarAbaSetor('Manutenção Predial', 'manutencaoBody');
             if (abaName === 'naem') renderizarAbaSetor('Multimídia (NAEM)', 'naemBody');
             if (abaName === 'ti') renderizarAbaSetor('TI / Internet', 'tiBody');
@@ -919,6 +921,7 @@
             `).join('');
         }
 
+        // 🟢 REGRA DE FILTRAGEM ATUALIZADA
         function filtrar() {
             const status = document.getElementById('filterStatus').value;
             const prioridade = document.getElementById('filterPrioridade').value;
@@ -926,9 +929,17 @@
 
             CHAMADOS_FILTRADOS = CHAMADOS.filter(c => {
                 let ok = true;
-                if (status && c.status !== status) ok = false;
+                const statusChamado = (c.status || '').toLowerCase();
+
+                // Se não houver filtro de status explícito selecionado, OCULTA os Concluídos na tabela principal
+                if (!status && FILTRO_RAPIDO !== 'Concluído') {
+                    if (statusChamado.includes('conclu')) ok = false;
+                } else if (status && c.status !== status) {
+                    ok = false;
+                }
+
                 if (prioridade && c.prioridade !== prioridade) ok = false;
-                if (FILTRO_RAPIDO === '__vencidos__' && (!c.slaVencido || (c.status || '').toLowerCase().includes('conclu'))) ok = false;
+                if (FILTRO_RAPIDO === '__vencidos__' && (!c.slaVencido || statusChamado.includes('conclu'))) ok = false;
                 if (busca && !`${c.id} ${c.titulo} ${c.solicitante} ${c.setorAtendimento}`.toLowerCase().includes(busca)) ok = false;
                 return ok;
             });
