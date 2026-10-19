@@ -390,15 +390,15 @@
 </head>
 <body>
 
-    <!-- LOGIN OVERLAY -->
-    <div id="loginOverlay" style="display:none; position:fixed; inset:0; z-index:9999; background:linear-gradient(135deg, #1a2a5e 0%, #2a3a7e 100%); align-items:center; justify-content:center; padding:20px;">
-        <form onsubmit="fazerLogin(event)" style="background:#fff; border-radius:16px; padding:44px 36px; max-width:380px; width:100%; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+    <!-- OVERLAY DE LOGIN COM SENHA -->
+    <div id="loginOverlay" style="display:flex; position:fixed; inset:0; z-index:9999; background:linear-gradient(135deg, #0a1628 0%, #1a2f4d 100%); align-items:center; justify-content:center; padding:20px;">
+        <form onsubmit="fazerLogin(event)" style="background:rgba(10, 22, 40, 0.95); border:2px solid rgba(255, 165, 0, 0.4); border-radius:16px; padding:44px 36px; max-width:400px; width:100%; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.6);">
             <img src="logo-UNIFEB.png" alt="UNIFEB" style="max-width:160px; margin-bottom:18px;" onerror="this.style.display='none'">
-            <h2 style="margin:0 0 6px; color:#1a2a5e;">Controle de Chamados</h2>
-            <p style="margin:0 0 20px; color:#666; font-size:14px;">Área restrita</p>
-            <input type="password" id="loginSenha" placeholder="Senha" required style="width:100%; padding:12px; border:1px solid #ccc; border-radius:8px; margin-bottom:12px;">
-            <button type="submit" style="width:100%; padding:12px; font-weight:bold; color:#fff; background:#1a2a5e; border:none; border-radius:8px; cursor:pointer;">Entrar</button>
-            <div id="loginErro" style="color:#d32f2f; font-size:13px; margin-top:12px;"></div>
+            <h2 style="margin:0 0 6px; color:#fff;">Controle de Chamados</h2>
+            <p style="margin:0 0 20px; color:#ffa500; font-size:13px; font-weight:bold; letter-spacing:1px;">🔒 ÁREA RESTRITA - UNIFEB</p>
+            <input type="password" id="loginSenha" placeholder="Digite sua senha de acesso" required style="width:100%; padding:14px; background:rgba(255,165,0,0.08); border:2px solid rgba(255,165,0,0.3); border-radius:8px; color:#fff; margin-bottom:16px; font-size:14px; outline:none;">
+            <button type="submit" style="width:100%; padding:14px; font-weight:bold; color:#fff; background:linear-gradient(135deg, #ff6b35, #ffa500); border:none; border-radius:8px; cursor:pointer; font-size:14px; text-transform:uppercase;">Entrar no Sistema</button>
+            <div id="loginErro" style="color:#ff6464; font-size:13px; margin-top:14px; font-weight:bold;"></div>
         </form>
     </div>
 
@@ -528,7 +528,7 @@
                     </div>
                 </div>
 
-                <!-- ABAS DE CATEGORIAS / SETORES (TODAS IGUAIS À TABELA PRINCIPAL) -->
+                <!-- ABAS DE CATEGORIAS -->
                 <div id="viaemail" class="tab-content">
                     <div class="table-wrapper">
                         <table>
@@ -922,7 +922,6 @@
                 document.getElementById('syncStatus').textContent = '🟢 Sincronizado';
                 atualizarCardsResumo();
                 
-                // Atualiza a visualização conforme a aba atual
                 if (ABA_ATUAL === 'manutencao') renderizarAbaSetor('Manutenção Predial', 'manutencaoBody');
                 else if (ABA_ATUAL === 'naem') renderizarAbaSetor('Multimídia (NAEM)', 'naemBody');
                 else if (ABA_ATUAL === 'ti') renderizarAbaSetor('TI / Internet', 'tiBody');
@@ -963,13 +962,16 @@
             filtrar();
         }
 
-        // 🟢 GERADOR DE LINHAS DA TABELA NO MESMO FORMATO DE DETALHADOS
+        // 🟢 GERADOR DE LINHAS (OCULTA CONCLUÍDOS POR PADRÃO)
         function gerarLinhasTabela(lista) {
-            if (!lista.length) {
-                return `<tr><td colspan="9" class="empty-state">📭 Nenhum chamado encontrado</td></tr>`;
+            // Filtra e oculta os chamados concluídos nas categorias
+            const chamadosAtivos = lista.filter(c => !(c.status || '').toLowerCase().includes('conclu'));
+
+            if (!chamadosAtivos.length) {
+                return `<tr><td colspan="9" class="empty-state">📭 Nenhum chamado ativo encontrado nesta categoria</td></tr>`;
             }
 
-            return lista.map(c => {
+            return chamadosAtivos.map(c => {
                 const ehConcluido = (c.status || '').toLowerCase().includes('conclu');
                 const badgeSLA = ehConcluido 
                     ? `<span class="badge badge-concluido">✅ CONCLUÍDO</span>`
@@ -1030,7 +1032,31 @@
 
         function renderizar() {
             const tbody = document.getElementById('tbody');
-            tbody.innerHTML = gerarLinhasTabela(CHAMADOS_FILTRADOS);
+            if (!CHAMADOS_FILTRADOS.length) {
+                tbody.innerHTML = `<tr><td colspan="9" class="empty-state">📭 Nenhum chamado encontrado</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = CHAMADOS_FILTRADOS.map(c => {
+                const ehConcluido = (c.status || '').toLowerCase().includes('conclu');
+                const badgeSLA = ehConcluido 
+                    ? `<span class="badge badge-concluido">✅ CONCLUÍDO</span>`
+                    : `<span class="badge ${c.slaVencido ? 'sla-vencido' : 'sla-ok'}">${c.slaVencido ? '🔴 VENCIDO' : '✅ OK'}</span>`;
+
+                return `
+                    <tr onclick="abrirFormularioEditar('${c.id}')">
+                        <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+                        <td><strong>#${c.id}</strong></td>
+                        <td>${c.titulo}</td>
+                        <td>${c.solicitante}</td>
+                        <td>${obterBadgePrioridade(c.prioridade)}</td>
+                        <td>${obterBadgeStatus(c.status)}</td>
+                        <td>${c.setorAtendimento}${c.sublocal ? ' - ' + c.sublocal : ''}</td>
+                        <td>${c.data ? new Date(c.data).toLocaleDateString('pt-BR') : '-'}</td>
+                        <td>${badgeSLA}</td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         function atualizarCardsResumo() {
@@ -1130,8 +1156,12 @@
 
         window.addEventListener('load', () => {
             popularSelectLocais();
-            if (DASHBOARD_TOKEN) iniciarDashboard();
-            else mostrarLogin();
+            if (DASHBOARD_TOKEN) {
+                esconderLogin();
+                iniciarDashboard();
+            } else {
+                mostrarLogin();
+            }
         });
     </script>
 </body>
