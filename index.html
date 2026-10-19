@@ -724,6 +724,7 @@
                 const res = await authFetch(`${BACKEND_URL}/api/chamados`);
                 const dados = await res.json();
                 
+                // Mapeia os dados do backend
                 CHAMADOS = (Array.isArray(dados) ? dados : dados.chamados || []).map(c => {
                     const sla = calcularSLA(c.dataAbertura || c.data, c.prioridade, c.status);
                     return { 
@@ -734,6 +735,9 @@
                         origem: c.origem || (c.email ? 'E-mail' : 'QR Code')
                     };
                 });
+
+                // 🟢 ORDENAÇÃO: Chamados MAIS NOVOS em cima
+                CHAMADOS.sort((a, b) => new Date(b.data) - new Date(a.data));
 
                 document.getElementById('syncStatus').textContent = '🟢 Sincronizado';
                 atualizarCardsResumo();
@@ -765,8 +769,9 @@
 
         function renderizarEmail() {
             const body = document.getElementById('emailBody');
-            // ✅ FILTRAGEM CORRIGIDA PARA EXIBIR TODOS OS CHAMADOS DE EMAIL
-            const dados = CHAMADOS.filter(c => c.origem === 'E-mail' || c.origem === 'email' || (c.email && c.origem !== 'QR Code'));
+            // 🟢 FILTRAGEM + ORDENAÇÃO (MAIS NOVOS EM CIMA)
+            const dados = CHAMADOS.filter(c => c.origem === 'E-mail' || c.origem === 'email' || (c.email && c.origem !== 'QR Code'))
+                          .sort((a, b) => new Date(b.data) - new Date(a.data));
             
             if (!dados.length) {
                 body.innerHTML = `<tr><td colspan="7" class="empty-state">📭 Nenhum chamado via e-mail encontrado</td></tr>`;
@@ -788,7 +793,9 @@
 
         function renderizarAbaSetor(setor, elementId) {
             const body = document.getElementById(elementId);
-            const dados = CHAMADOS.filter(c => c.setorAtendimento === setor);
+            // 🟢 FILTRAGEM + ORDENAÇÃO (MAIS NOVOS EM CIMA)
+            const dados = CHAMADOS.filter(c => c.setorAtendimento === setor)
+                          .sort((a, b) => new Date(b.data) - new Date(a.data));
             
             if (!dados.length) {
                 body.innerHTML = `<tr><td colspan="7" class="empty-state">📭 Nenhum chamado neste setor</td></tr>`;
