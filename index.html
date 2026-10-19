@@ -504,13 +504,13 @@
                     </div>
                 </div>
 
-                <!-- TABELA PRINCIPAL -->
+                <!-- TABELA PRINCIPAL (DETALHADOS) -->
                 <div id="chamados" class="tab-content active">
                     <div class="table-wrapper">
                         <table id="tabela">
                             <thead>
                                 <tr>
-                                    <th style="width:36px;"><input type="checkbox" id="checkTodos"></th>
+                                    <th style="width:36px;"><input type="checkbox" class="checkTodos"></th>
                                     <th>ID</th>
                                     <th>Título</th>
                                     <th>Solicitante</th>
@@ -528,11 +528,90 @@
                     </div>
                 </div>
 
-                <!-- ABAS DE SETORES -->
-                <div id="viaemail" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th><th>Ações</th></tr></thead><tbody id="emailBody"></tbody></table></div></div>
-                <div id="ti" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th><th>Ações</th></tr></thead><tbody id="tiBody"></tbody></table></div></div>
-                <div id="naem" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th><th>Ações</th></tr></thead><tbody id="naemBody"></tbody></table></div></div>
-                <div id="manutencao" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th><th>Ações</th></tr></thead><tbody id="manutencaoBody"></tbody></table></div></div>
+                <!-- ABAS DE CATEGORIAS / SETORES (TODAS IGUAIS À TABELA PRINCIPAL) -->
+                <div id="viaemail" class="tab-content">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width:36px;"><input type="checkbox" class="checkTodos"></th>
+                                    <th>ID</th>
+                                    <th>Título</th>
+                                    <th>Solicitante</th>
+                                    <th>Prioridade</th>
+                                    <th>Status</th>
+                                    <th>Setor/Local</th>
+                                    <th>Abertura</th>
+                                    <th>SLA</th>
+                                </tr>
+                            </thead>
+                            <tbody id="emailBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="ti" class="tab-content">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width:36px;"><input type="checkbox" class="checkTodos"></th>
+                                    <th>ID</th>
+                                    <th>Título</th>
+                                    <th>Solicitante</th>
+                                    <th>Prioridade</th>
+                                    <th>Status</th>
+                                    <th>Setor/Local</th>
+                                    <th>Abertura</th>
+                                    <th>SLA</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tiBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="naem" class="tab-content">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width:36px;"><input type="checkbox" class="checkTodos"></th>
+                                    <th>ID</th>
+                                    <th>Título</th>
+                                    <th>Solicitante</th>
+                                    <th>Prioridade</th>
+                                    <th>Status</th>
+                                    <th>Setor/Local</th>
+                                    <th>Abertura</th>
+                                    <th>SLA</th>
+                                </tr>
+                            </thead>
+                            <tbody id="naemBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="manutencao" class="tab-content">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width:36px;"><input type="checkbox" class="checkTodos"></th>
+                                    <th>ID</th>
+                                    <th>Título</th>
+                                    <th>Solicitante</th>
+                                    <th>Prioridade</th>
+                                    <th>Status</th>
+                                    <th>Setor/Local</th>
+                                    <th>Abertura</th>
+                                    <th>SLA</th>
+                                </tr>
+                            </thead>
+                            <tbody id="manutencaoBody"></tbody>
+                        </table>
+                    </div>
+                </div>
 
                 <!-- ABA GRÁFICOS -->
                 <div id="graficos" class="tab-content">
@@ -842,7 +921,14 @@
 
                 document.getElementById('syncStatus').textContent = '🟢 Sincronizado';
                 atualizarCardsResumo();
-                filtrar();
+                
+                // Atualiza a visualização conforme a aba atual
+                if (ABA_ATUAL === 'manutencao') renderizarAbaSetor('Manutenção Predial', 'manutencaoBody');
+                else if (ABA_ATUAL === 'naem') renderizarAbaSetor('Multimídia (NAEM)', 'naemBody');
+                else if (ABA_ATUAL === 'ti') renderizarAbaSetor('TI / Internet', 'tiBody');
+                else if (ABA_ATUAL === 'viaemail') renderizarEmail();
+                else filtrar();
+
             } catch (e) {
                 document.getElementById('syncStatus').textContent = '🔴 Erro de Sincronização';
             }
@@ -857,16 +943,18 @@
             if (target) target.classList.add('active');
             if (el && el.classList.contains('sidebar-item')) el.classList.add('active');
 
-            // Se voltar para 'Detalhados', limpa o filtro de status se estiver em "Concluído" para mostrar apenas ativos
             if (abaName === 'chamados') {
                 document.getElementById('filterStatus').value = '';
                 filtrar();
+            } else if (abaName === 'manutencao') {
+                renderizarAbaSetor('Manutenção Predial', 'manutencaoBody');
+            } else if (abaName === 'naem') {
+                renderizarAbaSetor('Multimídia (NAEM)', 'naemBody');
+            } else if (abaName === 'ti') {
+                renderizarAbaSetor('TI / Internet', 'tiBody');
+            } else if (abaName === 'viaemail') {
+                renderizarEmail();
             }
-
-            if (abaName === 'manutencao') renderizarAbaSetor('Manutenção Predial', 'manutencaoBody');
-            if (abaName === 'naem') renderizarAbaSetor('Multimídia (NAEM)', 'naemBody');
-            if (abaName === 'ti') renderizarAbaSetor('TI / Internet', 'tiBody');
-            if (abaName === 'viaemail') renderizarEmail();
         }
 
         function mostrarAbaConcluidos(el) {
@@ -875,85 +963,13 @@
             filtrar();
         }
 
-        function renderizarEmail() {
-            const body = document.getElementById('emailBody');
-            const dados = CHAMADOS.filter(c => c.origem === 'E-mail' || c.origem === 'email' || (c.email && c.origem !== 'QR Code'))
-                          .sort((a, b) => new Date(b.data) - new Date(a.data));
-            
-            if (!dados.length) {
-                body.innerHTML = `<tr><td colspan="7" class="empty-state">📭 Nenhum chamado via e-mail encontrado</td></tr>`;
-                return;
+        // 🟢 GERADOR DE LINHAS DA TABELA NO MESMO FORMATO DE DETALHADOS
+        function gerarLinhasTabela(lista) {
+            if (!lista.length) {
+                return `<tr><td colspan="9" class="empty-state">📭 Nenhum chamado encontrado</td></tr>`;
             }
 
-            body.innerHTML = dados.map(c => `
-                <tr onclick="abrirFormularioEditar('${c.id}')">
-                    <td>#${c.id}</td>
-                    <td>${obterBadgeStatus(c.status)}</td>
-                    <td>${obterBadgePrioridade(c.prioridade)}</td>
-                    <td>${c.titulo}</td>
-                    <td>${c.solicitante} (${c.email || 'N/A'})</td>
-                    <td>${c.data ? new Date(c.data).toLocaleDateString('pt-BR') : '-'}</td>
-                    <td><button class="btn-inline" style="padding:4px 8px;">Editar</button></td>
-                </tr>
-            `).join('');
-        }
-
-        function renderizarAbaSetor(setor, elementId) {
-            const body = document.getElementById(elementId);
-            const dados = CHAMADOS.filter(c => (c.setorAtendimento || '').toLowerCase().includes(setor.toLowerCase()))
-                          .sort((a, b) => new Date(b.data) - new Date(a.data));
-            
-            if (!dados.length) {
-                body.innerHTML = `<tr><td colspan="7" class="empty-state">📭 Nenhum chamado neste setor</td></tr>`;
-                return;
-            }
-
-            body.innerHTML = dados.map(c => `
-                <tr onclick="abrirFormularioEditar('${c.id}')">
-                    <td>#${c.id}</td>
-                    <td>${obterBadgeStatus(c.status)}</td>
-                    <td>${obterBadgePrioridade(c.prioridade)}</td>
-                    <td>${c.titulo}</td>
-                    <td>${c.solicitante}</td>
-                    <td>${c.data ? new Date(c.data).toLocaleDateString('pt-BR') : '-'}</td>
-                    <td><button class="btn-inline" style="padding:4px 8px;">Editar</button></td>
-                </tr>
-            `).join('');
-        }
-
-        // 🟢 REGRA DE FILTRAGEM ATUALIZADA
-        function filtrar() {
-            const status = document.getElementById('filterStatus').value;
-            const prioridade = document.getElementById('filterPrioridade').value;
-            const busca = document.getElementById('filterBusca').value.toLowerCase();
-
-            CHAMADOS_FILTRADOS = CHAMADOS.filter(c => {
-                let ok = true;
-                const statusChamado = (c.status || '').toLowerCase();
-
-                // Se não houver filtro de status explícito selecionado, OCULTA os Concluídos na tabela principal
-                if (!status && FILTRO_RAPIDO !== 'Concluído') {
-                    if (statusChamado.includes('conclu')) ok = false;
-                } else if (status && c.status !== status) {
-                    ok = false;
-                }
-
-                if (prioridade && c.prioridade !== prioridade) ok = false;
-                if (FILTRO_RAPIDO === '__vencidos__' && (!c.slaVencido || statusChamado.includes('conclu'))) ok = false;
-                if (busca && !`${c.id} ${c.titulo} ${c.solicitante} ${c.setorAtendimento}`.toLowerCase().includes(busca)) ok = false;
-                return ok;
-            });
-            renderizar();
-        }
-
-        function renderizar() {
-            const tbody = document.getElementById('tbody');
-            if (!CHAMADOS_FILTRADOS.length) {
-                tbody.innerHTML = `<tr><td colspan="9" class="empty-state">📭 Nenhum chamado encontrado</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = CHAMADOS_FILTRADOS.map(c => {
+            return lista.map(c => {
                 const ehConcluido = (c.status || '').toLowerCase().includes('conclu');
                 const badgeSLA = ehConcluido 
                     ? `<span class="badge badge-concluido">✅ CONCLUÍDO</span>`
@@ -973,6 +989,48 @@
                     </tr>
                 `;
             }).join('');
+        }
+
+        function renderizarEmail() {
+            const body = document.getElementById('emailBody');
+            const dados = CHAMADOS.filter(c => c.origem === 'E-mail' || c.origem === 'email' || (c.email && c.origem !== 'QR Code'))
+                          .sort((a, b) => new Date(b.data) - new Date(a.data));
+            body.innerHTML = gerarLinhasTabela(dados);
+        }
+
+        function renderizarAbaSetor(setor, elementId) {
+            const body = document.getElementById(elementId);
+            const dados = CHAMADOS.filter(c => (c.setorAtendimento || '').toLowerCase().includes(setor.toLowerCase()))
+                          .sort((a, b) => new Date(b.data) - new Date(a.data));
+            body.innerHTML = gerarLinhasTabela(dados);
+        }
+
+        function filtrar() {
+            const status = document.getElementById('filterStatus').value;
+            const prioridade = document.getElementById('filterPrioridade').value;
+            const busca = document.getElementById('filterBusca').value.toLowerCase();
+
+            CHAMADOS_FILTRADOS = CHAMADOS.filter(c => {
+                let ok = true;
+                const statusChamado = (c.status || '').toLowerCase();
+
+                if (!status && FILTRO_RAPIDO !== 'Concluído') {
+                    if (statusChamado.includes('conclu')) ok = false;
+                } else if (status && c.status !== status) {
+                    ok = false;
+                }
+
+                if (prioridade && c.prioridade !== prioridade) ok = false;
+                if (FILTRO_RAPIDO === '__vencidos__' && (!c.slaVencido || statusChamado.includes('conclu'))) ok = false;
+                if (busca && !`${c.id} ${c.titulo} ${c.solicitante} ${c.setorAtendimento}`.toLowerCase().includes(busca)) ok = false;
+                return ok;
+            });
+            renderizar();
+        }
+
+        function renderizar() {
+            const tbody = document.getElementById('tbody');
+            tbody.innerHTML = gerarLinhasTabela(CHAMADOS_FILTRADOS);
         }
 
         function atualizarCardsResumo() {
