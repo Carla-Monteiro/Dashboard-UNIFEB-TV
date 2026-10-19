@@ -14,7 +14,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0d1626;
+            background: linear-gradient(135deg, #0a1628 0%, #1a2f4d 100%);
             color: #fff;
             min-height: 100vh;
             display: flex;
@@ -25,8 +25,8 @@
         .topbar {
             width: 100%;
             height: 70px;
-            background: #121e30;
-            border-bottom: 2px solid #38301c;
+            background: rgba(10, 22, 40, 0.97);
+            border-bottom: 2px solid rgba(255, 165, 0, 0.3);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -34,6 +34,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
         }
 
         .topbar-left {
@@ -43,13 +44,13 @@
         }
 
         .topbar-logo {
-            height: 38px;
+            height: 42px;
             width: auto;
             object-fit: contain;
         }
 
         .topbar-title h1 {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 700;
             color: #ffffff;
             line-height: 1.2;
@@ -57,7 +58,7 @@
 
         .topbar-title p {
             font-size: 11px;
-            color: #d19a3f;
+            color: #ffa500;
             font-weight: 700;
             letter-spacing: 0.5px;
         }
@@ -69,10 +70,10 @@
         }
 
         .status-badge {
-            padding: 6px 14px;
-            background: rgba(0, 200, 100, 0.15);
-            border: 1px solid #00c864;
-            border-radius: 20px;
+            padding: 8px 16px;
+            background: rgba(0, 200, 100, 0.25);
+            border: 2px solid #00c864;
+            border-radius: 25px;
             color: #00c864;
             font-size: 11px;
             font-weight: 700;
@@ -83,9 +84,9 @@
             align-items: center;
             gap: 12px;
             padding: 6px 6px 6px 16px;
-            border: 1px solid #d19a3f;
+            border: 2px solid rgba(255, 165, 0, 0.5);
             border-radius: 25px;
-            background: rgba(18, 30, 48, 0.6);
+            background: rgba(10, 22, 40, 0.6);
         }
 
         .user-info {
@@ -93,12 +94,12 @@
             align-items: center;
             gap: 8px;
             font-size: 13px;
-            color: #d19a3f;
+            color: #ffa500;
             font-weight: 600;
         }
 
         .btn-logout {
-            background: #d9635b;
+            background: #ff6b35;
             color: #ffffff;
             border: none;
             padding: 6px 16px;
@@ -110,7 +111,7 @@
         }
 
         .btn-logout:hover {
-            background: #c54f47;
+            background: #ff7a50;
         }
 
         /* ===== ESTRUTURA PRINCIPAL ===== */
@@ -123,12 +124,12 @@
         /* ===== SIDEBAR ===== */
         .sidebar {
             width: 250px;
-            background: #121e30;
-            border-right: 2px solid #38301c;
+            background: rgba(10, 22, 40, 0.95);
+            border-right: 2px solid rgba(255, 165, 0, 0.3);
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
-            padding-top: 10px;
+            padding-top: 15px;
         }
 
         .sidebar-menu {
@@ -140,14 +141,14 @@
             padding: 16px 20px 8px;
             font-size: 11px;
             font-weight: 700;
-            color: #d19a3f;
+            color: #ffa500;
             text-transform: uppercase;
             letter-spacing: 0.8px;
         }
 
         .sidebar-item {
             padding: 12px 20px 12px 28px;
-            color: #a0aec0;
+            color: #aaa;
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
@@ -155,20 +156,20 @@
             align-items: center;
             gap: 12px;
             transition: all 0.2s ease;
-            border-left: 3px solid transparent;
+            border-left: 4px solid transparent;
             text-decoration: none;
         }
 
         .sidebar-item:hover {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.03);
+            color: #ffa500;
+            background: rgba(255, 165, 0, 0.05);
         }
 
         .sidebar-item.active {
             color: #ffa500;
-            background: #1d2729;
+            background: rgba(255, 165, 0, 0.12);
             border-left-color: #ffa500;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         /* ===== ÁREA DE CONTEÚDO PRINCIPAL ===== */
@@ -183,7 +184,7 @@
             margin: 0 auto;
         }
 
-        /* ===== BOTÕES ===== */
+        /* ===== BOTÕES DE AÇÃO ===== */
         .buttons-group {
             display: flex;
             gap: 10px;
@@ -192,29 +193,29 @@
         }
 
         .btn {
-            padding: 10px 18px;
-            background: rgba(255, 165, 0, 0.12);
-            border: 1px solid rgba(255, 165, 0, 0.4);
+            padding: 11px 20px;
+            background: rgba(255, 165, 0, 0.15);
+            border: 2px solid rgba(255, 165, 0, 0.5);
             border-radius: 8px;
             color: #ffa500;
             font-weight: 600;
             cursor: pointer;
             font-size: 12px;
-            transition: all 0.2s;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
         .btn:hover {
-            background: rgba(255, 165, 0, 0.22);
+            background: rgba(255, 165, 0, 0.25);
             border-color: #ffa500;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
         }
 
         .btn.primary {
             background: linear-gradient(135deg, #ff6b35, #ffa500);
-            border: none;
+            border-color: #ff6b35;
             color: #fff;
         }
 
@@ -226,8 +227,8 @@
         /* ===== FILTROS ===== */
         .filters-section {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 18px;
             margin-bottom: 25px;
         }
 
@@ -236,23 +237,23 @@
             font-size: 11px;
             font-weight: 700;
             color: #ffa500;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             text-transform: uppercase;
         }
 
         .filter-item select,
         .filter-item input {
             width: 100%;
-            padding: 10px 12px;
-            background: rgba(255, 165, 0, 0.06);
-            border: 1px solid rgba(255, 165, 0, 0.3);
+            padding: 12px 14px;
+            background: rgba(255, 165, 0, 0.08);
+            border: 2px solid rgba(255, 165, 0, 0.3);
             border-radius: 8px;
             color: #fff;
             font-size: 13px;
         }
 
         .filter-item select option {
-            background: #121e30;
+            background: #0a1628;
             color: #fff;
         }
 
@@ -265,33 +266,34 @@
         }
 
         .stat-card {
-            background: #121e30;
-            border: 1px solid rgba(255, 165, 0, 0.2);
-            border-radius: 10px;
-            padding: 20px;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.15), rgba(255, 165, 0, 0.05));
+            border: 2px solid rgba(255, 165, 0, 0.3);
+            border-radius: 12px;
+            padding: 25px;
             text-align: center;
-            transition: all 0.2s;
+            transition: all 0.3s;
             cursor: pointer;
         }
 
         .stat-card:hover {
-            border-color: rgba(255, 165, 0, 0.5);
-            transform: translateY(-2px);
+            border-color: rgba(255, 165, 0, 0.6);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 165, 0, 0.2);
         }
 
-        .stat-icon { font-size: 26px; margin-bottom: 6px; }
-        .stat-label { font-size: 11px; color: #8899a6; margin-bottom: 6px; text-transform: uppercase; }
-        .stat-number { font-size: 30px; font-weight: 700; color: #ffa500; }
+        .stat-icon { font-size: 32px; margin-bottom: 10px; }
+        .stat-label { font-size: 11px; color: #aaa; margin-bottom: 8px; text-transform: uppercase; }
+        .stat-number { font-size: 36px; font-weight: 700; color: #ffa500; }
         .stat-card.warning .stat-number { color: #ff6464; }
         .stat-card.success .stat-number { color: #00c864; }
 
         /* ===== TABELA ===== */
         .table-wrapper {
-            background: #121e30;
-            border: 1px solid rgba(255, 165, 0, 0.2);
-            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 165, 0, 0.2);
+            border-radius: 12px;
             overflow: auto;
-            max-height: 60vh;
+            max-height: 65vh;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
@@ -304,23 +306,23 @@
             position: sticky;
             top: 0;
             z-index: 2;
-            padding: 14px 12px;
+            padding: 16px 12px;
             text-align: left;
             font-size: 11px;
             font-weight: 700;
             color: #ffa500;
             text-transform: uppercase;
-            background: #17263c;
-            border-bottom: 1px solid rgba(255, 165, 0, 0.3);
+            background: #16283f;
+            border-bottom: 2px solid rgba(255, 165, 0, 0.3);
         }
 
         td {
-            padding: 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 13px 12px;
+            border-bottom: 1px solid rgba(255, 165, 0, 0.08);
             font-size: 13px;
         }
 
-        tbody tr:hover { background: rgba(255, 165, 0, 0.05); }
+        tbody tr:hover { background: rgba(255, 165, 0, 0.1); }
 
         .table-select {
             padding: 5px 8px;
@@ -332,13 +334,13 @@
             cursor: pointer;
         }
 
-        .table-select option { background: #121e30; color: #fff; }
+        .table-select option { background: #0a1628; color: #fff; }
 
         /* BADGES */
         .badge {
             display: inline-block;
-            padding: 4px 10px;
-            border-radius: 4px;
+            padding: 6px 12px;
+            border-radius: 5px;
             font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
@@ -354,34 +356,6 @@
         .sla-ok { background: rgba(0, 200, 100, 0.3); color: #00c864; border-color: #00c864; cursor: pointer; }
         .sla-vencido { background: rgba(255, 100, 100, 0.3); color: #ff6464; border-color: #ff6464; cursor: pointer; }
 
-        /* MODAL SLA */
-        .sla-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .sla-modal.active { display: flex; }
-
-        .sla-card-modal {
-            background: rgba(20, 40, 60, 0.98);
-            border: 2px solid rgba(255, 100, 100, 0.6);
-            border-radius: 12px;
-            padding: 40px;
-            max-width: 450px;
-            width: 90%;
-            position: relative;
-        }
-
-        .sla-close {
-            position: absolute; top: 20px; right: 20px;
-            background: transparent; border: none; color: #aaa; font-size: 28px; cursor: pointer;
-        }
-
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .empty-state { text-align: center; padding: 40px 20px; color: #aaa; }
@@ -389,13 +363,13 @@
         .graficos-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
+            gap: 25px;
         }
 
         .chart-card {
-            background: #121e30;
-            border: 1px solid rgba(255, 165, 0, 0.2);
-            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 165, 0, 0.2);
+            border-radius: 12px;
             padding: 20px;
         }
 
@@ -409,19 +383,19 @@
 </head>
 <body>
 
-    <!-- TELA DE LOGIN -->
-    <div id="loginOverlay" style="display:none; position:fixed; inset:0; z-index:9999; background:#0a121d; align-items:center; justify-content:center; padding:20px;">
-        <form onsubmit="fazerLogin(event)" style="background:#121e30; border:1px solid rgba(255, 165, 0, 0.3); border-radius:16px; padding:40px; max-width:380px; width:100%; text-align:center;">
-            <img src="logo-UNIFEB.png" alt="UNIFEB" style="max-width:140px; margin-bottom:18px;" onerror="this.style.display='none'">
-            <h2 style="margin:0 0 6px; color:#fff;">Controle de Chamados</h2>
-            <p style="margin:0 0 20px; color:#8899a6; font-size:14px;">Área restrita</p>
-            <input type="password" id="loginSenha" placeholder="Senha" required style="width:100%; padding:12px; background:rgba(255,165,0,0.06); border:1px solid rgba(255,165,0,0.3); border-radius:8px; color:#fff; margin-bottom:12px;">
-            <button type="submit" class="btn primary" style="width:100%; justify-content:center; padding:12px;">Entrar</button>
-            <div id="loginErro" style="color:#ff6464; font-size:13px; margin-top:12px;"></div>
+    <!-- LOGIN OVERLAY -->
+    <div id="loginOverlay" style="display:none; position:fixed; inset:0; z-index:9999; background:linear-gradient(135deg, #1a2a5e 0%, #2a3a7e 100%); align-items:center; justify-content:center; padding:20px;">
+        <form onsubmit="fazerLogin(event)" style="background:#fff; border-radius:16px; padding:44px 36px; max-width:380px; width:100%; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+            <img src="logo-UNIFEB.png" alt="UNIFEB" style="max-width:160px; margin-bottom:18px;" onerror="this.style.display='none'">
+            <h2 style="margin:0 0 6px; color:#1a2a5e;">Controle de Chamados</h2>
+            <p style="margin:0 0 20px; color:#666; font-size:14px;">Área restrita</p>
+            <input type="password" id="loginSenha" placeholder="Senha" required style="width:100%; padding:12px; border:1px solid #ccc; border-radius:8px; margin-bottom:12px;">
+            <button type="submit" style="width:100%; padding:12px; font-weight:bold; color:#fff; background:#1a2a5e; border:none; border-radius:8px; cursor:pointer;">Entrar</button>
+            <div id="loginErro" style="color:#d32f2f; font-size:13px; margin-top:12px;"></div>
         </form>
     </div>
 
-    <!-- HEADER BARRA SUPERIOR -->
+    <!-- HEADER TOPBAR -->
     <header class="topbar">
         <div class="topbar-left">
             <img src="logo-UNIFEB.png" alt="UNIFEB" class="topbar-logo" onerror="this.style.display='none'">
@@ -444,7 +418,7 @@
     </header>
 
     <div class="app-layout">
-        <!-- SIDEBAR MENU -->
+        <!-- SIDEBAR -->
         <aside class="sidebar">
             <nav class="sidebar-menu">
                 <div class="sidebar-category">📁 CATEGORIAS</div>
@@ -461,11 +435,11 @@
             </nav>
         </aside>
 
-        <!-- ÁREA PRINCIPAL DA PÁGINA -->
+        <!-- MAIN CONTENT -->
         <main class="main-content">
             <div class="container">
                 
-                <!-- BOTÕES DE AÇÃO -->
+                <!-- BOTÕES -->
                 <div class="buttons-group">
                     <button class="btn" onclick="sincronizar()">🔄 Sincronizar</button>
                     <button class="btn" onclick="limparCache()">🗑️ Limpar Cache</button>
@@ -474,7 +448,7 @@
                     <button class="btn primary" onclick="novoChamado()">➕ Novo Chamado</button>
                 </div>
 
-                <!-- CARDS RESUMO -->
+                <!-- CARDS -->
                 <div class="stats-section">
                     <div class="stat-card" id="cardAbertos" onclick="filtrarRapido('Aberto')">
                         <div class="stat-icon">📂</div>
@@ -524,22 +498,22 @@
                     </div>
                 </div>
 
-                <!-- ABA: CHAMADOS DETALHADOS -->
+                <!-- TABELA PRINCIPAL -->
                 <div id="chamados" class="tab-content active">
                     <div class="table-wrapper">
                         <table id="tabela">
                             <thead>
                                 <tr>
                                     <th style="width:36px;"><input type="checkbox" id="checkTodos" onclick="alternarTodosVisiveis()"></th>
-                                    <th data-coluna="id" data-label="ID" onclick="ordenarPor('id')">ID</th>
-                                    <th data-coluna="titulo" data-label="Título" onclick="ordenarPor('titulo')">Título</th>
-                                    <th data-coluna="solicitante" data-label="Solicitante" onclick="ordenarPor('solicitante')">Solicitante</th>
-                                    <th data-coluna="prioridade" data-label="Prioridade" onclick="ordenarPor('prioridade')">Prioridade</th>
-                                    <th data-coluna="status" data-label="Status" onclick="ordenarPor('status')">Status</th>
-                                    <th data-coluna="responsavel" data-label="Responsável" onclick="ordenarPor('responsavel')">Responsável</th>
-                                    <th data-coluna="setor" data-label="Setor" onclick="ordenarPor('setor')">Setor</th>
-                                    <th data-coluna="abertura" data-label="Abertura" onclick="ordenarPor('abertura')">Abertura</th>
-                                    <th data-coluna="sla" data-label="SLA" onclick="ordenarPor('sla')">SLA</th>
+                                    <th onclick="ordenarPor('id')">ID</th>
+                                    <th onclick="ordenarPor('titulo')">Título</th>
+                                    <th onclick="ordenarPor('solicitante')">Solicitante</th>
+                                    <th onclick="ordenarPor('prioridade')">Prioridade</th>
+                                    <th onclick="ordenarPor('status')">Status</th>
+                                    <th onclick="ordenarPor('responsavel')">Responsável</th>
+                                    <th onclick="ordenarPor('setor')">Setor</th>
+                                    <th onclick="ordenarPor('abertura')">Abertura</th>
+                                    <th onclick="ordenarPor('sla')">SLA</th>
                                 </tr>
                             </thead>
                             <tbody id="tbody">
@@ -549,7 +523,13 @@
                     </div>
                 </div>
 
-                <!-- ABA: GRÁFICOS -->
+                <!-- ABAS DE SETORES -->
+                <div id="viaemail" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th><th>Ações</th></tr></thead><tbody id="emailBody"></tbody></table></div></div>
+                <div id="ti" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th><th>Ações</th></tr></thead><tbody id="tiBody"></tbody></table></div></div>
+                <div id="naem" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th><th>Ações</th></tr></thead><tbody id="naemBody"></tbody></table></div></div>
+                <div id="manutencao" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th><th>Ações</th></tr></thead><tbody id="manutencaoBody"></tbody></table></div></div>
+
+                <!-- ABA GRÁFICOS -->
                 <div id="graficos" class="tab-content">
                     <div class="graficos-grid">
                         <div class="chart-card">
@@ -567,18 +547,12 @@
                     </div>
                 </div>
 
-                <!-- ABA: SATISFAÇÃO -->
+                <!-- ABA SATISFAÇÃO -->
                 <div id="satisfacao" class="tab-content">
                     <div class="table-wrapper">
                         <table>
                             <thead>
-                                <tr>
-                                    <th>Avaliação</th>
-                                    <th>Comentário</th>
-                                    <th>Chamado</th>
-                                    <th>Setor</th>
-                                    <th>Data</th>
-                                </tr>
+                                <tr><th>Avaliação</th><th>Comentário</th><th>Chamado</th><th>Setor</th><th>Data</th></tr>
                             </thead>
                             <tbody id="tbodySatisfacao">
                                 <tr><td colspan="5" class="empty-state">Carregando respostas...</td></tr>
@@ -587,46 +561,40 @@
                     </div>
                 </div>
 
-                <!-- SEÇÕES DE SETORES -->
-                <div id="manutencao" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th><th>Ações</th></tr></thead><tbody id="manutencaoBody"></tbody></table></div></div>
-                <div id="naem" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th><th>Ações</th></tr></thead><tbody id="naemBody"></tbody></table></div></div>
-                <div id="ti" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th><th>Ações</th></tr></thead><tbody id="tiBody"></tbody></table></div></div>
-                <div id="viaemail" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Status</th><th>Prioridade</th><th>Título</th><th>Solicitante</th><th>Data</th><th>Ações</th></tr></thead><tbody id="emailBody"></tbody></table></div></div>
-
             </div>
         </main>
     </div>
 
     <!-- MODAL FORMULÁRIO -->
-    <div id="modalFormulario" class="modal-formulario" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 100; padding: 20px; display: none; flex-direction: column; justify-content: center; align-items: center;">
-        <div style="background: #121e30; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 16px; padding: 30px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+    <div id="modalFormulario" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 100; padding: 20px; display: none; flex-direction: column; justify-content: center; align-items: center;">
+        <div style="background: linear-gradient(135deg, #0a1628 0%, #1a2f4d 100%); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 16px; padding: 30px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px solid rgba(255, 165, 0, 0.2);">
                 <h2 id="modalTitulo" style="font-size: 24px; margin: 0; color: #fff;">➕ Novo Chamado</h2>
-                <button class="modal-close" onclick="fecharFormulario()" style="background: none; border: none; color: #aaa; font-size: 28px; cursor: pointer;">✕</button>
+                <button onclick="fecharFormulario()" style="background: none; border: none; color: #aaa; font-size: 28px; cursor: pointer;">✕</button>
             </div>
             <form id="formChamado" onsubmit="salvarChamado(event)" style="display: flex; flex-direction: column; gap: 20px;">
                 <div>
                     <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">TÍTULO *</label>
-                    <input type="text" id="titulo" required style="width: 100%; padding: 12px; background: rgba(255, 165, 0, 0.08); border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
+                    <input type="text" id="titulo" required style="width: 100%; padding: 12px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
                 </div>
                 <div>
                     <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">DESCRIÇÃO *</label>
-                    <textarea id="descricao" required style="width: 100%; padding: 12px; background: rgba(255, 165, 0, 0.08); border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; min-height: 80px;"></textarea>
+                    <textarea id="descricao" required style="width: 100%; padding: 12px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; min-height: 80px;"></textarea>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">SOLICITANTE *</label>
-                        <input type="text" id="solicitante" required style="width: 100%; padding: 12px; background: rgba(255, 165, 0, 0.08); border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
+                        <input type="text" id="solicitante" required style="width: 100%; padding: 12px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">EMAIL *</label>
-                        <input type="email" id="email" required style="width: 100%; padding: 12px; background: rgba(255, 165, 0, 0.08); border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
+                        <input type="email" id="email" required style="width: 100%; padding: 12px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
                     </div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">SETOR *</label>
-                        <select id="setor" required style="width: 100%; padding: 12px; background: #17263c; border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
+                        <select id="setor" required style="width: 100%; padding: 12px; background: #1a2f4d; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
                             <option value="">Selecione um setor</option>
                             <option value="TI / Internet">TI / Internet</option>
                             <option value="Multimídia (NAEM)">Multimídia (NAEM)</option>
@@ -636,7 +604,7 @@
                     </div>
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">PRIORIDADE *</label>
-                        <select id="prioridade" required style="width: 100%; padding: 12px; background: #17263c; border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
+                        <select id="prioridade" required style="width: 100%; padding: 12px; background: #1a2f4d; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
                             <option value="Alta">Alta</option>
                             <option value="Média" selected>Média</option>
                             <option value="Baixa">Baixa</option>
@@ -645,19 +613,15 @@
                 </div>
                 <div id="statusEditar" style="display: none;">
                     <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">STATUS</label>
-                    <select id="status" onchange="atualizarCampoResolucao()" style="width: 100%; padding: 12px; background: #17263c; border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
+                    <select id="status" style="width: 100%; padding: 12px; background: #1a2f4d; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
                         <option value="Aberto">Aberto</option>
                         <option value="Em andamento">Em andamento</option>
                         <option value="Concluído">Concluído</option>
                     </select>
                 </div>
-                <div id="resolucaoEditar" style="display: none;">
-                    <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">SOLUÇÃO *</label>
-                    <textarea id="resolucaoTexto" style="width: 100%; padding: 12px; background: rgba(255, 165, 0, 0.08); border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;"></textarea>
-                </div>
                 <div id="responsavelEditar" style="display: none;">
                     <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">RESPONSÁVEL</label>
-                    <select id="responsavel" style="width: 100%; padding: 12px; background: #17263c; border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
+                    <select id="responsavel" style="width: 100%; padding: 12px; background: #1a2f4d; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
                         <option value="">Não atribuído</option>
                         <option value="Carla Monteiro (NST)">Carla Monteiro (NST)</option>
                         <option value="Felipe Sanches (NST)">Felipe Sanches (NST)</option>
@@ -670,19 +634,9 @@
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
                     <button type="submit" id="btnSubmit" class="btn primary" style="flex:2; justify-content:center;">Criar Chamado</button>
                     <button type="button" onclick="fecharFormulario()" class="btn" style="flex:1; justify-content:center;">Cancelar</button>
-                    <button type="button" id="btnDeletar" style="display: none; background: rgba(255,100,100,0.2); border: 1px solid #ff6464; color: #ff6464; border-radius:8px; padding: 10px; cursor:pointer;" onclick="deletarChamadoAtual()">🗑️ Excluir</button>
+                    <button type="button" id="btnDeletar" style="display: none; background: rgba(255,100,100,0.2); border: 2px solid #ff6464; color: #ff6464; border-radius:8px; padding: 10px; cursor:pointer;" onclick="deletarChamadoAtual()">🗑️ Excluir</button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <!-- MODAL SLA DETALHES -->
-    <div id="slaModal" class="sla-modal" onclick="if(event.target === this) fecharSLA()">
-        <div class="sla-card-modal">
-            <button class="sla-close" onclick="fecharSLA()">✕</button>
-            <h3 style="color:#ff6464; margin-bottom:15px;" id="modalStatus">🔴 VENCIDO</h3>
-            <p><strong>Tempo Atraso:</strong> <span id="modalAtraso">0h</span></p>
-            <p style="margin-top:10px;"><strong>Aberto há:</strong> <span id="modalAberto">0h</span></p>
         </div>
     </div>
 
@@ -721,7 +675,7 @@
                     mostrarLogin(data.mensagem || 'Senha incorreta');
                 }
             } catch (err) {
-                mostrarLogin('Erro de conexão com servidor');
+                mostrarLogin('Erro ao conectar com servidor');
             }
         }
 
@@ -754,15 +708,14 @@
         const PRAZOS_SLA = { 'Baixa': 24, 'Média': 8, 'Alta': 2 };
 
         function calcularSLA(dataAbertura, prioridade, status) {
-            if (status === 'Concluído') return { slaVencido: false, slaAberto: '✅ CONCLUÍDO', slaAtraso: 'Concluído', porcentagem: 100 };
+            if (status === 'Concluído') return { slaVencido: false, slaAberto: '✅ CONCLUÍDO', slaAtraso: 'Concluído' };
             const decorrido = (new Date() - new Date(dataAbertura)) / (1000 * 60 * 60);
             const prazo = PRAZOS_SLA[prioridade] || 8;
             const vencido = decorrido > prazo;
             return {
                 slaVencido: vencido,
                 slaAberto: `${Math.floor(decorrido)}h`,
-                slaAtraso: vencido ? `🔴 ATRASADO ${Math.round(decorrido - prazo)}h` : 'No prazo',
-                porcentagem: Math.min(100, Math.round((decorrido / prazo) * 100))
+                slaAtraso: vencido ? `🔴 ATRASADO ${Math.round(decorrido - prazo)}h` : 'No prazo'
             };
         }
 
@@ -770,9 +723,16 @@
             try {
                 const res = await authFetch(`${BACKEND_URL}/api/chamados`);
                 const dados = await res.json();
+                
                 CHAMADOS = (Array.isArray(dados) ? dados : dados.chamados || []).map(c => {
-                    const sla = calcularSLA(c.dataAbertura, c.prioridade, c.status);
-                    return { ...c, ...sla, data: c.dataAbertura, setorAtendimento: c.setor };
+                    const sla = calcularSLA(c.dataAbertura || c.data, c.prioridade, c.status);
+                    return { 
+                        ...c, 
+                        ...sla, 
+                        data: c.dataAbertura || c.data, 
+                        setorAtendimento: c.setor || c.setorAtendimento || 'Geral',
+                        origem: c.origem || (c.email ? 'E-mail' : 'QR Code')
+                    };
                 });
 
                 document.getElementById('syncStatus').textContent = '🟢 Sincronizado';
@@ -791,7 +751,6 @@
             if (target) target.classList.add('active');
             if (el) el.classList.add('active');
 
-            if (abaName === 'graficos') desenharGraficos();
             if (abaName === 'manutencao') renderizarAbaSetor('Manutenção Predial', 'manutencaoBody');
             if (abaName === 'naem') renderizarAbaSetor('Multimídia (NAEM)', 'naemBody');
             if (abaName === 'ti') renderizarAbaSetor('TI / Internet', 'tiBody');
@@ -802,6 +761,51 @@
             mostrarAba('chamados', el);
             document.getElementById('filterStatus').value = 'Concluído';
             filtrar();
+        }
+
+        function renderizarEmail() {
+            const body = document.getElementById('emailBody');
+            // ✅ FILTRAGEM CORRIGIDA PARA EXIBIR TODOS OS CHAMADOS DE EMAIL
+            const dados = CHAMADOS.filter(c => c.origem === 'E-mail' || c.origem === 'email' || (c.email && c.origem !== 'QR Code'));
+            
+            if (!dados.length) {
+                body.innerHTML = `<tr><td colspan="7" class="empty-state">📭 Nenhum chamado via e-mail encontrado</td></tr>`;
+                return;
+            }
+
+            body.innerHTML = dados.map(c => `
+                <tr onclick="abrirFormularioEditar('${c.id}')">
+                    <td>#${c.id}</td>
+                    <td><span class="badge badge-aberto">${c.status}</span></td>
+                    <td><span class="badge badge-${c.prioridade ? c.prioridade.toLowerCase() : 'media'}">${c.prioridade}</span></td>
+                    <td>${c.titulo}</td>
+                    <td>${c.solicitante} (${c.email || 'N/A'})</td>
+                    <td>${c.data ? new Date(c.data).toLocaleDateString('pt-BR') : '-'}</td>
+                    <td><button class="btn" style="padding:4px 8px;">Editar</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderizarAbaSetor(setor, elementId) {
+            const body = document.getElementById(elementId);
+            const dados = CHAMADOS.filter(c => c.setorAtendimento === setor);
+            
+            if (!dados.length) {
+                body.innerHTML = `<tr><td colspan="7" class="empty-state">📭 Nenhum chamado neste setor</td></tr>`;
+                return;
+            }
+
+            body.innerHTML = dados.map(c => `
+                <tr onclick="abrirFormularioEditar('${c.id}')">
+                    <td>#${c.id}</td>
+                    <td><span class="badge badge-aberto">${c.status}</span></td>
+                    <td><span class="badge badge-${c.prioridade ? c.prioridade.toLowerCase() : 'media'}">${c.prioridade}</span></td>
+                    <td>${c.titulo}</td>
+                    <td>${c.solicitante}</td>
+                    <td>${c.data ? new Date(c.data).toLocaleDateString('pt-BR') : '-'}</td>
+                    <td><button class="btn" style="padding:4px 8px;">Editar</button></td>
+                </tr>
+            `).join('');
         }
 
         function filtrar() {
@@ -829,38 +833,16 @@
 
             tbody.innerHTML = CHAMADOS_FILTRADOS.map(c => `
                 <tr onclick="abrirFormularioEditar('${c.id}')">
-                    <td onclick="event.stopPropagation()"><input type="checkbox" ${SELECIONADOS.has(c.id) ? 'checked' : ''} onclick="alternarSelecao('${c.id}')"></td>
+                    <td onclick="event.stopPropagation()"><input type="checkbox"></td>
                     <td><strong>#${c.id}</strong></td>
                     <td>${c.titulo}</td>
                     <td>${c.solicitante}</td>
-                    <td><span class="badge badge-${c.prioridade.toLowerCase()}">${c.prioridade}</span></td>
+                    <td><span class="badge badge-${c.prioridade ? c.prioridade.toLowerCase() : 'media'}">${c.prioridade}</span></td>
                     <td><span class="badge badge-aberto">${c.status}</span></td>
                     <td>${c.responsavel || 'Não atribuído'}</td>
                     <td>${c.setorAtendimento || 'Geral'}</td>
                     <td>${c.data ? new Date(c.data).toLocaleDateString('pt-BR') : '-'}</td>
-                    <td onclick="event.stopPropagation(); abrirSLA('${c.id}')"><span class="badge ${c.slaVencido ? 'sla-vencido' : 'sla-ok'}">${c.slaVencido ? '🔴 VENCIDO' : '✅ OK'}</span></td>
-                </tr>
-            `).join('');
-        }
-
-        function renderizarAbaSetor(setor, elementId) {
-            const body = document.getElementById(elementId);
-            const dados = CHAMADOS.filter(c => c.setorAtendimento === setor);
-            body.innerHTML = dados.map(c => `
-                <tr onclick="abrirFormularioEditar('${c.id}')">
-                    <td>#${c.id}</td><td>${c.status}</td><td>${c.prioridade}</td><td>${c.titulo}</td><td>${c.solicitante}</td><td>${new Date(c.data).toLocaleDateString()}</td>
-                    <td><button class="btn" style="padding:4px 8px;">Editar</button></td>
-                </tr>
-            `).join('');
-        }
-
-        function renderizarEmail() {
-            const body = document.getElementById('emailBody');
-            const dados = CHAMADOS.filter(c => c.origem === 'E-mail');
-            body.innerHTML = dados.map(c => `
-                <tr onclick="abrirFormularioEditar('${c.id}')">
-                    <td>#${c.id}</td><td>${c.status}</td><td>${c.prioridade}</td><td>${c.titulo}</td><td>${c.solicitante}</td><td>${new Date(c.data).toLocaleDateString()}</td>
-                    <td><button class="btn" style="padding:4px 8px;">Editar</button></td>
+                    <td><span class="badge ${c.slaVencido ? 'sla-vencido' : 'sla-ok'}">${c.slaVencido ? '🔴 VENCIDO' : '✅ OK'}</span></td>
                 </tr>
             `).join('');
         }
@@ -877,17 +859,6 @@
             document.getElementById('filterStatus').value = (FILTRO_RAPIDO && FILTRO_RAPIDO !== '__vencidos__') ? FILTRO_RAPIDO : '';
             filtrar();
         }
-
-        function abrirSLA(id) {
-            const c = CHAMADOS.find(x => x.id === id);
-            if (!c) return;
-            document.getElementById('modalStatus').textContent = c.slaVencido ? '🔴 VENCIDO' : '✅ DENTRO DO PRAZO';
-            document.getElementById('modalAtraso').textContent = c.slaAtraso;
-            document.getElementById('modalAberto').textContent = c.slaAberto;
-            document.getElementById('slaModal').classList.add('active');
-        }
-
-        function fecharSLA() { document.getElementById('slaModal').classList.remove('active'); }
 
         function novoChamado() {
             EDICAO_ID = null;
