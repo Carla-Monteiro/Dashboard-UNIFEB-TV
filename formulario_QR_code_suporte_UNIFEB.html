@@ -232,11 +232,11 @@
                 <input type="email" id="email" required>
             </div>
 
-            <!-- BLOCO -->
+            <!-- Local -->
             <div class="form-group">
-                <label for="bloco">📍 Bloco *</label>
-                <select id="bloco" required>
-                    <option value="">Selecione o bloco</option>
+                <label for="Local">📍 Local *</label>
+                <select id="Local" required>
+                    <option value="">Selecione o Local</option>
                 </select>
             </div>
 
@@ -297,22 +297,57 @@
 
     <script>
         // DADOS DA UNIFEB
-        const blocosESalas = {
-            'Laboratórios de Informática': ['Lab 3', 'Lab 4', 'Lab 5', 'Lab 6', 'OUTROS'],
-            'João Monteiro de Barros Filho': ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'C16', 'C17', 'C18', 'OUTROS'],
-            'Biblioteca': ['Acervo', 'Sala 1', 'Sala 2', 'OUTROS'],
-            'Núcleo de Ensino a Distância (NEAD)': ['NEAD 01', 'NEAD 02', 'NEAD 03', 'NEAD 04', 'OUTROS'],
-            'Sala de Metodologia Ativa (Pós)': ['Sala 01', 'Sala 02', 'Sala Completa', 'OUTROS'],
-            'Laboratórios de Informática': ['Lab 3', 'Lab 4', 'Lab 5', 'Lab 6', 'OUTROS'],
-            'Elvira Parada': ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'OUTROS'],
-            'Lauro Kfouri': ['1', '2', '3', '4', '5', '6', 'OUTROS'],
-            'Laranjão': ['1', '2', '3', '4', '5', '6', 'OUTROS'],
-            'Rael Vidal': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'OUTROS'],
-            'Núcleo de Prática Jurídica': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', 'OUTROS'],
-            'Marcelo Ramos': ['01', '03', '05', '06', '07', '08', '09', '10', '11', 'OUTROS'],
-            'Teatro Jorge Andrade': ['Auditório', 'OUTROS'],
-            'Tribunal do Júri': ['Auditório', 'OUTROS']
-        };
+const blocosESalas = {
+    'Laboratórios de Informática': ['Lab 3', 'Lab 4', 'Lab 5', 'Lab 6', 'OUTROS'],
+    'João Monteiro de Barros Filho': ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B1Aqui está o objeto JavaScript atualizado e organizado, incluindo os novos setores/locais das imagens[cite: 1, 2], removendo duplicatas e mantendo o padrão de sub-itens para cada local:
+
+```javascript
+const blocosESalas = {
+    'Laboratórios de Informática': ['Lab 3', 'Lab 4', 'Lab 5', 'Lab 6', 'OUTROS'],
+    'João Monteiro de Barros Filho': ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'C16', 'C17', 'C18', 'OUTROS'],
+    'Biblioteca': ['Acervo', 'Sala 1', 'Sala 2', 'OUTROS'],
+    'Núcleo de Ensino a Distância (NEAD)': ['NEAD 01', 'NEAD 02', 'NEAD 03', 'NEAD 04', 'OUTROS'],
+    'Sala de Metodologia Ativa (Pós)': ['Sala 01', 'Sala 02', 'Sala Completa', 'OUTROS'],
+    'Elvira Parada': ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'OUTROS'],
+    'Lauro Kfouri': ['1', '2', '3', '4', '5', '6', 'OUTROS'],
+    'Laranjão': ['1', '2', '3', '4', '5', '6', 'OUTROS'],
+    'Rael Vidal': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'OUTROS'],
+    'Núcleo de Prática Jurídica': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', 'OUTROS'],
+    'Marcelo Ramos': ['01', '03', '05', '06', '07', '08', '09', '10', '11', 'OUTROS'],
+    'Teatro Jorge Andrade': ['Auditório', 'OUTROS'],
+    'Tribunal do Júri': ['Auditório', 'OUTROS'],
+
+    // Novas opções baseadas nas imagens fornecidas:
+    'Almoxarifado': ['Geral', 'OUTROS'],
+    'Coordenação de Professores': ['Geral', 'OUTROS'],
+    'Clínica Odontológica': ['Recepção', 'Atendimento', 'OUTROS'],
+    'Colégio FEB': ['Secretaria', 'Salas', 'OUTROS'],
+    'Departamento de Tecnologia': ['Suporte', 'Infraestrutura', 'OUTROS'],
+    'Matrícula': ['Atendimento', 'OUTROS'],
+    'Coordenação Laboratórios': ['Geral', 'OUTROS'],
+    'Manutenção': ['Oficina', 'Geral', 'OUTROS'],
+    'Comissão Própria de Avaliação (CPA)': ['Geral', 'OUTROS'],
+    'NEU': ['Geral', 'OUTROS'],
+    'Marketing': ['Geral', 'OUTROS'],
+    'NAPE': ['Geral', 'OUTROS'],
+    'Atendimento Financeiro': ['Atendimento', 'OUTROS'],
+    'PRADM': ['Geral', 'OUTROS'],
+    'Departamento Jurídico': ['Geral', 'OUTROS'],
+    'Pró Aluno': ['Atendimento', 'OUTROS'],
+    'Reitoria': ['Geral', 'OUTROS'],
+    'RH': ['Atendimento', 'OUTROS'],
+    'Secretaria': ['Atendimento', 'OUTROS'],
+    'Conselho Curador': ['Geral', 'OUTROS'],
+    'Clínica Medicina Veterinária': ['Recepção', 'Atendimento', 'OUTROS'],
+    'Sala Atendimento Professor': ['Geral', 'OUTROS'],
+    'Cartório - Núcleo Práticas Jurídicas': ['Atendimento', 'OUTROS'],
+    'Sala dos Professores': ['Geral', 'OUTROS'],
+    'Ouvidoria': ['Atendimento', 'OUTROS'],
+    'Núcleo de Sustentabilidade': ['Geral', 'OUTROS'],
+    'Clínica de Fisioterapia': ['Recepção', 'Atendimento', 'OUTROS'],
+    'NAC': ['Geral', 'OUTROS'],
+    'Sala Professores de Contrato': ['Geral', 'OUTROS']
+};
 
         // CATEGORIAS POR TIPO
         const categoriasPorTipo = {
