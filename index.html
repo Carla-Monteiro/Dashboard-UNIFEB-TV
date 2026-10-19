@@ -21,79 +21,79 @@
             flex-direction: column;
         }
 
-        /* ===== BARRA SUPERIOR (HEADER TOPBAR) ===== */
+        /* ===== BARRA SUPERIOR (HEADER TOPBAR) - AUMENTADA ===== */
         .topbar {
             width: 100%;
-            height: 70px;
-            background: rgba(10, 22, 40, 0.97);
-            border-bottom: 2px solid rgba(255, 165, 0, 0.3);
+            height: 90px; /* Aumentado de 70px para 90px */
+            background: rgba(10, 22, 40, 0.98);
+            border-bottom: 2px solid rgba(255, 165, 0, 0.4);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 25px;
+            padding: 0 30px;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.45);
         }
 
         .topbar-left {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 25px;
         }
 
         .topbar-logo {
-            height: 42px;
+            height: 55px; /* Aumentado de 42px para 55px */
             width: auto;
             object-fit: contain;
         }
 
         .topbar-title h1 {
-            font-size: 22px;
+            font-size: 26px; /* Aumentado de 22px para 26px */
             font-weight: 700;
             color: #ffffff;
             line-height: 1.2;
         }
 
         .topbar-title p {
-            font-size: 11px;
+            font-size: 12px;
             color: #ffa500;
             font-weight: 700;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
         }
 
         .topbar-right {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
         }
 
         .status-badge {
-            padding: 8px 16px;
+            padding: 10px 20px;
             background: rgba(0, 200, 100, 0.25);
             border: 2px solid #00c864;
             border-radius: 25px;
             color: #00c864;
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 700;
         }
 
         .user-box {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 6px 6px 6px 16px;
+            gap: 15px;
+            padding: 8px 8px 8px 20px;
             border: 2px solid rgba(255, 165, 0, 0.5);
-            border-radius: 25px;
-            background: rgba(10, 22, 40, 0.6);
+            border-radius: 30px;
+            background: rgba(10, 22, 40, 0.7);
         }
 
         .user-info {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 13px;
+            gap: 10px;
+            font-size: 14px;
             color: #ffa500;
             font-weight: 600;
         }
@@ -102,34 +102,36 @@
             background: #ff6b35;
             color: #ffffff;
             border: none;
-            padding: 6px 16px;
-            border-radius: 18px;
+            padding: 8px 20px;
+            border-radius: 20px;
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s;
         }
 
         .btn-logout:hover {
             background: #ff7a50;
+            transform: scale(1.03);
         }
 
         /* ===== ESTRUTURA PRINCIPAL ===== */
         .app-layout {
             display: flex;
             flex: 1;
-            min-height: calc(100vh - 70px);
+            min-height: calc(100vh - 90px);
         }
 
-        /* ===== SIDEBAR ===== */
+        /* ===== SIDEBAR (COM BOTÕES NA LATERAL) ===== */
         .sidebar {
-            width: 250px;
+            width: 270px;
             background: rgba(10, 22, 40, 0.95);
             border-right: 2px solid rgba(255, 165, 0, 0.3);
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
             padding-top: 15px;
+            padding-bottom: 20px;
         }
 
         .sidebar-menu {
@@ -158,18 +160,38 @@
             transition: all 0.2s ease;
             border-left: 4px solid transparent;
             text-decoration: none;
+            background: none;
+            border-right: none;
+            border-top: none;
+            border-bottom: none;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
         }
 
         .sidebar-item:hover {
             color: #ffa500;
-            background: rgba(255, 165, 0, 0.05);
+            background: rgba(255, 165, 0, 0.08);
         }
 
         .sidebar-item.active {
             color: #ffa500;
-            background: rgba(255, 165, 0, 0.12);
+            background: rgba(255, 165, 0, 0.15);
             border-left-color: #ffa500;
             font-weight: 700;
+        }
+
+        .sidebar-item.primary-btn {
+            color: #ffffff;
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.3), rgba(255, 165, 0, 0.3));
+            border-left-color: #ff6b35;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+
+        .sidebar-item.primary-btn:hover {
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.5), rgba(255, 165, 0, 0.5));
+            color: #ffffff;
         }
 
         /* ===== ÁREA DE CONTEÚDO PRINCIPAL ===== */
@@ -182,46 +204,6 @@
         .container {
             max-width: 1900px;
             margin: 0 auto;
-        }
-
-        /* ===== BOTÕES DE AÇÃO ===== */
-        .buttons-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 11px 20px;
-            background: rgba(255, 165, 0, 0.15);
-            border: 2px solid rgba(255, 165, 0, 0.5);
-            border-radius: 8px;
-            color: #ffa500;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn:hover {
-            background: rgba(255, 165, 0, 0.25);
-            border-color: #ffa500;
-            transform: translateY(-2px);
-        }
-
-        .btn.primary {
-            background: linear-gradient(135deg, #ff6b35, #ffa500);
-            border-color: #ff6b35;
-            color: #fff;
-        }
-
-        .btn.primary:hover {
-            background: linear-gradient(135deg, #ff7a50, #ffb84d);
-            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
         }
 
         /* ===== FILTROS ===== */
@@ -324,18 +306,6 @@
 
         tbody tr:hover { background: rgba(255, 165, 0, 0.1); }
 
-        .table-select {
-            padding: 5px 8px;
-            background: rgba(255, 165, 0, 0.1);
-            border: 1px solid rgba(255, 165, 0, 0.4);
-            border-radius: 6px;
-            color: #fff;
-            font-size: 11px;
-            cursor: pointer;
-        }
-
-        .table-select option { background: #0a1628; color: #fff; }
-
         /* BADGES */
         .badge {
             display: inline-block;
@@ -375,6 +345,29 @@
 
         .chart-card h3 { color: #ffa500; font-size: 14px; margin-bottom: 15px; }
 
+        .btn-inline {
+            padding: 11px 20px;
+            background: rgba(255, 165, 0, 0.15);
+            border: 2px solid rgba(255, 165, 0, 0.5);
+            border-radius: 8px;
+            color: #ffa500;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .btn-inline:hover {
+            background: rgba(255, 165, 0, 0.25);
+            border-color: #ffa500;
+        }
+
+        .btn-inline.primary {
+            background: linear-gradient(135deg, #ff6b35, #ffa500);
+            border-color: #ff6b35;
+            color: #fff;
+        }
+
         @media (max-width: 900px) {
             .app-layout { flex-direction: column; }
             .sidebar { width: 100%; }
@@ -395,7 +388,7 @@
         </form>
     </div>
 
-    <!-- HEADER TOPBAR -->
+    <!-- HEADER TOPBAR (IMAGEM 1 - MAIOR) -->
     <header class="topbar">
         <div class="topbar-left">
             <img src="logo-UNIFEB.png" alt="UNIFEB" class="topbar-logo" onerror="this.style.display='none'">
@@ -418,7 +411,7 @@
     </header>
 
     <div class="app-layout">
-        <!-- SIDEBAR -->
+        <!-- SIDEBAR (IMAGEM 2 - COM BOTÕES NA LATERAL) -->
         <aside class="sidebar">
             <nav class="sidebar-menu">
                 <div class="sidebar-category">📁 CATEGORIAS</div>
@@ -432,6 +425,14 @@
                 <a class="sidebar-item" onclick="mostrarAbaConcluidos(this)">✅ Concluídos</a>
                 <a class="sidebar-item" onclick="mostrarAba('graficos', this)">📊 Gráficos</a>
                 <a class="sidebar-item" onclick="mostrarAba('satisfacao', this)">⭐ Satisfação</a>
+
+                <!-- BOTÕES DE AÇÕES MOVIDOS PARA A SIDEBAR (IMAGEM 2) -->
+                <div class="sidebar-category" style="margin-top: 15px;">⚙️ OPÇÕES</div>
+                <button class="sidebar-item primary-btn" onclick="novoChamado()">➕ Novo Chamado</button>
+                <button class="sidebar-item" onclick="sincronizar()">🔄 Sincronizar</button>
+                <button class="sidebar-item" onclick="limparCache()">🗑️ Limpar Cache</button>
+                <button class="sidebar-item" onclick="exportar()">📥 Exportar</button>
+                <button class="sidebar-item" onclick="imprimir()">🖨️ Imprimir</button>
             </nav>
         </aside>
 
@@ -439,15 +440,6 @@
         <main class="main-content">
             <div class="container">
                 
-                <!-- BOTÕES -->
-                <div class="buttons-group">
-                    <button class="btn" onclick="sincronizar()">🔄 Sincronizar</button>
-                    <button class="btn" onclick="limparCache()">🗑️ Limpar Cache</button>
-                    <button class="btn" onclick="exportar()">📥 Exportar</button>
-                    <button class="btn" onclick="imprimir()">🖨️ Imprimir</button>
-                    <button class="btn primary" onclick="novoChamado()">➕ Novo Chamado</button>
-                </div>
-
                 <!-- CARDS -->
                 <div class="stats-section">
                     <div class="stat-card" id="cardAbertos" onclick="filtrarRapido('Aberto')">
@@ -632,8 +624,8 @@
                     </select>
                 </div>
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button type="submit" id="btnSubmit" class="btn primary" style="flex:2; justify-content:center;">Criar Chamado</button>
-                    <button type="button" onclick="fecharFormulario()" class="btn" style="flex:1; justify-content:center;">Cancelar</button>
+                    <button type="submit" id="btnSubmit" class="btn-inline primary" style="flex:2; justify-content:center;">Criar Chamado</button>
+                    <button type="button" onclick="fecharFormulario()" class="btn-inline" style="flex:1; justify-content:center;">Cancelar</button>
                     <button type="button" id="btnDeletar" style="display: none; background: rgba(255,100,100,0.2); border: 2px solid #ff6464; color: #ff6464; border-radius:8px; padding: 10px; cursor:pointer;" onclick="deletarChamadoAtual()">🗑️ Excluir</button>
                 </div>
             </form>
@@ -724,7 +716,6 @@
                 const res = await authFetch(`${BACKEND_URL}/api/chamados`);
                 const dados = await res.json();
                 
-                // Mapeia os dados do backend
                 CHAMADOS = (Array.isArray(dados) ? dados : dados.chamados || []).map(c => {
                     const sla = calcularSLA(c.dataAbertura || c.data, c.prioridade, c.status);
                     return { 
@@ -736,7 +727,7 @@
                     };
                 });
 
-                // 🟢 ORDENAÇÃO: Chamados MAIS NOVOS em cima
+                // Ordena: Mais novos em cima
                 CHAMADOS.sort((a, b) => new Date(b.data) - new Date(a.data));
 
                 document.getElementById('syncStatus').textContent = '🟢 Sincronizado';
@@ -753,7 +744,7 @@
 
             const target = document.getElementById(abaName);
             if (target) target.classList.add('active');
-            if (el) el.classList.add('active');
+            if (el && el.classList.contains('sidebar-item')) el.classList.add('active');
 
             if (abaName === 'manutencao') renderizarAbaSetor('Manutenção Predial', 'manutencaoBody');
             if (abaName === 'naem') renderizarAbaSetor('Multimídia (NAEM)', 'naemBody');
@@ -769,7 +760,6 @@
 
         function renderizarEmail() {
             const body = document.getElementById('emailBody');
-            // 🟢 FILTRAGEM + ORDENAÇÃO (MAIS NOVOS EM CIMA)
             const dados = CHAMADOS.filter(c => c.origem === 'E-mail' || c.origem === 'email' || (c.email && c.origem !== 'QR Code'))
                           .sort((a, b) => new Date(b.data) - new Date(a.data));
             
@@ -786,14 +776,13 @@
                     <td>${c.titulo}</td>
                     <td>${c.solicitante} (${c.email || 'N/A'})</td>
                     <td>${c.data ? new Date(c.data).toLocaleDateString('pt-BR') : '-'}</td>
-                    <td><button class="btn" style="padding:4px 8px;">Editar</button></td>
+                    <td><button class="btn-inline" style="padding:4px 8px;">Editar</button></td>
                 </tr>
             `).join('');
         }
 
         function renderizarAbaSetor(setor, elementId) {
             const body = document.getElementById(elementId);
-            // 🟢 FILTRAGEM + ORDENAÇÃO (MAIS NOVOS EM CIMA)
             const dados = CHAMADOS.filter(c => c.setorAtendimento === setor)
                           .sort((a, b) => new Date(b.data) - new Date(a.data));
             
@@ -810,7 +799,7 @@
                     <td>${c.titulo}</td>
                     <td>${c.solicitante}</td>
                     <td>${c.data ? new Date(c.data).toLocaleDateString('pt-BR') : '-'}</td>
-                    <td><button class="btn" style="padding:4px 8px;">Editar</button></td>
+                    <td><button class="btn-inline" style="padding:4px 8px;">Editar</button></td>
                 </tr>
             `).join('');
         }
