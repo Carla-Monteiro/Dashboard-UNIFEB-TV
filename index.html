@@ -332,21 +332,6 @@
         .tab-content.active { display: block; }
         .empty-state { text-align: center; padding: 40px 20px; color: #aaa; }
 
-        .graficos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-        }
-
-        .chart-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 165, 0, 0.2);
-            border-radius: 12px;
-            padding: 20px;
-        }
-
-        .chart-card h3 { color: #ffa500; font-size: 14px; margin-bottom: 15px; }
-
         .btn-inline {
             padding: 11px 20px;
             background: rgba(255, 165, 0, 0.15);
@@ -368,6 +353,29 @@
             background: linear-gradient(135deg, #ff6b35, #ffa500);
             border-color: #ff6b35;
             color: #fff;
+        }
+
+        /* ===== ESTILO MELHORADO DA CAIXA DE DESCRIÇÃO NO MODAL ===== */
+        .descricao-box {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(5, 12, 22, 0.8);
+            border: 2px solid rgba(255, 165, 0, 0.4);
+            border-radius: 10px;
+            color: #e0e6ed;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.6;
+            min-height: 150px;
+            max-height: 300px;
+            resize: vertical;
+            outline: none;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .descricao-box:focus {
+            border-color: #ffa500;
+            box-shadow: 0 0 10px rgba(255, 165, 0, 0.25), inset 0 2px 8px rgba(0, 0, 0, 0.5);
         }
 
         @media (max-width: 900px) {
@@ -492,7 +500,7 @@
                     </div>
                 </div>
 
-                <!-- TABELA PRINCIPAL (SEM COLUNA RESPONSÁVEL) -->
+                <!-- TABELA PRINCIPAL -->
                 <div id="chamados" class="tab-content active">
                     <div class="table-wrapper">
                         <table id="tabela">
@@ -559,34 +567,35 @@
     </div>
 
     <!-- MODAL FORMULÁRIO -->
-    <div id="modalFormulario" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 100; padding: 20px; display: none; flex-direction: column; justify-content: center; align-items: center;">
-        <div style="background: linear-gradient(135deg, #0a1628 0%, #1a2f4d 100%); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 16px; padding: 30px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px solid rgba(255, 165, 0, 0.2);">
-                <h2 id="modalTitulo" style="font-size: 24px; margin: 0; color: #fff;">➕ Novo Chamado</h2>
+    <div id="modalFormulario" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 100; padding: 20px; display: none; flex-direction: column; justify-content: center; align-items: center;">
+        <div style="background: linear-gradient(135deg, #0a1628 0%, #1a2f4d 100%); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 16px; padding: 30px; width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid rgba(255, 165, 0, 0.2);">
+                <h2 id="modalTitulo" style="font-size: 22px; margin: 0; color: #fff;">➕ Novo Chamado</h2>
                 <button onclick="fecharFormulario()" style="background: none; border: none; color: #aaa; font-size: 28px; cursor: pointer;">✕</button>
             </div>
-            <form id="formChamado" onsubmit="salvarChamado(event)" style="display: flex; flex-direction: column; gap: 20px;">
+            <form id="formChamado" onsubmit="salvarChamado(event)" style="display: flex; flex-direction: column; gap: 18px;">
                 <div>
-                    <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">TÍTULO *</label>
+                    <label style="display: block; font-size: 11px; font-weight: 700; color: #ffa500; margin-bottom: 6px; text-transform: uppercase;">TÍTULO *</label>
                     <input type="text" id="titulo" required style="width: 100%; padding: 12px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
                 </div>
                 <div>
-                    <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">DESCRIÇÃO *</label>
-                    <textarea id="descricao" required style="width: 100%; padding: 12px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff; min-height: 80px;"></textarea>
+                    <label style="display: block; font-size: 11px; font-weight: 700; color: #ffa500; margin-bottom: 6px; text-transform: uppercase;">DESCRIÇÃO *</label>
+                    <!-- CAIXA DE DESCRIÇÃO MELHORADA -->
+                    <textarea id="descricao" required class="descricao-box" placeholder="Escreva a descrição do chamado..."></textarea>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">SOLICITANTE *</label>
+                        <label style="display: block; font-size: 11px; font-weight: 700; color: #ffa500; margin-bottom: 6px; text-transform: uppercase;">SOLICITANTE *</label>
                         <input type="text" id="solicitante" required style="width: 100%; padding: 12px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
                     </div>
                     <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">EMAIL *</label>
+                        <label style="display: block; font-size: 11px; font-weight: 700; color: #ffa500; margin-bottom: 6px; text-transform: uppercase;">EMAIL *</label>
                         <input type="email" id="email" required style="width: 100%; padding: 12px; background: rgba(255, 165, 0, 0.08); border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
                     </div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">SETOR *</label>
+                        <label style="display: block; font-size: 11px; font-weight: 700; color: #ffa500; margin-bottom: 6px; text-transform: uppercase;">SETOR *</label>
                         <select id="setor" required style="width: 100%; padding: 12px; background: #1a2f4d; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
                             <option value="">Selecione um setor</option>
                             <option value="TI / Internet">TI / Internet</option>
@@ -596,7 +605,7 @@
                         </select>
                     </div>
                     <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">PRIORIDADE *</label>
+                        <label style="display: block; font-size: 11px; font-weight: 700; color: #ffa500; margin-bottom: 6px; text-transform: uppercase;">PRIORIDADE *</label>
                         <select id="prioridade" required style="width: 100%; padding: 12px; background: #1a2f4d; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
                             <option value="Alta">Alta</option>
                             <option value="Média" selected>Média</option>
@@ -605,14 +614,14 @@
                     </div>
                 </div>
                 <div id="statusEditar" style="display: none;">
-                    <label style="display: block; font-size: 12px; font-weight: 700; color: #ffa500; margin-bottom: 8px;">STATUS</label>
+                    <label style="display: block; font-size: 11px; font-weight: 700; color: #ffa500; margin-bottom: 6px; text-transform: uppercase;">STATUS</label>
                     <select id="status" style="width: 100%; padding: 12px; background: #1a2f4d; border: 2px solid rgba(255, 165, 0, 0.3); border-radius: 8px; color: #fff;">
                         <option value="Aberto">Aberto</option>
                         <option value="Em andamento">Em andamento</option>
                         <option value="Concluído">Concluído</option>
                     </select>
                 </div>
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
                     <button type="submit" id="btnSubmit" class="btn-inline primary" style="flex:2; justify-content:center;">Criar Chamado</button>
                     <button type="button" onclick="fecharFormulario()" class="btn-inline" style="flex:1; justify-content:center;">Cancelar</button>
                     <button type="button" id="btnDeletar" style="display: none; background: rgba(255,100,100,0.2); border: 2px solid #ff6464; color: #ff6464; border-radius:8px; padding: 10px; cursor:pointer;" onclick="deletarChamadoAtual()">🗑️ Excluir</button>
@@ -622,11 +631,21 @@
     </div>
 
     <script>
-        // 🟢 URL DO BACKEND CORRIGIDA (SEM COLCHES OU PARENTESES)
         const BACKEND_URL = 'https://unifeb-backend.onrender.com';
 
         let DASHBOARD_TOKEN = sessionStorage.getItem('unifeb_dashboard_token') || null;
         let PAPEL_USUARIO = sessionStorage.getItem('unifeb_dashboard_papel') || null;
+
+        // 🟢 FUNÇÃO PARA LIMPAR TAGS HTML SUJAS DO OUTLOOK / SHAREPOINT
+        function limparHTML(texto) {
+            if (!texto) return '';
+            let div = document.createElement('div');
+            div.innerHTML = texto;
+            let limpo = div.textContent || div.innerText || '';
+            // Remove códigos de entidade como &#58; e múltiplos espaços
+            limpo = limpo.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec));
+            return limpo.replace(/\s+/g, ' ').trim();
+        }
 
         function mostrarLogin(msg) {
             document.getElementById('loginOverlay').style.display = 'flex';
@@ -857,7 +876,8 @@
             if (!c) return;
             EDICAO_ID = id;
             document.getElementById('titulo').value = c.titulo;
-            document.getElementById('descricao').value = c.descricao || '';
+            // 🟢 APLICA A LIMPEZA DE HTML AO CARREGAR A DESCRIÇÃO
+            document.getElementById('descricao').value = limparHTML(c.descricao || '');
             document.getElementById('solicitante').value = c.solicitante;
             document.getElementById('email').value = c.email || '';
             document.getElementById('setor').value = c.setorAtendimento || '';
