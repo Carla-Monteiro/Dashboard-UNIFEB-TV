@@ -972,29 +972,50 @@
             });
         }
 
-        // 🟢 FUNÇÃO CORRIGIDA COM OS CAMPOS EXATOS DA SUA LISTA DO SHAREPOINT (NumeroChamado, Avaliacao, comentario)
+        // 🟢 FUNÇÃO DE SATISFAÇÃO COM BUSCA DUAL (NODE + FALLBACK SHAREPOINT)
         async function renderizarSatisfacao() {
             const tbody = document.getElementById('tbodySatisfacao');
-            try {
-                const res = await authFetch(`${BACKEND_URL}/api/satisfacao`);
-                const dados = await res.json();
-                const avaliacoes = Array.isArray(dados) ? dados : dados.satisfacao || [];
+            tbody.innerHTML = `<tr><td colspan="4" class="empty-state">⏳ Carregando pesquisas de satisfação...</td></tr>`;
 
+            try {
+                let avaliacoes = [];
+
+                // 1. Tenta buscar da API Node.js
+                try {
+                    const res = await authFetch(`${BACKEND_URL}/api/satisfacao`);
+                    if (res.ok) {
+                        const dados = await res.json();
+                        avaliacoes = Array.isArray(dados) ? dados : (dados.satisfacao || dados.value || []);
+                    }
+                } catch (e) {
+                    console.warn("API Node /api/satisfacao indisponível, buscando fallback SharePoint...");
+                }
+
+                // 2. Se falhar ou vier vazio, tenta buscar via REST do SharePoint
                 if (!avaliacoes.length) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="empty-state">⭐ Nenhuma avaliação de satisfação registrada</td></tr>`;
+                    const sharepointUrl = "https://unifeb.sharepoint.com/sites/SuporteDTI/_api/web/lists/getbytitle('PesquisasSatisfacao')/items";
+                    const resSp = await fetch(sharepointUrl, {
+                        headers: { "Accept": "application/json;odata=verbose" }
+                    });
+                    if (resSp.ok) {
+                        const dataSp = await resSp.json();
+                        avaliacoes = dataSp.d ? dataSp.d.results : (dataSp.value || []);
+                    }
+                }
+
+                if (!avaliacoes || !avaliacoes.length) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="empty-state">⭐ Nenhuma avaliação encontrada na lista de Pesquisas de Satisfação.</td></tr>`;
                     return;
                 }
 
                 tbody.innerHTML = avaliacoes.map(a => {
-                    // Mapeamento dos campos do SharePoint
-                    const numChamado = a.NumeroChamado || a.numeroChamado || a.Chamado || a.id || '-';
+                    const numChamado = a.NumeroChamado || a.numeroChamado || a.Numero_x0020_Chamado || a.Title || a.id || '-';
                     const avaliacaoTexto = a.Avaliacao || a.avaliacao || 'Ótimo';
                     const comentarioTexto = a.comentario || a.Comentario || '-';
                     const dataFormatada = a.Created || a.data ? new Date(a.Created || a.data).toLocaleDateString('pt-BR') : '-';
 
-                    // Converte texto em estrelas se necessário
                     let estrelas = '⭐⭐⭐⭐⭐';
-                    const txt = avaliacaoTexto.toLowerCase();
+                    const txt = String(avaliacaoTexto).toLowerCase();
                     if (txt.includes('ruim') || txt.includes('péssimo')) estrelas = '⭐';
                     else if (txt.includes('regular')) estrelas = '⭐⭐⭐';
                     else if (txt.includes('bom')) estrelas = '⭐⭐⭐⭐';
@@ -1008,8 +1029,10 @@
                         </tr>
                     `;
                 }).join('');
-            } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="4" class="empty-state">⭐ Nenhuma avaliação de satisfação encontrada no servidor</td></tr>`;
+
+            } catch (err) {
+                console.error("Erro satisfação:", err);
+                tbody.innerHTML = `<tr><td colspan="4" class="empty-state">⚠️ Erro ao carregar pesquisas. Verifique a permissão do servidor.</td></tr>`;
             }
         }
 
