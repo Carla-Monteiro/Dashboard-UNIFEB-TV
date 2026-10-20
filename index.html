@@ -565,7 +565,7 @@
                     </div>
                 </div>
 
-                <!-- ABA SATISFAÇÃO (CAMPOS MAPEADOS CONFORME SHAREPOINT) -->
+                <!-- ABA SATISFAÇÃO -->
                 <div id="satisfacao" class="tab-content">
                     <div class="table-wrapper">
                         <table>
@@ -663,6 +663,7 @@
         let DASHBOARD_TOKEN = sessionStorage.getItem('unifeb_dashboard_token') || null;
         let PAPEL_USUARIO = sessionStorage.getItem('unifeb_dashboard_papel') || null;
         let ABA_ATUAL = 'chamados';
+        let SATISFACAO_CARREGADA = false;
 
         let chartStatusInstance = null;
         let chartPrioridadeInstance = null;
@@ -821,7 +822,7 @@
         function iniciarDashboard() {
             popularSelectLocais();
             carregarDados();
-            setInterval(carregarDados, 5000);
+            setInterval(carregarDados, 15000); // 15 segundos para evitar requisições em excesso
         }
 
         let CHAMADOS = [];
@@ -851,7 +852,7 @@
                 const res = await authFetch(`${BACKEND_URL}/api/chamados`);
                 const dados = await res.json();
                 
-                CHAMADOS = (Array.isArray(dados) ? dados : dados.chamados || []).map(c => {
+                const novosChamados = (Array.isArray(dados) ? dados : dados.chamados || []).map(c => {
                     const sla = calcularSLA(c.dataAbertura || c.data, c.prioridade, c.status);
                     return { 
                         ...c, 
@@ -862,7 +863,12 @@
                     };
                 });
 
-                CHAMADOS.sort((a, b) => new Date(b.data) - new Date(a.data));
+                novosChamados.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+                // Evita redesenhar se os dados não tiverem alteração
+                if (JSON.stringify(CHAMADOS) === JSON.stringify(novosChamados)) return;
+
+                CHAMADOS = novosChamados;
 
                 document.getElementById('syncStatus').textContent = '🟢 Sincronizado';
                 atualizarCardsResumo();
@@ -871,9 +877,7 @@
                 else if (ABA_ATUAL === 'naem') renderizarAbaSetor('Multimídia (NAEM)', 'naemBody');
                 else if (ABA_ATUAL === 'ti') renderizarAbaSetor('TI / Internet', 'tiBody');
                 else if (ABA_ATUAL === 'viaemail') renderizarEmail();
-                else if (ABA_ATUAL === 'graficos') renderizarGraficos();
-                else if (ABA_ATUAL === 'satisfacao') renderizarSatisfacao();
-                else filtrar();
+                else if (ABA_ATUAL === 'chamados') filtrar();
 
             } catch (e) {
                 document.getElementById('syncStatus').textContent = '🔴 Erro de Sincronização';
@@ -903,7 +907,7 @@
             } else if (abaName === 'graficos') {
                 renderizarGraficos();
             } else if (abaName === 'satisfacao') {
-                renderizarSatisfacao();
+                if (!SATISFACAO_CARREGADA) renderizarSatisfacao();
             }
         }
 
@@ -972,44 +976,26 @@
             });
         }
 
-        // 🟢 FUNÇÃO DE SATISFAÇÃO COM BUSCA DUAL (NODE + FALLBACK SHAREPOINT)
         async function renderizarSatisfacao() {
             const tbody = document.getElementById('tbodySatisfacao');
             tbody.innerHTML = `<tr><td colspan="4" class="empty-state">⏳ Carregando pesquisas de satisfação...</td></tr>`;
 
             try {
-                let avaliacoes = [];
+                const res = await authFetch(`${BACKEND_URL}/api/satisfacao`);
+                if (!res.ok) throw new Error('Erro na resposta do servidor');
+                
+                const dados = await res.json();
+                const avaliacoes = Array.isArray(dados) ? dados : (dados.satisfacao || []);
 
-                // 1. Tenta buscar da API Node.js
-                try {
-                    const res = await authFetch(`${BACKEND_URL}/api/satisfacao`);
-                    if (res.ok) {
-                        const dados = await res.json();
-                        avaliacoes = Array.isArray(dados) ? dados : (dados.satisfacao || dados.value || []);
-                    }
-                } catch (e) {
-                    console.warn("API Node /api/satisfacao indisponível, buscando fallback SharePoint...");
-                }
+                SATISFACAO_CARREGADA = true;
 
-                // 2. Se falhar ou vier vazio, tenta buscar via REST do SharePoint
                 if (!avaliacoes.length) {
-                    const sharepointUrl = "https://unifeb.sharepoint.com/sites/SuporteDTI/_api/web/lists/getbytitle('PesquisasSatisfacao')/items";
-                    const resSp = await fetch(sharepointUrl, {
-                        headers: { "Accept": "application/json;odata=verbose" }
-                    });
-                    if (resSp.ok) {
-                        const dataSp = await resSp.json();
-                        avaliacoes = dataSp.d ? dataSp.d.results : (dataSp.value || []);
-                    }
-                }
-
-                if (!avaliacoes || !avaliacoes.length) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="empty-state">⭐ Nenhuma avaliação encontrada na lista de Pesquisas de Satisfação.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" class="empty-state">⭐ Nenhuma avaliação encontrada.</td></tr>`;
                     return;
                 }
 
                 tbody.innerHTML = avaliacoes.map(a => {
-                    const numChamado = a.NumeroChamado || a.numeroChamado || a.Numero_x0020_Chamado || a.Title || a.id || '-';
+                    const numChamado = a.NumeroChamado || a.numeroChamado || a.Title || a.id || '-';
                     const avaliacaoTexto = a.Avaliacao || a.avaliacao || 'Ótimo';
                     const comentarioTexto = a.comentario || a.Comentario || '-';
                     const dataFormatada = a.Created || a.data ? new Date(a.Created || a.data).toLocaleDateString('pt-BR') : '-';
@@ -1031,8 +1017,7 @@
                 }).join('');
 
             } catch (err) {
-                console.error("Erro satisfação:", err);
-                tbody.innerHTML = `<tr><td colspan="4" class="empty-state">⚠️ Erro ao carregar pesquisas. Verifique a permissão do servidor.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="empty-state">⚠️ Erro ao carregar pesquisas. Tente novamente mais tarde.</td></tr>`;
             }
         }
 
