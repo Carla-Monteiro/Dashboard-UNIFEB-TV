@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Versão: 12.0 - Recupera preenchimento automático de setor por email (nome.setor@feb.br)"""
+"""Versão: 12.1 - Correção completa de CORS e rota de Satisfação para o Dashboard"""
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -22,7 +22,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+
+# Configuração explícita e global do CORS para liberar todas as rotas da API
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True, allow_headers=["Content-Type", "Authorization", "Access-Control-Allow-Headers", "Origin", "Accept"])
 
 GRAPH_API = "https://graph.microsoft.com/v1.0"
 SHAREPOINT_DOMAIN = "unifeb.sharepoint.com"
@@ -117,7 +119,7 @@ EMAIL_SETOR_MAPPING = {
     'dejur': 'Departamento Jurídico - DEJUR',
     'proaluno': 'Pró Aluno',
     'reitoria': 'Reitoria',
-    'rh': 'Recursos Humanos',
+    'rh': 'RH',
     'secretaria': 'Secretaria',
     'conselho': 'Conselho Curador',
     'clivet': 'Clínica Medicina Veterinária',
@@ -206,7 +208,7 @@ def criar_manutencao():
     try:
         logger.info("INICIANDO criar_manutencao")
         
-        data = request.json
+        data = request.json or {}
         email = data.get('email', '').strip()
         bloco = data.get('bloco', '').strip()
         sala = data.get('sala', '').strip()
@@ -447,9 +449,19 @@ def obter_chamado_unico(numero):
         return jsonify({"status": "erro", "mensagem": "Chamado não encontrado"}), 404
 
 
-@app.route('/api/chamados', methods=['GET'])
-@requer_login
+@app.route('/api/chamados', methods=['GET', 'OPTIONS'])
 def obter_chamados():
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    tokens_validos = _tokens_por_papel()
+    auth_header = request.headers.get('Authorization', '')
+    token_enviado = auth_header.replace('Bearer ', '').strip()
+    papel = _papel_do_token(token_enviado, tokens_validos)
+
+    if not papel:
+        return jsonify({"status": "erro", "mensagem": "Não autorizado"}), 401
+
     try:
         token = get_access_token()
         if not token:
@@ -663,11 +675,18 @@ def concluir_chamado():
 # ============================================================
 
 @app.route('/api/satisfacao', methods=['GET', 'OPTIONS'])
-@requer_login
 def obter_pesquisas_satisfacao():
     """Retorna todas as pesquisas de satisfação registradas no SharePoint"""
     if request.method == 'OPTIONS':
         return '', 200
+
+    tokens_validos = _tokens_por_papel()
+    auth_header = request.headers.get('Authorization', '')
+    token_enviado = auth_header.replace('Bearer ', '').strip()
+    papel = _papel_do_token(token_enviado, tokens_validos)
+
+    if not papel:
+        return jsonify({"status": "erro", "mensagem": "Não autorizado"}), 401
 
     try:
         token = get_access_token()
@@ -710,11 +729,18 @@ def obter_pesquisas_satisfacao():
 
 
 @app.route('/api/criar-chamado', methods=['POST', 'OPTIONS'])
-@requer_login
 def criar_chamado_dashboard():
     """Cria um novo chamado a partir do formulário interno do Dashboard"""
     if request.method == 'OPTIONS':
         return '', 200
+
+    tokens_validos = _tokens_por_papel()
+    auth_header = request.headers.get('Authorization', '')
+    token_enviado = auth_header.replace('Bearer ', '').strip()
+    papel = _papel_do_token(token_enviado, tokens_validos)
+
+    if not papel:
+        return jsonify({"status": "erro", "mensagem": "Não autorizado"}), 401
 
     try:
         data = request.json or {}
@@ -787,11 +813,18 @@ def criar_chamado_dashboard():
 
 
 @app.route('/api/editar-chamado/<id_chamado>', methods=['PATCH', 'OPTIONS'])
-@requer_login
 def editar_chamado(id_chamado):
     """Atualiza dados e status de um chamado existente"""
     if request.method == 'OPTIONS':
         return '', 200
+
+    tokens_validos = _tokens_por_papel()
+    auth_header = request.headers.get('Authorization', '')
+    token_enviado = auth_header.replace('Bearer ', '').strip()
+    papel = _papel_do_token(token_enviado, tokens_validos)
+
+    if not papel:
+        return jsonify({"status": "erro", "mensagem": "Não autorizado"}), 401
 
     try:
         data = request.json or {}
@@ -829,11 +862,18 @@ def editar_chamado(id_chamado):
 
 
 @app.route('/api/deletar-chamado/<id_chamado>', methods=['DELETE', 'OPTIONS'])
-@requer_admin
 def deletar_chamado(id_chamado):
     """Exclui um chamado do SharePoint (Exige perfil Administrador)"""
     if request.method == 'OPTIONS':
         return '', 200
+
+    tokens_validos = _tokens_por_papel()
+    auth_header = request.headers.get('Authorization', '')
+    token_enviado = auth_header.replace('Bearer ', '').strip()
+    papel = _papel_do_token(token_enviado, tokens_validos)
+
+    if papel != 'admin':
+        return jsonify({"status": "erro", "mensagem": "Ação disponível apenas para o administrador."}), 403
 
     try:
         token = get_access_token()
