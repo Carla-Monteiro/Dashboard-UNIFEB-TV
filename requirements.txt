@@ -1,0 +1,7 @@
+requests
+python-dotenv
+flask
+flask-cors
+openpyxl
+reportlab
+backports.zoneinfo; python_version < "3.9"
