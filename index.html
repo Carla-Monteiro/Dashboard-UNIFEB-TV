@@ -547,7 +547,7 @@
                 <div id="naem" class="tab-content"><div class="table-wrapper"><table><thead><tr><th style="width:36px;"><input type="checkbox" class="checkTodos"></th><th>ID</th><th>Título</th><th>Solicitante</th><th>Prioridade</th><th>Status</th><th>Setor/Local</th><th>Abertura</th><th>SLA</th></tr></thead><tbody id="naemBody"></tbody></table></div></div>
                 <div id="manutencao" class="tab-content"><div class="table-wrapper"><table><thead><tr><th style="width:36px;"><input type="checkbox" class="checkTodos"></th><th>ID</th><th>Título</th><th>Solicitante</th><th>Prioridade</th><th>Status</th><th>Setor/Local</th><th>Abertura</th><th>SLA</th></tr></thead><tbody id="manutencaoBody"></tbody></table></div></div>
 
-                <!-- ABA GRÁFICOS (CORRIGIDA) -->
+                <!-- ABA GRÁFICOS -->
                 <div id="graficos" class="tab-content">
                     <div class="graficos-grid">
                         <div class="chart-card">
@@ -565,15 +565,20 @@
                     </div>
                 </div>
 
-                <!-- ABA SATISFAÇÃO (CORRIGIDA) -->
+                <!-- ABA SATISFAÇÃO (CAMPOS MAPEADOS CONFORME SHAREPOINT) -->
                 <div id="satisfacao" class="tab-content">
                     <div class="table-wrapper">
                         <table>
                             <thead>
-                                <tr><th>Avaliação</th><th>Comentário</th><th>Chamado</th><th>Setor</th><th>Data</th></tr>
+                                <tr>
+                                    <th>Nº Chamado</th>
+                                    <th>Avaliação</th>
+                                    <th>Comentário</th>
+                                    <th>Data</th>
+                                </tr>
                             </thead>
                             <tbody id="tbodySatisfacao">
-                                <tr><td colspan="5" class="empty-state">Carregando respostas...</td></tr>
+                                <tr><td colspan="4" class="empty-state">Carregando respostas...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -908,7 +913,6 @@
             filtrar();
         }
 
-        // 🟢 FUNÇÃO PARA RENDERIZAR GRÁFICOS
         function renderizarGraficos() {
             const abertos = CHAMADOS.filter(c => (c.status || '').toLowerCase() === 'aberto').length;
             const andamento = CHAMADOS.filter(c => (c.status || '').toLowerCase().includes('andamento')).length;
@@ -924,7 +928,6 @@
                 setores[s] = (setores[s] || 0) + 1;
             });
 
-            // Status Chart
             if (chartStatusInstance) chartStatusInstance.destroy();
             chartStatusInstance = new Chart(document.getElementById('graficoStatus'), {
                 type: 'doughnut',
@@ -938,7 +941,6 @@
                 options: { plugins: { legend: { labels: { color: '#fff' } } } }
             });
 
-            // Prioridade Chart
             if (chartPrioridadeInstance) chartPrioridadeInstance.destroy();
             chartPrioridadeInstance = new Chart(document.getElementById('graficoPrioridade'), {
                 type: 'bar',
@@ -956,7 +958,6 @@
                 }
             });
 
-            // Setor Chart
             if (chartSetorInstance) chartSetorInstance.destroy();
             chartSetorInstance = new Chart(document.getElementById('graficoSetor'), {
                 type: 'pie',
@@ -971,7 +972,7 @@
             });
         }
 
-        // 🟢 FUNÇÃO PARA RENDERIZAR PESQUISA DE SATISFAÇÃO
+        // 🟢 FUNÇÃO CORRIGIDA COM OS CAMPOS EXATOS DA SUA LISTA DO SHAREPOINT (NumeroChamado, Avaliacao, comentario)
         async function renderizarSatisfacao() {
             const tbody = document.getElementById('tbodySatisfacao');
             try {
@@ -980,21 +981,35 @@
                 const avaliacoes = Array.isArray(dados) ? dados : dados.satisfacao || [];
 
                 if (!avaliacoes.length) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">⭐ Nenhuma avaliação de satisfação registrada</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" class="empty-state">⭐ Nenhuma avaliação de satisfação registrada</td></tr>`;
                     return;
                 }
 
-                tbody.innerHTML = avaliacoes.map(a => `
-                    <tr>
-                        <td>${'⭐'.repeat(a.nota || 5)} (${a.nota || 5}/5)</td>
-                        <td>${a.comentario || 'Sem comentário'}</td>
-                        <td>#${a.chamadoId || '-'}</td>
-                        <td>${a.setor || '-'}</td>
-                        <td>${a.data ? new Date(a.data).toLocaleDateString('pt-BR') : '-'}</td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = avaliacoes.map(a => {
+                    // Mapeamento dos campos do SharePoint
+                    const numChamado = a.NumeroChamado || a.numeroChamado || a.Chamado || a.id || '-';
+                    const avaliacaoTexto = a.Avaliacao || a.avaliacao || 'Ótimo';
+                    const comentarioTexto = a.comentario || a.Comentario || '-';
+                    const dataFormatada = a.Created || a.data ? new Date(a.Created || a.data).toLocaleDateString('pt-BR') : '-';
+
+                    // Converte texto em estrelas se necessário
+                    let estrelas = '⭐⭐⭐⭐⭐';
+                    const txt = avaliacaoTexto.toLowerCase();
+                    if (txt.includes('ruim') || txt.includes('péssimo')) estrelas = '⭐';
+                    else if (txt.includes('regular')) estrelas = '⭐⭐⭐';
+                    else if (txt.includes('bom')) estrelas = '⭐⭐⭐⭐';
+
+                    return `
+                        <tr>
+                            <td><strong>#${numChamado}</strong></td>
+                            <td>${estrelas} (${avaliacaoTexto})</td>
+                            <td>${comentarioTexto}</td>
+                            <td>${dataFormatada}</td>
+                        </tr>
+                    `;
+                }).join('');
             } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-state">⭐ Nenhuma avaliação de satisfação encontrada</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="empty-state">⭐ Nenhuma avaliação de satisfação encontrada no servidor</td></tr>`;
             }
         }
 
